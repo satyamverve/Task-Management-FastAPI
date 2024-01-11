@@ -1,9 +1,10 @@
+# app/dto/users_schema.py
+
 from __future__ import annotations
 from pydantic import BaseModel, EmailStr
 from datetime import date
 from typing import Optional, List
 # from permissions.roles import Role
-
 
 class UserSignUp(BaseModel):
     email: EmailStr
@@ -12,40 +13,33 @@ class UserSignUp(BaseModel):
     surname: Optional[str] = None
     # role: Role
 
-
 class UserUpdate(BaseModel):
     name: Optional[str]
     surname: Optional[str]
     # role: Optional[Role]
 
-
 class UserUpdateMe(BaseModel):
     name: Optional[str]
     surname: Optional[str]
-
 
 class UserChangePassword(BaseModel):
     old_password: str
     new_password: str
 
-
 class User(UserSignUp):
     # register_date: date
-
     class Config:
         from_attributes = True
 
-
 class UserOut(BaseModel):
+    id : int
     email: EmailStr
     name: Optional[str]
     surname: Optional[str]
     # role: Role
     # register_date: date
-
     class Config:
         from_attributes = True
-
 
 class UserMe(BaseModel):
     email: EmailStr
@@ -54,7 +48,6 @@ class UserMe(BaseModel):
     # register_date: date
     # role: Role
     # permissions: List[str]
-
 
 class Token(BaseModel):
     access_token: str

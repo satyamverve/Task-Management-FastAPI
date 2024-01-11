@@ -1,33 +1,30 @@
 # main.py
 
 import sys
-
 sys.path.append("..")
 
 import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from Final_Demo.app.models.users import Base as user_base
-from Final_Demo.app.models.tokens import Base as token_base
+from Final_Demo.app.models.users import Base 
+# from Final_Demo.app.models.users import Base as token_base
 
 from Final_Demo.app.config.database import engine
 from Final_Demo.app.modules.users.routers import router as user_router
 from app.modules.login import router as login_router
 
 description = """
-An example FastAPI application to demonstrate forgot password flow.
+FastAPI application for Task Management.
 """
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    user_base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
 
-    token_base.metadata.create_all(bind=engine)
+    # token_base.metadata.create_all(bind=engine)
 
     yield
-
 
 app = FastAPI(
     lifespan=lifespan

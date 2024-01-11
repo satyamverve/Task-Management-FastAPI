@@ -127,5 +127,5 @@
 
 #     @classmethod
 #     @property
-#     def permissions(cls) -> ModelPermissions: # noqa
+#     def permissions(cls) -> ModelPermissions: 
 #         return ModelPermissions(cls)

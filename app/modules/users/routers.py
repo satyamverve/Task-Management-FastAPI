@@ -17,7 +17,7 @@ from Final_Demo.app.dto.users_schemas import User, UserSignUp, UserChangePasswor
 from app.email_notifications.notify import send_registration_notification, send_reset_password_mail
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from app.models.tokens import Token
+from app.models.users import Token
 
 templates = Jinja2Templates(directory='./app/templates')
 
@@ -190,9 +190,9 @@ def user_reset_password(request: Request, new_password: str = Form(...), user: U
     try:
         result = db_crud.user_reset_password(db, user.email, new_password)
 
-        # Call the new function to update reset_token status
+        # # Call the new function to update reset_token status
         # reset_token_updated = db_crud.update_reset_token(db, user.temp_token)
-        
+
         return templates.TemplateResponse(
             "reset_password_result.html",
             {

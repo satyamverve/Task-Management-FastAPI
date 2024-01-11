@@ -1,3 +1,5 @@
+# app/auth/auth.py
+
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
@@ -13,11 +15,8 @@ from typing import List
 # from permissions.roles import get_role_permissions
 from app.data.data_class import settings
 
-
-
 class BearAuthException(Exception):
     pass
-
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -31,10 +30,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-
 def get_password_hash(password):
     return pwd_context.hash(password)
-
 
 def create_access_token(data: str, expire_minutes=ACCESS_TOKEN_EXPIRE_MINUTES):
     to_encode = {"sub": data}
@@ -42,7 +39,6 @@ def create_access_token(data: str, expire_minutes=ACCESS_TOKEN_EXPIRE_MINUTES):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-
 
 def get_token_payload(token: str = Depends(oauth2_scheme)):
     try:
@@ -54,7 +50,6 @@ def get_token_payload(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise BearAuthException("Token could not be validated")
 
-
 def authenticate_user(db: Session, user_email: str, password: str):
     user = db.query(User).filter(User.email == user_email).first()
     if not user:
@@ -63,11 +58,9 @@ def authenticate_user(db: Session, user_email: str, password: str):
         return False
     return user
 
-
 def get_user_by_email(db: Session, user_email: str):
     user = db.query(User).filter(User.email == user_email).first()
     return user
-
 
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     try:
@@ -78,7 +71,6 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
             detail="Could not validate bearer token",
             headers={"WWW-Authenticate": "Bearer"}
         )
-
     user = db.query(User).filter(User.email == user_email).first()
     if not user:
         raise HTTPException(
@@ -87,7 +79,6 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
             headers={"WWW-Authenticate": "Bearer"}
         )
     return user
-
 
 def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get_db)):
     try:
@@ -98,7 +89,6 @@ def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get
             detail="Could not validate bearer token",
             headers={"WWW-Authenticate": "Bearer"}
         )
-
     user = db.query(User).filter(User.email == user_email).first()
     if not user:
         raise HTTPException(
@@ -107,7 +97,6 @@ def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get
             headers={"WWW-Authenticate": "Bearer"}
         )
     return user
-
 
 # class PermissionChecker:
 #     def __init__(self, permissions_required: List[ModelPermission]):

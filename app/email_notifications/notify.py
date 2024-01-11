@@ -1,3 +1,5 @@
+# app/email_notifications/notify.py
+
 import os
 from dotenv import load_dotenv
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
