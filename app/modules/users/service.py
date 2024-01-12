@@ -26,7 +26,7 @@ def add_user(db: Session, user: users_schemas.UserSignUp):
         password=get_password_hash(password),
         name=user.name,
         surname=user.surname,
-        # role=user.role
+        role=user.role
     )
     try:
         db.add(user)

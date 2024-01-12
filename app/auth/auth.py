@@ -4,15 +4,13 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer
-from dotenv import load_dotenv
-import os
 from sqlalchemy.orm import Session
 from Final_Demo.app.models.users import User
 from Final_Demo.app.config.database import get_db
 from fastapi import Depends, HTTPException, status
 from typing import List
-# from permissions.base import ModelPermission
-# from permissions.roles import get_role_permissions
+from app.permissions.base import ModelPermission, PermissionType
+from app.permissions.roles import Role, get_role_permissions
 from app.data.data_class import settings
 
 class BearAuthException(Exception):
@@ -98,14 +96,14 @@ def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get
         )
     return user
 
-# class PermissionChecker:
-#     def __init__(self, permissions_required: List[ModelPermission]):
-#         self.permissions_required = permissions_required
+class PermissionChecker:
+    def __init__(self, permissions_required: List[ModelPermission]):
+        self.permissions_required = permissions_required
 
-#     def __call__(self, user: User = Depends(get_current_user)):
-#         for permission_required in self.permissions_required:
-#             if permission_required not in get_role_permissions(user.role):
-#                 raise HTTPException(
-#                     status_code=status.HTTP_403_FORBIDDEN,
-#                     detail="Not enough permissions to access this resource")
-#         return user
+    def __call__(self, user: User = Depends(get_current_user)):
+        for permission_required in self.permissions_required:
+            if permission_required not in get_role_permissions(user.role):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Not enough permissions to access this resource")
+        return user

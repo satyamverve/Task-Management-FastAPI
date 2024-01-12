@@ -1,11 +1,13 @@
+# app/permissions/roles.py
+
 from enum import Enum
-from permissions.models_permissions import *
+from app.permissions.models_permissions import *
 from typing import List
 
-
 class Role(str, Enum):
-    ADMINISTRATOR = "ADMINISTRATOR"
-    USER = "USER"
+    SUPERADMIN = "SUPERADMIN"
+    MANAGER = "MANAGER"
+    AGENT= "AGENT"
 
     @classmethod
     def get_roles(cls):
@@ -14,20 +16,28 @@ class Role(str, Enum):
             values.append(f"{member.value}")
         return values
 
-
 ROLE_PERMISSIONS = {
-    Role.ADMINISTRATOR: [
+    Role.SUPERADMIN: [
         Users.permissions.FULL_PERMISSIONS,
+        # Users.permissions.MANAGER,
+        # Users.permissions.AGENT,
+        
     ],
-    Role.USER: [
+    Role.MANAGER: [
         [
-            Users.permissions.CHANGE_PASSWORD,
+            Users.permissions.CHANGE_PASSWORD,  
+            Users.permissions.VIEW_ME,
+            Users.permissions.EDIT_ME,
+            Users.permissions.CREATE_AGENT,
+        ]
+    ],
+    Role.AGENT: [
+        [
             Users.permissions.VIEW_ME,
             Users.permissions.EDIT_ME
         ]
     ]
 }
-
 
 def get_role_permissions(role: Role):
     permissions = set()

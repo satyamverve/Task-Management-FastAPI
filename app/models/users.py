@@ -17,7 +17,7 @@ class User(Base):
     password = Column(String(250))
     name = Column(String(50), nullable=True)
     surname = Column(String(50), nullable=True)
-    # role = Column(String)
+    role = Column(String(20))
     register_date= Column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))
     # Define the one-to-one relationship with Token
     # temp_token = relationship("Token", back_populates="user", uselist=False)

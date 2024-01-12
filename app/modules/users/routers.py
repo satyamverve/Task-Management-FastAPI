@@ -3,14 +3,14 @@
 import sys
 sys.path.append("..")
 
-from fastapi import Depends, APIRouter, HTTPException, Request, Form
+from fastapi import Depends, APIRouter, HTTPException, Request, Form, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List
 from Final_Demo.app.auth.auth import  create_access_token,\
-    authenticate_user, get_current_user, get_user_by_email, get_current_user_via_temp_token #, PermissionChecker
-# from permissions.models_permissions import Users
-# from permissions.roles import get_role_permissions, Role
+      get_current_user, get_user_by_email, get_current_user_via_temp_token , PermissionChecker
+from app.permissions.models_permissions import Users
+from app.permissions.roles import get_role_permissions, Role
 from Final_Demo.app.config.database import get_db
 from Final_Demo.app.modules.users import service as db_crud
 from Final_Demo.app.dto.users_schemas import User, UserSignUp, UserChangePassword, UserOut, UserMe, Token, UserUpdate, UserUpdateMe
@@ -25,7 +25,7 @@ router = APIRouter(prefix="")
 
 
 @router.post("/users",
-            #  dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],
+             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],
              response_model=UserOut, summary="Register a user", tags=["Users"])
 async def create_user(user_signup: UserSignUp, db: Session = Depends(get_db)):
     """
@@ -43,6 +43,47 @@ async def create_user(user_signup: UserSignUp, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
+    
+@router.post("/users/agents",
+             response_model=UserOut, summary="Register an User when You are an Manager", tags=["Users"])
+async def create_user(user_signup: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Registers an agent.
+    """
+    # Check if the current user is MANAGER and has the CREATE_AGENT permission
+    if current_user.role == Role.MANAGER:
+        if Users.permissions.CREATE_AGENT not in get_role_permissions(current_user.role):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions to create an Agent"
+            )
+
+    # Ensure that the user_signup.role is not SUPERADMIN
+    if user_signup.role == Role.SUPERADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not Enough Permissions to create Superadmin"
+        )
+    if user_signup.role == Role.MANAGER:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not Enough Permissions to Create Managers"
+        )
+
+    try:
+        user_created, password = db_crud.add_user(db, user_signup)
+        await send_registration_notification(
+            password=password, 
+            recipient_email=user_created.email
+        )
+        return user_created
+    except db_crud.DuplicateError as e:
+        raise HTTPException(status_code=403, detail=f"{e}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
+    
+
 
 
 @router.get("/users",
@@ -98,7 +139,7 @@ def delete_user(user_email: str, db: Session = Depends(get_db)):
 
 
 # @router.get("/users/roles",
-#             dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))],
+#             dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], 
 #             response_model=List[Role], summary="Get all user roles", tags=["Users"])
 # def get_user_roles(db: Session = Depends(get_db)):
 #     """

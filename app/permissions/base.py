@@ -1,8 +1,9 @@
+# app/permissions/base.py
+
 from enum import Enum
 from typing import Union, Type
 import re
 from dataclasses import dataclass
-
 
 @dataclass(init=False, eq=False)
 class Permission:
@@ -46,6 +47,10 @@ class PermissionType(str, Enum):
     VIEW_DETAILS = "VIEW_DETAILS"
     EDIT = "EDIT"
     DELETE = "DELETE"
+    MANAGER = "MANAGER"  # Add MANAGER permission
+    AGENT = "AGENT"  # Add AGENT permission
+    CREATE_SUPERADMIN = "CREATE_SUPERADMIN"  # Add CREATE_SUPERADMIN permission
+    CREATE_AGENT = "CREATE_AGENT"  # Add CREATE_AGENT permission
 
     def __str__(self):
         return f"{self.value}"
@@ -115,7 +120,8 @@ class ModelPermissions:
             self.VIEW_DETAILS,
             self.EDIT,
             self.DELETE,
-            *additional_permissions
+            *additional_permissions #this will autometically add all the permissions initialized in __PERMISSIONS__ attribute
+            # from models_permissions.py file
         ]
 
 
@@ -125,7 +131,7 @@ class ModelPermissionsMixin:
     under the `permissions` attribute.
     """
 
-    # @classmethod
+    @classmethod
     @property
     def permissions(cls) -> ModelPermissions: # noqa
         return ModelPermissions(cls)
