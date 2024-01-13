@@ -4,4 +4,4 @@
 ## Use this Query to generate 1st Superadmin 
 ``` INSERT INTO users (email,password,name,surname, role) VALUES('sk6005848@gmail.com', '$2a$12$G1.eB9vmbGprvloq.Fb3v.iK3sgosfTj.FMglkWlDEDJEzCjJZgpq', 'admin', 'admin', 'ADMINISTRATOR'); ```
 
-User_Management
+User_Management 112
