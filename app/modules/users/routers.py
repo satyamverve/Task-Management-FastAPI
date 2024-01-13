@@ -44,19 +44,13 @@ async def create_user(user_signup: UserSignUp, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
     
-@router.post("/users/agents",
-             response_model=UserOut, summary="Register an User when You are an Manager", tags=["Users"])
+@router.post("/users/agent",
+             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE_AGENT]))],
+             response_model=UserOut, summary="Register an Agent when You are a Manager", tags=["Users"])
 async def create_user(user_signup: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Registers an agent.
     """
-    # Check if the current user is MANAGER and has the CREATE_AGENT permission
-    if current_user.role == Role.MANAGER:
-        if Users.permissions.CREATE_AGENT not in get_role_permissions(current_user.role):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not enough permissions to create an Agent"
-            )
 
     # Ensure that the user_signup.role is not SUPERADMIN
     if user_signup.role == Role.SUPERADMIN:
@@ -87,7 +81,7 @@ async def create_user(user_signup: UserSignUp, db: Session = Depends(get_db), cu
 
 
 @router.get("/users",
-            # dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST]))],
+            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST]))],
             response_model=List[UserOut], summary="Get all users", tags=["Users"])
 def get_users(db: Session = Depends(get_db)):
     """
@@ -102,7 +96,7 @@ def get_users(db: Session = Depends(get_db)):
 
 
 @router.patch("/users",
-            #   dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_DETAILS, Users.permissions.EDIT]))],
+              dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_DETAILS, Users.permissions.EDIT]))],
               response_model=UserOut,
               summary="Update a user", tags=["Users"])
 def update_user(user_email: str, user_update: UserUpdate, db: Session = Depends(get_db)):
@@ -121,7 +115,7 @@ def update_user(user_email: str, user_update: UserUpdate, db: Session = Depends(
 
 
 @router.delete("/users",
-            #    dependencies=[Depends(PermissionChecker([Users.permissions.DELETE]))],
+               dependencies=[Depends(PermissionChecker([Users.permissions.DELETE]))],
                summary="Delete a user", tags=["Users"])
 def delete_user(user_email: str, db: Session = Depends(get_db)):
     """
@@ -138,44 +132,44 @@ def delete_user(user_email: str, db: Session = Depends(get_db)):
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
 
-# @router.get("/users/roles",
-#             dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], 
-#             response_model=List[Role], summary="Get all user roles", tags=["Users"])
-# def get_user_roles(db: Session = Depends(get_db)):
-#     """
-#     Returns all user roles.
-#     """
-#     try:
-#         return Role.get_roles()
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
+@router.get("/users/roles",
+            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], 
+            response_model=List[Role], summary="Get all user roles", tags=["Users"])
+def get_user_roles(db: Session = Depends(get_db)):
+    """
+    Returns all user roles.
+    """
+    try:
+        return Role.get_roles()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
 
-# @router.get("/users/me",
-#             response_model=UserMe, summary="Get info for my account", tags=["Users"])
-# def get_users(user: User = Depends(PermissionChecker([Users.permissions.VIEW_ME]))):
-#     """
-#     Returns info of logged in account.
-#     """
-#     try:
-#         user = UserMe(
-#             email=user.email,
-#             name=user.name,
-#             surname=user.surname,
-#             title=user.title,
-#             register_date=user.register_date,
-#             roles=user.role,
-#             permissions=get_role_permissions(user.role)
-#         )
-#         return user
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
+@router.get("/users/me",
+            response_model=UserMe, summary="Get info for my account", tags=["Users"])
+def get_users(user: User = Depends(PermissionChecker([Users.permissions.VIEW_ME]))):
+    """
+    Returns info of logged in account.
+    """
+    try:
+        user = UserMe(
+            id = user.id,
+            email=user.email,
+            name=user.name,
+            surname=user.surname,
+            register_date=user.register_date,
+            role=user.role,
+            permissions=get_role_permissions(user.role)
+        )
+        return user
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
 
 @router.patch("/users/me",
-            #   dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ME, Users.permissions.EDIT_ME]))],
+              dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ME, Users.permissions.EDIT_ME]))],
               response_model=UserMe,
               summary="Change details for a logged in user", tags=["Users"])
 def update_me(user_update: UserUpdateMe, user: User = Depends(get_current_user),
@@ -186,12 +180,13 @@ def update_me(user_update: UserUpdateMe, user: User = Depends(get_current_user),
     try:
         user = db_crud.update_me(db, user.email, user_update)
         user = UserMe(
+            id= user.id,
             email=user.email,
             name=user.name,
             surname=user.surname,
-            # register_date=user.register_date,
-            # roles=user.roles,
-            # permissions=get_role_permissions(user.role)
+            register_date=user.register_date,
+            role=user.role,
+            permissions=get_role_permissions(user.role)
         )
         return user
     except ValueError as e:

@@ -19,8 +19,6 @@ class Role(str, Enum):
 ROLE_PERMISSIONS = {
     Role.SUPERADMIN: [
         Users.permissions.FULL_PERMISSIONS,
-        # Users.permissions.MANAGER,
-        # Users.permissions.AGENT,
         
     ],
     Role.MANAGER: [
@@ -34,7 +32,9 @@ ROLE_PERMISSIONS = {
     Role.AGENT: [
         [
             Users.permissions.VIEW_ME,
-            Users.permissions.EDIT_ME
+            Users.permissions.EDIT_ME,
+            Users.permissions.CHANGE_PASSWORD
+
         ]
     ]
 }

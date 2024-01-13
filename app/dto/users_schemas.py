@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from pydantic import BaseModel, EmailStr
-from datetime import date
+from datetime import datetime
 from typing import Optional, List
 from app.permissions.roles import Role
 
@@ -16,7 +16,7 @@ class UserSignUp(BaseModel):
 class UserUpdate(BaseModel):
     name: Optional[str]
     surname: Optional[str]
-    # role: Optional[Role]
+    role: Optional[Role]
 
 class UserUpdateMe(BaseModel):
     name: Optional[str]
@@ -27,7 +27,7 @@ class UserChangePassword(BaseModel):
     new_password: str
 
 class User(UserSignUp):
-    # register_date: date
+    # register_date: datetime
     class Config:
         from_attributes = True
 
@@ -37,17 +37,18 @@ class UserOut(BaseModel):
     name: Optional[str]
     surname: Optional[str]
     role: Role
-    # register_date: date
+    register_date: datetime
     class Config:
         from_attributes = True
 
 class UserMe(BaseModel):
+    id : int
     email: EmailStr
     name: Optional[str]
     surname: Optional[str]
-    # register_date: date
-    # role: Role
-    # permissions: List[str]
+    register_date: datetime
+    role: Role
+    permissions: List[str]
 
 class Token(BaseModel):
     access_token: str
