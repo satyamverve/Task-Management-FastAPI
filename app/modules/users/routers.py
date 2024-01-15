@@ -177,6 +177,8 @@ def update_me(user_update: UserUpdateMe, user: User = Depends(get_current_user),
     """
     Changes details for a logged in user.
     """
+    # print(user.email)
+
     try:
         user = db_crud.update_me(db, user.email, user_update)
         user = UserMe(
