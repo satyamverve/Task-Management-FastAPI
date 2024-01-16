@@ -46,7 +46,6 @@ def add_user(db: Session, user: users_schemas.UserSignUp):
         email=user.email,
         password=get_password_hash(password),
         name=user.name,
-        surname=user.surname,
         role=user.role
     )
     try:

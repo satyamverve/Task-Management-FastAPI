@@ -10,43 +10,40 @@ class UserSignUp(BaseModel):
     email: EmailStr
     password: Optional[str]
     name: str
-    surname: Optional[str] = None
     role: Role
 
 class UserUpdate(BaseModel):
     name: Optional[str]
-    surname: Optional[str]
     role: Optional[Role]
 
 class UserUpdateMe(BaseModel):
     name: Optional[str]
-    surname: Optional[str]
 
 class UserChangePassword(BaseModel):
     old_password: str
     new_password: str
 
 class User(UserSignUp):
-    # register_date: datetime
+    # created_at: datetime
     class Config:
         from_attributes = True
 
 class UserOut(BaseModel):
-    id : int
+    ID : int
     email: EmailStr
     name: Optional[str]
-    surname: Optional[str]
     role: Role
-    register_date: datetime
+    created_at: datetime
+    updated_at: datetime
     class Config:
         from_attributes = True
 
 class UserMe(BaseModel):
-    id : int
+    ID : int
     email: EmailStr
     name: Optional[str]
-    surname: Optional[str]
-    register_date: datetime
+    created_at: datetime
+    updated_at: datetime
     role: Role
     permissions: List[str]
 

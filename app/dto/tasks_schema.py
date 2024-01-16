@@ -21,19 +21,21 @@ class CreateTask(BaseModel):
     # documents: List[str] = []
     status: TaskStatus
     due_date: date
-    assigned_to: int
+    assigned_to_user: int
     
 
 class ReturnTask(CreateTask):
-    
-    id: int
+    ID: int
     assigned_agent: Optional[str] 
+    assigned_to_user: Optional[int]
     owner: UserOut
     class config:
-        orm_mode=True
+        orm_mode = True
+        exclude = ['created_at', 'updated_at']
+
 
 class ReturnEditTask(CreateTask):
-    id:int
+    ID:int
     owner: UserOut
     class config:
         orm_mode= True
