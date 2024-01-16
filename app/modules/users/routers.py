@@ -158,8 +158,8 @@ def get_users(user: User = Depends(PermissionChecker([Users.permissions.VIEW_ME]
             id = user.id,
             email=user.email,
             name=user.name,
-            surname=user.surname,
-            register_date=user.register_date,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
             role=user.role,
             permissions=get_role_permissions(user.role)
         )
@@ -186,8 +186,8 @@ def update_me(user_update: UserUpdateMe, user: User = Depends(get_current_user),
             id= user.id,
             email=user.email,
             name=user.name,
-            surname=user.surname,
-            register_date=user.register_date,
+            created_at=user.created_at,
+            updated_at= user.updated,
             role=user.role,
             permissions=get_role_permissions(user.role)
         )
