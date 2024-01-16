@@ -41,10 +41,15 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+@app.get("/")
+def read_root():
+    return {"message": "This is the root path"}
+
+
 app.include_router(user_router)
 app.include_router(login_router)
 app.include_router(task_router)
 
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=9999)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -5,7 +5,9 @@ from datetime import date
 from sqlalchemy.orm import Session
 from app.models.tasks import Task, TaskHistory
 from app.dto.tasks_schema import CreateTask, TaskStatus, ReturnTask
-from app.auth.auth import get_current_user   
+from app.auth.auth import get_current_user  
+from app.models.users import User 
+from app.permissions.roles import Role
 
 def create_task(db: Session, task: CreateTask, current_user: get_current_user):
     # Create the task without assigned_agent
@@ -15,6 +17,7 @@ def create_task(db: Session, task: CreateTask, current_user: get_current_user):
         status=task.status,
         due_date=task.due_date,
         user_id=current_user.id,
+        assigned_agent=current_user.role
     )
 
     db.add(db_task)
@@ -25,7 +28,7 @@ def create_task(db: Session, task: CreateTask, current_user: get_current_user):
     log_task_history(db, db_task.id, db_task.status)
 
     # Get the role information for assigned_agent
-    role_info = f"{current_user.role} - {current_user.name}"
+    role_info = f"{current_user.role}"
     
     # Create the response model
     return_task = ReturnTask(
@@ -34,8 +37,8 @@ def create_task(db: Session, task: CreateTask, current_user: get_current_user):
         description=db_task.description,
         status=db_task.status,
         due_date=db_task.due_date,
-        assigned_agent=role_info,  # Include role information in the response
-        owner=current_user,  # Assuming you want to include owner information
+        assigned_agent=role_info, 
+        owner=current_user,  
     )
 
     return return_task
@@ -61,16 +64,58 @@ def delete_task(db: Session, task_id: int):
         return task_to_delete
     return None
 
-def view_all_tasks(db: Session, status: Optional[TaskStatus] = None, due_date: Optional[date] = None):
+def view_all_tasks(db: Session,current_user: get_current_user,status: Optional[TaskStatus] = None, due_date: Optional[date] = None):
     query = db.query(Task)
-
+    
     if status:
         query = query.filter(Task.status == status)
 
     if due_date:
         query = query.filter(Task.due_date == due_date)
 
-    return query.all()
+    tasks = query.all()
+    
+    # Modify the tasks by adding assigned_agent information
+    return [
+        ReturnTask(
+            id=task.id,
+            title=task.title,
+            description=task.description,
+            status=task.status,
+            due_date=task.due_date,
+            assigned_agent=task.assigned_agent,
+            owner=task.owner
+        )
+        for task in tasks
+    ]
+
+def view_all_tasks_role_based(db: Session, current_user: get_current_user, role: Role):
+    query = db.query(Task)
+
+    # Filter tasks based on the role
+    if role == Role.AGENT:
+        query = query.filter(Task.assigned_agent == Role.AGENT)
+    elif role == Role.MANAGER:
+        query = query.filter(Task.assigned_agent == Role.MANAGER)
+    elif role == Role.SUPERADMIN:
+        query = query.filter(Task.assigned_agent == Role.SUPERADMIN)
+
+    tasks = query.all()
+
+    # Modify the tasks by adding assigned_agent information
+    return [
+        ReturnTask(
+            id=task.id,
+            title=task.title,
+            description=task.description,
+            status=task.status,
+            due_date=task.due_date,
+            assigned_agent=task.assigned_agent,
+            owner=task.owner
+        )
+        for task in tasks
+    ]
+
 
 def log_task_history(db: Session, task_id: int, status: TaskStatus):
     history_entry = TaskHistory(task_id=task_id, status=status)

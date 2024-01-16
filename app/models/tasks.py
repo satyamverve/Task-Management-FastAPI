@@ -22,7 +22,7 @@ class Task(Base):
     documents = Column(String(250))  
     status = Column(Enum(TaskStatus))
     due_date= Column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))
-    assigned_agent = Column(String(50))
+    assigned_agent = Column(String(50),nullable=False)
     user_id= Column(Integer, ForeignKey(User.id,ondelete='CASCADE',
                                         onupdate='NO ACTION'),nullable=False)
     owner = relationship(User)

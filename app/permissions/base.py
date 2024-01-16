@@ -51,6 +51,7 @@ class PermissionType(str, Enum):
     AGENT = "AGENT"  # Add AGENT permission
     CREATE_SUPERADMIN = "CREATE_SUPERADMIN"  # Add CREATE_SUPERADMIN permission
     CREATE_AGENT = "CREATE_AGENT"  # Add CREATE_AGENT permission
+    CREATE_TASK= "CREATE_TASK"
 
     def __str__(self):
         return f"{self.value}"

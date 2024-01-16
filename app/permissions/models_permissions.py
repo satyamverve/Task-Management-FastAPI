@@ -9,4 +9,5 @@ class Users(ModelPermissionsMixin):
         'CHANGE_PASSWORD',
         'VIEW_ROLES',
         'CREATE_AGENT',
+        'CREATE_TASK'
     ]

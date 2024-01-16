@@ -4,4 +4,22 @@
 ## Use this Query to generate 1st Superadmin 
 ``` INSERT INTO users (email,password,name,surname, role) VALUES('sk6005848@gmail.com', '$2a$12$G1.eB9vmbGprvloq.Fb3v.iK3sgosfTj.FMglkWlDEDJEzCjJZgpq', 'admin', 'admin', 'SUPERADMIN'); ```
 
-User_Management 1234
+<run(IP): uvicorn main:app --host 0.0.0.0 --port 8000 --reload>
+
+
+## access the fastapi app from others system:
+<search: http://<your-local-ip>:8000>
+
+# CREATE THE ".env" file and add the below details
+>> Create at the root directory
+# .env
+
+DATABASE_USERNAME=
+DATABASE_PASSWORD=
+DATABASE_HOSTNAME="localhost"
+DATABASE_PORT="3306"
+DATABASE_NAME=
+
+SECRET_KEY=
+ALGORITHM=
+ACCESS_TOKEN_EXPIRE_MINUTES=

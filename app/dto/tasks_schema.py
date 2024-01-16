@@ -21,14 +21,22 @@ class CreateTask(BaseModel):
     # documents: List[str] = []
     status: TaskStatus
     due_date: date
+    
 
 
 class ReturnTask(CreateTask):
+    
     id: int
-    assigned_agent: str
+    assigned_agent: Optional[str] 
     owner: UserOut
     class config:
         orm_mode=True
+
+class ReturnEditTask(CreateTask):
+    id:int
+    owner: UserOut
+    class config:
+        orm_mode= True
 
 class History(BaseModel):
     # due_date: datetime
