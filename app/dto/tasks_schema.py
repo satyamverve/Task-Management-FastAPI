@@ -21,8 +21,8 @@ class CreateTask(BaseModel):
     # documents: List[str] = []
     status: TaskStatus
     due_date: date
+    assigned_to: int
     
-
 
 class ReturnTask(CreateTask):
     

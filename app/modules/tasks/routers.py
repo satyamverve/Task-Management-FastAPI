@@ -15,8 +15,6 @@ from Final_Demo.app.auth.auth import PermissionChecker
 from app.permissions.models_permissions import Users
 
 
-
-
 router = APIRouter(tags=["Tasks"])
 
 @router.post("/create/task", 

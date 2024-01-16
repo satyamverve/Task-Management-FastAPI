@@ -12,9 +12,30 @@ import Final_Demo.app.dto.users_schemas as users_schemas
 from sqlalchemy.exc import IntegrityError
 from Final_Demo.app.auth.auth import get_password_hash, verify_password
 from app.models.users import Token
-
+from datetime import datetime, timedelta
+TEMP_TOKEN_EXPIRE_MINUTES = 1
 class DuplicateError(Exception):
     pass
+
+def update_token_status(db: Session, expire_minutes: int):
+    expired_tokens = db.query(Token).filter(Token.is_expired == expire_minutes).first()
+    Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)
+    if expired_tokens:
+        expired_tokens.is_expired
+        db.commit()
+        return True
+    return False
+
+def update_password_change_status(db: Session, temp_token: str):
+    """
+    Update the reset_password column to True for the given temp_token.
+    """
+    reset_token = db.query(Token).filter(Token.token == temp_token).first()
+    if reset_token:
+        reset_token.reset_password = True
+        db.commit()
+        return True
+    return False
 
 def add_user(db: Session, user: users_schemas.UserSignUp):
     password = user.password
@@ -92,13 +113,13 @@ def get_users(db: Session):
     users = list(db.query(User).all())
     return users
 
-# def update_reset_token(db: Session, temp_token: str):
-#     reset_token = db.query(Token).filter(Token.token == temp_token).first()
-#     if reset_token:
-#         # Update the reset_password column to 1 and is_expired column to 1
-#         reset_token.reset_password = True
-#         reset_token.is_expired = True
-#         db.commit()
-#         return True
-#     return False
+def update_reset_token(db: Session, temp_token: str):
+    reset_token = db.query(Token).filter(Token.token == temp_token).first()
+    if reset_token:
+        # Update the reset_password column to 1 and is_expired column to 1
+        reset_token.reset_password = True
+        reset_token.is_expired = True
+        db.commit()
+        return True
+    return False
 

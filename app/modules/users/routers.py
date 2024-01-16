@@ -3,7 +3,7 @@
 import sys
 sys.path.append("..")
 
-from fastapi import Depends, APIRouter, HTTPException, Request, Form, status
+from fastapi import Depends, APIRouter, HTTPException, Request, Form, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List
@@ -18,6 +18,7 @@ from app.email_notifications.notify import send_registration_notification, send_
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from app.models.users import Token
+from Final_Demo.app.modules.users.service import TEMP_TOKEN_EXPIRE_MINUTES
 
 templates = Jinja2Templates(directory='./app/templates')
 
@@ -220,22 +221,27 @@ def user_change_password(user_change_password_body: UserChangePassword, user: Us
 
 @router.post("/users/me/reset_password",
               summary="Resets password for a user", tags=["Users"])
-def user_reset_password(request: Request, new_password: str = Form(...), user: User = Depends(get_current_user_via_temp_token),
-                         db: Session = Depends(get_db)):
+def user_reset_password(request: Request, user: User = Depends(get_current_user_via_temp_token),
+                         db: Session = Depends(get_db), new_password: str = Form(...),
+                         background_tasks: BackgroundTasks = BackgroundTasks()):
     """
     Resets password for a user.
     """
     try:
         result = db_crud.user_reset_password(db, user.email, new_password)
+        
+        # Update token status using the same expire_minutes value
+        db_crud.update_token_status(db, TEMP_TOKEN_EXPIRE_MINUTES)
 
-        # # Call the new function to update reset_token status
-        # reset_token_updated = db_crud.update_reset_token(db, user.temp_token)
 
+        db_crud.update_password_change_status(db, user.temp_token.token)
+        background_tasks.add_task(db_crud.update_password_change_status, db, user.temp_token.token)
+        
         return templates.TemplateResponse(
             "reset_password_result.html",
             {
                 "request": request,
-                "success": result #and reset_token_updated
+                "success": result 
             }
         )
     except ValueError as e:
@@ -244,8 +250,7 @@ def user_reset_password(request: Request, new_password: str = Form(...), user: U
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
-
-
+    
 @router.get("/users/me/reset_password_template",
               response_class=HTMLResponse,
               summary="Reset password for a user", tags=["Users"])
@@ -269,12 +274,12 @@ def user_reset_password_template(request: Request, user: User = Depends(get_curr
 
 
 @router.post("/users/me/forgot_password",
-              summary="Trigger forgot password mechanism for a user", tags=["Users"])
+              summary="Forgot password mechanism for a user", tags=["Users"])
 async def user_forgot_password(request: Request, user_email: str, db: Session = Depends(get_db)):
     """
     Triggers forgot password mechanism for a user.
     """
-    TEMP_TOKEN_EXPIRE_MINUTES = 10
+    
     try:
         user = get_user_by_email(db=db, user_email=user_email)
         if not user:

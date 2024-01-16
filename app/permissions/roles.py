@@ -27,7 +27,9 @@ ROLE_PERMISSIONS = {
             Users.permissions.VIEW_ME,
             Users.permissions.EDIT_ME,
             Users.permissions.CREATE_AGENT,
-            Users.permissions.CREATE_TASK
+            Users.permissions.CREATE_TASK,
+            Users.permissions.EDIT_TASK,
+            Users.permissions.DELETE_TASK
         ]
     ],
     Role.AGENT: [
