@@ -23,10 +23,10 @@ ROLE_PERMISSIONS = {
     ],
     Role.MANAGER: [
         [
+            Users.permissions.CREATE,
             Users.permissions.CHANGE_PASSWORD,  
-            Users.permissions.VIEW_ME,
-            Users.permissions.EDIT_ME,
-            Users.permissions.CREATE_AGENT,
+            Users.permissions.VIEW,
+            Users.permissions.EDIT,
             Users.permissions.CREATE_TASK,
             Users.permissions.EDIT_TASK,
             Users.permissions.DELETE_TASK
@@ -34,8 +34,7 @@ ROLE_PERMISSIONS = {
     ],
     Role.AGENT: [
         [
-            Users.permissions.VIEW_ME,
-            Users.permissions.EDIT_ME,
+            Users.permissions.VIEW,
             Users.permissions.CHANGE_PASSWORD
 
         ]

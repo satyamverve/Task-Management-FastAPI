@@ -13,11 +13,9 @@ class UserSignUp(BaseModel):
     role: Role
 
 class UserUpdate(BaseModel):
+    # password: Optional[str]
     name: Optional[str]
     role: Optional[Role]
-
-class UserUpdateMe(BaseModel):
-    name: Optional[str]
 
 class UserChangePassword(BaseModel):
     old_password: str

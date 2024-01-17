@@ -41,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-@app.get("/")
+@app.get("/", tags=["General"])
 def read_root():
     return {"message": "This is the root path"}
 

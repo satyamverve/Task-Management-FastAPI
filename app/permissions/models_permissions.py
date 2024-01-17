@@ -4,8 +4,8 @@ from app.permissions.base import ModelPermissionsMixin
 
 class Users(ModelPermissionsMixin):
     __PERMISSIONS__ = [
-        'VIEW_ME',
-        'EDIT_ME',
+        'VIEW',
+        'EDIT',
         'CHANGE_PASSWORD',
         'VIEW_ROLES',
         'CREATE_AGENT',
