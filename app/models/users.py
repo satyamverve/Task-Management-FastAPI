@@ -18,8 +18,11 @@ class User(Base):
     email = Column(String(200), primary_key=True, index=True, unique=True)
     password = Column(String(250))
     role = Column(String(50))
-    created_at = Column(DateTime, nullable=False, server_default=text('now()'))
-    updated_at = Column(DateTime, onupdate=func.now(), nullable=False, server_default=text('now()'))
+    # created_at = Column(DateTime, nullable=False, server_default=text('now()'))
+    # updated_at = Column(DateTime, onupdate=func.now(), nullable=False, server_default=text('now()'))
+    created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(TIMESTAMP, nullable=True,server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
     temp_token = relationship("Token", back_populates="user", uselist=False)
     
     @property
@@ -32,7 +35,9 @@ class Token(Base):
     user_email= Column(String(200), ForeignKey(User.email, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     reset_password = Column(Boolean, default=False)
     is_expired = Column(Boolean, default=False)
-    created_at = Column(DateTime, nullable=False, server_default=text('now()'))
-    updated_at = Column(DateTime, onupdate=func.now(), nullable=False, server_default=text('now()'))
+    # created_at = Column(DateTime, nullable=False, server_default=text('now()'))
+    # updated_at = Column(DateTime, onupdate=func.now(), nullable=False, server_default=text('now()'))
+    created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(TIMESTAMP, nullable=True,server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     user = relationship("User", back_populates="temp_token")

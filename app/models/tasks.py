@@ -18,26 +18,30 @@ Base = declarative_base()
 class Task(Base):
     __tablename__ = "tasks"
     ID = Column(Integer, primary_key=True, index=True)
-    title = Column(String(100), index=True)
+    title = Column(String(100), index=True) 
     description = Column(String(250))
     documents = Column(String(250))  
     status = Column(Enum(TaskStatus))
-    due_date= Column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))
-    assigned_to_user = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'), nullable=True)
+    assigned_to_user = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'))
+    assigned_to_user_role = Column(String(50))
     assigned_user = relationship(User, foreign_keys=[assigned_to_user])
     assigned_agent = Column(String(50),nullable=False)
     user_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     owner = relationship(User, foreign_keys=[user_id])
-    created_at = Column(DateTime, nullable=False, server_default=text('now()'))
-    updated_at = Column(DateTime, onupdate=func.now(), nullable=False, server_default=text('now()'))
+    due_date= Column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))
+    created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(TIMESTAMP, nullable=True,server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
 
 
 class TaskHistory(Base):
     __tablename__ = "task_history"
     ID = Column(Integer, primary_key=True, index=True)
-    date= Column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))
-    status = Column(Enum(TaskStatus))
     task_id = Column(Integer, ForeignKey("tasks.ID"))
+    status = Column(Enum(TaskStatus))
     task = relationship("Task", back_populates="history")
+    created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(TIMESTAMP, nullable=True,server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
-Task.history = relationship("TaskHistory", order_by=TaskHistory.date, back_populates="task")
+
+Task.history = relationship("TaskHistory", order_by=TaskHistory.updated_at, back_populates="task")
