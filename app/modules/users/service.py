@@ -17,26 +17,7 @@ TEMP_TOKEN_EXPIRE_MINUTES = 1
 class DuplicateError(Exception):
     pass
 
-def update_token_status(db: Session, expire_minutes: int):
-    expired_tokens = db.query(Token).filter(Token.is_expired == expire_minutes).first()
-    Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)
-    if expired_tokens:
-        expired_tokens.is_expired
-        db.commit()
-        return True
-    return False
-
-def update_password_change_status(db: Session, temp_token: str):
-    """
-    Update the reset_password column to True for the given temp_token.
-    """
-    reset_token = db.query(Token).filter(Token.token == temp_token).first()
-    if reset_token:
-        reset_token.reset_password = True
-        db.commit()
-        return True
-    return False
-
+# CREATE User
 def add_user(db: Session, user: users_schemas.UserSignUp):
     password = user.password
     if not password:
@@ -57,14 +38,10 @@ def add_user(db: Session, user: users_schemas.UserSignUp):
         raise DuplicateError(
             f"Email {user.email} is already attached to a registered user.")
 
-def get_user(db: Session, email: str):
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        return False
-    return user
 
-def update_user(db: Session, email: str, user_update: users_schemas.UserUpdate):
-    user = db.query(User).filter(User.email == email).first()
+# UPDATE User
+def update_user(db: Session,user_id:int, user_update: users_schemas.UserUpdate):
+    user = db.query(User).filter(User.ID == user_id).first()
     if not user:
         raise ValueError(
             f"There isn't any user with username {email}")
@@ -74,6 +51,17 @@ def update_user(db: Session, email: str, user_update: users_schemas.UserUpdate):
     db.commit()
     return user
 
+
+# Read User
+def get_user(db: Session, user_id: int):
+    # print("hello")
+    user= db.query(User).filter(User.ID == user_id).first()
+    if user:
+        return user
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+# DELETE User
 def delete_user(db: Session, email: str):
     user_cursor = db.query(User).filter(User.email == email)
     if not user_cursor.first():
@@ -81,6 +69,12 @@ def delete_user(db: Session, email: str):
     else:
         user_cursor.delete()
         db.commit()
+
+# Read Users for Get LIST of Users
+def get_users(db: Session):
+    users = list(db.query(User).all())
+    return users
+
 
 def user_change_password(db: Session, email: str, user_change_password_body: users_schemas.UserChangePassword):
     user = db.query(User).filter(User.email == email).first()
@@ -91,6 +85,7 @@ def user_change_password(db: Session, email: str, user_change_password_body: use
     user.password = get_password_hash(user_change_password_body.new_password)
     db.commit()
 
+
 def user_reset_password(db: Session, email: str, new_password: str):
     try:
         user = db.query(User).filter(User.email == email).first()
@@ -100,17 +95,6 @@ def user_reset_password(db: Session, email: str, new_password: str):
         return False
     return True
 
-def update_me(db: Session, email: str, user_update: users_schemas.UserUpdateMe):
-    user = db.query(User).filter(User.email == email).first()
-    updated_user = user_update.dict(exclude_unset=True)
-    for key, value in updated_user.items():
-        setattr(user, key, value)
-    db.commit()
-    return user
-
-def get_users(db: Session):
-    users = list(db.query(User).all())
-    return users
 
 def update_reset_token(db: Session, temp_token: str):
     reset_token = db.query(Token).filter(Token.token == temp_token).first()
@@ -122,3 +106,24 @@ def update_reset_token(db: Session, temp_token: str):
         return True
     return False
 
+
+def update_token_status(db: Session, expire_minutes: int):
+    expired_tokens = db.query(Token).filter(Token.is_expired == expire_minutes).first()
+    Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)
+    if expired_tokens:
+        expired_tokens.is_expired
+        db.commit()
+        return True
+    return False
+
+
+def update_password_change_status(db: Session, temp_token: str):
+    """
+    Update the reset_password column to True for the given temp_token.
+    """
+    reset_token = db.query(Token).filter(Token.token == temp_token).first()
+    if reset_token:
+        reset_token.reset_password = True
+        db.commit()
+        return True
+    return False
