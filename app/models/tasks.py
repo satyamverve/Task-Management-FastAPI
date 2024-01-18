@@ -2,15 +2,12 @@
 
 from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey, Date
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-# from datetime import date
 from app.dto.tasks_schema import TaskStatus
 from Final_Demo.app.config.database import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from app.models.users import User
 from sqlalchemy.orm import relationship
-from sqlalchemy import DateTime
-from sqlalchemy.sql import func
 
 
 Base = declarative_base()
@@ -38,10 +35,10 @@ class TaskHistory(Base):
     __tablename__ = "task_history"
     ID = Column(Integer, primary_key=True, index=True)
     task_id = Column(Integer, ForeignKey("tasks.ID"))
+    comments = Column(String(250))
     status = Column(Enum(TaskStatus))
     task = relationship("Task", back_populates="history")
     created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
-    updated_at = Column(TIMESTAMP, nullable=True,server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
 
-Task.history = relationship("TaskHistory", order_by=TaskHistory.updated_at, back_populates="task")
+Task.history = relationship("TaskHistory", order_by=TaskHistory.created_at, back_populates="task")

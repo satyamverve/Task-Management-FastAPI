@@ -8,16 +8,16 @@ from enum import Enum
 from app.dto.users_schemas import UserOut
 from app.permissions.roles import Role
 
-
 class TaskStatus(str, Enum):
     NotAssigned = "Not-Assigned"
     Assigned = "Assigned"
     InProgress = "In-Progress"
     OnHold = "On-Hold"
     Completed = "Completed"
+    @classmethod
+    def get_status(cls):
+        return list(cls.__members__)
     
-
-
 class CreateTask(BaseModel):
     title: str
     description: str
@@ -25,8 +25,7 @@ class CreateTask(BaseModel):
     status: TaskStatus
     due_date: date
     assigned_to_user: Optional[int]=None
-    
-
+        
 class ReturnTask(BaseModel):
     ID: int
     title: str
@@ -45,19 +44,21 @@ class ReturnTask(BaseModel):
 
 class UpdateTask(ReturnTask):
     updated_at: datetime
-    class cofig:
+    class config:
         orm_mode=True
         exclude = ['created_at', 'updated_at']
 
-    
-
 class TaskHistory(BaseModel):
-    updated_at: datetime
-    status: str  # Assuming `TaskStatus` is a string enum
+    comments : Optional[str]
+    status: TaskStatus  
+    created_at: datetime
+
+class CreateHistory(BaseModel):
+    comments : Optional[str]
+    # status: str  
 
 class TaskHistoryResponse(BaseModel):
     task_id: int
-    created_at: datetime
     due_date: date
     history: List[TaskHistory]
     class Config:
@@ -66,3 +67,4 @@ class TaskHistoryResponse(BaseModel):
             datetime: lambda v: v.strftime('%Y-%m-%d %H:%M:%S'),  # Format datetime
             date: lambda v: v.strftime('%Y-%m-%d')  # Format date
         }
+    

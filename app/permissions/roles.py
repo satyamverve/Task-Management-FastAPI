@@ -24,9 +24,10 @@ ROLE_PERMISSIONS = {
     Role.MANAGER: [
         [
             Users.permissions.CREATE,
-            Users.permissions.CHANGE_PASSWORD,  
-            Users.permissions.VIEW,
+            Users.permissions.VIEW_DETAILS,
             Users.permissions.EDIT,
+            Users.permissions.DELETE,
+            Users.permissions.VIEW_LIST,
             Users.permissions.CREATE_TASK,
             Users.permissions.EDIT_TASK,
             Users.permissions.DELETE_TASK
@@ -34,9 +35,8 @@ ROLE_PERMISSIONS = {
     ],
     Role.AGENT: [
         [
-            Users.permissions.VIEW,
-            Users.permissions.CHANGE_PASSWORD
-
+            Users.permissions.VIEW_DETAILS,
+            Users.permissions.VIEW_LIST,
         ]
     ]
 }
@@ -47,3 +47,4 @@ def get_role_permissions(role: Role):
         for permission in permissions_group:
             permissions.add(str(permission))
     return list(permissions)
+
