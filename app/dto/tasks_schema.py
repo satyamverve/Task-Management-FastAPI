@@ -22,7 +22,7 @@ class CreateTask(BaseModel):
     title: str
     description: str
     # documents: List[str] = []
-    status: TaskStatus
+    # status: TaskStatus
     due_date: date
     assigned_to_user: Optional[int]=None
         
@@ -55,7 +55,7 @@ class TaskHistory(BaseModel):
 
 class CreateHistory(BaseModel):
     comments : Optional[str]
-    # status: str  
+    # status: TaskStatus  
 
 class TaskHistoryResponse(BaseModel):
     task_id: int

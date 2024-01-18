@@ -9,7 +9,6 @@ from sqlalchemy.sql.expression import text
 from app.models.users import User
 from sqlalchemy.orm import relationship
 
-
 Base = declarative_base()
 
 class Task(Base):
@@ -29,8 +28,6 @@ class Task(Base):
     created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=True,server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
-
-
 class TaskHistory(Base):
     __tablename__ = "task_history"
     ID = Column(Integer, primary_key=True, index=True)
@@ -39,6 +36,5 @@ class TaskHistory(Base):
     status = Column(Enum(TaskStatus))
     task = relationship("Task", back_populates="history")
     created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
-
 
 Task.history = relationship("TaskHistory", order_by=TaskHistory.created_at, back_populates="task")

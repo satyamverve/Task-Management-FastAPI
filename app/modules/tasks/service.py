@@ -11,14 +11,14 @@ from app.models.users import User
 from app.permissions.roles import Role
 
 # CREATE
-def create_task(db: Session, task: CreateTask, current_user: get_current_user):
+def create_task(db: Session, task: CreateTask, status: TaskStatus, current_user: get_current_user):
     assigned_user = None
     
     if task.assigned_to_user is not None:
         assigned_user = db.query(User).filter(User.ID == task.assigned_to_user).first()
         if not assigned_user:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=400,
                 detail="Assigned user not available. Please provide a valid user ID.",
             )
     
@@ -26,7 +26,7 @@ def create_task(db: Session, task: CreateTask, current_user: get_current_user):
     assigned_to_user_value = assigned_user.ID if assigned_user else None
     
     # Use the provided status enum directly
-    status_value = task.status
+    status_value = status
     
     db_task = Task(
         title=task.title,
@@ -62,48 +62,55 @@ def create_task(db: Session, task: CreateTask, current_user: get_current_user):
 
 
 # UPDATE
-def edit_task(db: Session, task_id: int, updated_task: CreateTask):
+def edit_task(db: Session, task_id: int, updated_task: CreateTask,status: TaskStatus,
+                current_user: get_current_user = Depends()):
+    assigned_user = None
+
     existing_task = db.query(Task).filter(Task.ID == task_id).first()
     if existing_task:
         # Check if the assigned user exists
         assigned_user = db.query(User).filter(User.ID == updated_task.assigned_to_user).first()
         if not assigned_user:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=400,
                 detail="Assigned user not available. Please provide a valid user ID.",
             )
-        for field, value in updated_task.dict().items():
-            setattr(existing_task, field, value)
+        for key, value in updated_task.model_dump().items():
+            setattr(existing_task, key, value)
         # Update the assigned_user relationship
         existing_task.assigned_user = assigned_user
         existing_task.assigned_to_user_role = assigned_user.role if assigned_user else None
+        # Update the status in the task
+        existing_task.status = status
         db.commit()
         return existing_task
     return None
 
 # UPDATE History
-def update_task(db: Session, task_id: int, task: CreateHistory,
+def update_task(db: Session, task_id: int, task: CreateHistory, status: TaskStatus,
                 current_user: get_current_user = Depends()):
-    tasks= db.query(Task).filter(Task.ID == task_id).first()
-                
-    if tasks == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Task Not found')
-
+    tasks = db.query(Task).filter(Task.ID == task_id).first()
     # #logic for only the logged in user can do any CRUD opeartions with only their own posts
-    # if db_post.user_id != current_user.id:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-    #                         detail="Not Authorized to perform requested action")   
-    
+    if tasks .user_id != current_user.ID:
+        raise HTTPException(status_code=401,
+                            detail="Not Authorized to perform requested action") 
+
+    if tasks is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Task Not found')
     else:
         for key, value in task.model_dump(exclude_unset=True).items():
-            setattr(tasks,key,value)
+            setattr(tasks, key, value)
+
+        # Update the status in the task
+        tasks.status = status
+
         db.commit()
+
         # Log task edit in history
-        log_task_history(db, tasks.ID, tasks.status, task.comments)
+        log_task_history(db, tasks.ID, status, task.comments)
 
         db.refresh(tasks)
         return tasks
-
 # READ
 def view_all_tasks(db: Session, current_user: get_current_user, status: Optional[TaskStatus] = None, due_date: Optional[date] = None):
     if current_user.role not in Role.get_roles():
