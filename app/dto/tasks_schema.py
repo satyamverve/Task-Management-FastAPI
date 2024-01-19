@@ -24,7 +24,7 @@ class CreateTask(BaseModel):
     # documents: List[str] = []
     # status: TaskStatus
     due_date: date
-    assigned_to_user: Optional[int]=None
+    agent_id: Optional[int]=None
         
 class ReturnTask(BaseModel):
     ID: int
@@ -33,9 +33,9 @@ class ReturnTask(BaseModel):
     # documents: List[str] = []
     status: TaskStatus
     due_date: date
-    assigned_agent: Optional[str] 
-    assigned_to_user: Optional[int]
-    assigned_to_user_role: Optional[str]
+    agent_id: int
+    agent_role: Optional[str]
+    created_by_role: Optional[str] 
     created_at: datetime
     # owner: UserOut
     class config:
@@ -58,7 +58,7 @@ class CreateHistory(BaseModel):
     # status: TaskStatus  
 
 class TaskHistoryResponse(BaseModel):
-    task_id: int
+    task_id: Optional[int]
     due_date: date
     history: List[TaskHistory]
     class Config:

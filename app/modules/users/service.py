@@ -7,18 +7,31 @@ import random
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from Final_Demo.app.models.users import User
-import Final_Demo.app.dto.users_schemas as users_schemas
+from app.dto.users_schemas import UserSignUp, UserUpdate, UserChangePassword
 from sqlalchemy.exc import IntegrityError
 from Final_Demo.app.auth.auth import get_password_hash, verify_password
 from app.models.users import Token
 from datetime import datetime, timedelta
+from app.auth.auth import get_current_user  
+from app.permissions.roles import Role
+
 
 class DuplicateError(Exception):
     pass
 TEMP_TOKEN_EXPIRE_MINUTES = 10
 
 # CREATE User
-def add_user(db: Session, user: users_schemas.UserSignUp):
+def add_user(db: Session, user: UserSignUp,current_user: get_current_user):
+    if current_user.role == Role.MANAGER and user.role==Role.MANAGER:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not enough permissions to access this resource"
+        )
+    if current_user.role == Role.MANAGER and  user.role==Role.SUPERADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not enough permissions to access this resource"
+        )
     password = user.password
     if not password:
         characters = string.ascii_letters + string.digits + string.punctuation
@@ -40,7 +53,7 @@ def add_user(db: Session, user: users_schemas.UserSignUp):
 
 
 # UPDATE User
-def update_user(db: Session,user_id:int, user_update: users_schemas.UserUpdate):
+def update_user(db: Session,user_id:int, user_update: UserUpdate):
     user = db.query(User).filter(User.ID == user_id).first()
     if not user:
         raise ValueError(
@@ -76,7 +89,7 @@ def get_users(db: Session):
     return users
 
 # Change password
-def user_change_password(db: Session, email: str, user_change_password_body: users_schemas.UserChangePassword):
+def user_change_password(db: Session, email: str, user_change_password_body: UserChangePassword):
     user = db.query(User).filter(User.email == email).first()
 
     if not verify_password(user_change_password_body.old_password, user.password):

@@ -6,7 +6,7 @@ from app.config.database import get_db
 from app.models.tasks import Task
 from app.dto.tasks_schema import CreateTask, ReturnTask, TaskStatus, TaskHistoryResponse, UpdateTask
 from app.dto.tasks_schema import ReturnTask ,CreateHistory
-from app.modules.tasks.service import create_task, edit_task, delete_task, view_all_tasks,get_tasks,update_task
+from app.modules.tasks.service import create_task, delete_task, view_all_tasks,get_tasks,update_task, get_task_history
 from typing import List, Optional
 from datetime import datetime, date
 from app.auth.auth import get_current_user   
@@ -40,25 +40,25 @@ def create_new_task(
 
 
 
-# UPDATE the existing task
-@router.put("/tasks/{task_id}", response_model=UpdateTask,tags=["Tasks"], summary="Update the tasks")
-async def edit_task_endpoint(
-    task_id: int,
-    updated_task: CreateTask,
-    status: TaskStatus = Query(..., title="Status", description="Choose the task status from the dropdown."),
-    db: Session = Depends(get_db),
-    current_user: get_current_user = Depends(),
-):
-    """
-    Update the task and please enter null if you have not any user to assign the task
-    """
-    try:
-        return edit_task(db, task_id, updated_task, status, current_user)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid status provided")
+# # UPDATE the existing task
+# @router.put("/tasks/{task_id}", response_model=UpdateTask,tags=["Tasks"], summary="Update the tasks")
+# async def edit_task_endpoint(
+#     task_id: int,
+#     updated_task: CreateTask,
+#     status: TaskStatus = Query(..., title="Status", description="Choose the task status from the dropdown."),
+#     db: Session = Depends(get_db),
+#     current_user: get_current_user = Depends(),
+# ):
+#     """
+#     Update the task and please enter null if you have not any user to assign the task
+#     """
+#     try:
+#         return edit_task(db, task_id, updated_task, status, current_user)
+#     except ValueError:
+#         raise HTTPException(status_code=400, detail="Invalid status provided")
 
 
-# UPDATE History
+# UPDATE Status and make Comments
 @router.put("/update/{task_id}", response_model=UpdateTask,tags=["Tasks"], summary="Update the task status")
 async def update_task_status(
     task_id: int,
@@ -91,7 +91,7 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db),curre
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
-# get all tasks 
+# Filter all tasks with due_date and status
 @router.get("/tasks/", response_model=List[ReturnTask],tags=["Tasks"], summary="Filter all tasks along with due_date and status")
 async def view_all_tasks_endpoint(
     status: Optional[TaskStatus] = None, 
@@ -106,33 +106,31 @@ async def view_all_tasks_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
-# get task history
-@router.get("/tasks/{task_id}/history", response_model=TaskHistoryResponse,tags=["Tasks"], summary="View task History")
-async def view_task_history_endpoint(task_id: int, db: Session = Depends(get_db), current_user: get_current_user = Depends()):
+# GET task history
+@router.get("/tasks/history", response_model=TaskHistoryResponse, tags=["Tasks"], summary="View task History")
+async def view_task_history_endpoint(task_id: Optional[int]=None, 
+                                    db: Session = Depends(get_db),
+                                    current_user: get_current_user = Depends()):
     """
-    Hostory of taska according to the changes made in tasks
+    History of tasks according to the changes made in tasks
     """
-    try:
-        task = db.query(Task).filter(Task.ID == task_id).first()
-        if task:
-            task_history = task.history  # Use the relationship to get the history entries
-            return {"task_id":task.ID,"created_at":task.created_at,"due_date": task.due_date, "history": task_history}
-        else:
-            raise HTTPException(status_code=404, detail="Task not found")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+    return get_task_history(db, task_id)
     
-# LIST Task
+# LIST all Task
 @router.get("/tasks/all",
             dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST]))],
-            response_model=List[ReturnTask], summary="Get all tasks", tags=["General"])
-def get_all_tasks(db: Session = Depends(get_db)):
+            response_model=List[ReturnTask], 
+            summary="Get all tasks", tags=["Tasks"])
+def get_all_tasks(
+    db: Session = Depends(get_db),
+    current_user: get_current_user = Depends(),
+):
     """
-    Get list of all tasks.
+    Get list of all tasks for the current user.
     """
     try:
-        tasks = get_tasks(db)
+        tasks = get_tasks(db, current_user)
         return tasks
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")       

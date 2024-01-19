@@ -18,15 +18,17 @@ class Task(Base):
     description = Column(String(250))
     documents = Column(String(250))  
     status = Column(Enum(TaskStatus))
-    assigned_to_user = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'))
-    assigned_to_user_role = Column(String(50))
-    assigned_user = relationship(User, foreign_keys=[assigned_to_user])
-    assigned_agent = Column(String(50),nullable=False)
-    user_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
-    owner = relationship(User, foreign_keys=[user_id])
     due_date= Column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))
+    agent_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'))
+    agent_role = Column(String(50))
+    created_by_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
+    created_by_role = Column(String(50),nullable=False)
     created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=True,server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+    assigned_user = relationship(User, foreign_keys=[agent_id])
+    owner = relationship(User, foreign_keys=[created_by_id])
+
+
 
 class TaskHistory(Base):
     __tablename__ = "task_history"
@@ -34,7 +36,8 @@ class TaskHistory(Base):
     task_id = Column(Integer, ForeignKey("tasks.ID"))
     comments = Column(String(250))
     status = Column(Enum(TaskStatus))
-    task = relationship("Task", back_populates="history")
     created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
+    task = relationship("Task", back_populates="history")
+
 
 Task.history = relationship("TaskHistory", order_by=TaskHistory.created_at, back_populates="task")

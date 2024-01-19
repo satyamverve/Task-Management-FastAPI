@@ -5,7 +5,6 @@ sys.path.append("..")
 
 from fastapi import Depends, APIRouter, HTTPException, Request, Form, status, BackgroundTasks
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordRequestForm
 from typing import List, Dict
 from Final_Demo.app.auth.auth import  create_access_token,\
       get_current_user, get_user_by_email, get_current_user_via_temp_token , PermissionChecker
@@ -37,9 +36,7 @@ def get_user_roles(db: Session = Depends(get_db)):
         for role in Role:
             role_permissions = get_role_permissions(role)
             roles_with_permissions.append({role.value: role_permissions})
-
         return roles_with_permissions
-
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
@@ -65,22 +62,12 @@ def get_users(db: Session = Depends(get_db)):
 @router.post("/users",
              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],
              response_model=UserOut, summary="Register users", tags=["Users"])
-async def create_user(user_signup: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def create_user(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Registers an user.
     """
-    if current_user.role == Role.MANAGER and user_signup.role==Role.MANAGER:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Not enough permissions to access this resource"
-        )
-    if current_user.role == Role.MANAGER and  user_signup.role==Role.SUPERADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Not enough permissions to access this resource"
-        )
     try:
-        user_created, password = db_crud.add_user(db, user_signup)
+        user_created, password = db_crud.add_user(db, user, current_user)
         await send_registration_notification(
             password=password, 
             recipient_email=user_created.email
