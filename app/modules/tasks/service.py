@@ -41,7 +41,7 @@ def create_task(db: Session,
     )
     if current_user.role == Role.MANAGER and db_task.agent_role==Role.MANAGER:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=400,
             detail="Not enough permissions to access this resource"
         )
     if current_user.role == Role.MANAGER and db_task.agent_role==Role.SUPERADMIN:
@@ -103,7 +103,7 @@ def update_task(db: Session,
                 ):
     tasks = db.query(Task).filter(Task.ID == task_id).first()
     if tasks is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Task Not found')
+        raise HTTPException(status_code=404, detail='Task Not found')
     # Superadmin can update his own tasks, Manager and Agent
     if current_user.role == Role.SUPERADMIN:
         if tasks.agent_role == Role.SUPERADMIN and tasks.agent_id == current_user.ID:
@@ -204,8 +204,45 @@ def get_tasks(db: Session,
     return tasks
 
 # DELETE
-def delete_task(db: Session, task_id: int):
+def delete_task(db: Session,
+                current_user: get_current_user, 
+                task_id: int):
     task_to_delete = db.query(Task).filter(Task.ID == task_id).first()
+    # if task_to_delete is None:
+    #     raise HTTPException(status_code=404, detail='Task Not found')
+    # # Superadmin can update his own tasks, Manager and Agent
+    # if current_user.role == Role.SUPERADMIN:
+    #     if task_to_delete.agent_role == Role.SUPERADMIN and task_to_delete.agent_id == current_user.ID:
+    #         pass
+    #     elif task_to_delete.agent_role == Role.MANAGER or task_to_delete.agent_role== Role.AGENT:
+    #         pass
+    #     else:
+    #         raise HTTPException(
+    #             status_code=401,
+    #             detail="Not Authorized to perform requested action"
+    #         )
+    # # Manager can update tasks of Agent roles and himself
+    # elif current_user.role == Role.MANAGER:
+    #     if task_to_delete.agent_role == Role.AGENT and task_to_delete.agent_id == current_user.ID:
+    #         pass
+    #     if task_to_delete.agent_role == Role.MANAGER and task_to_delete.agent_id == current_user.ID:
+    #         pass
+    #     elif task_to_delete.agent_role == task_to_delete.agent_role== Role.AGENT:
+    #         pass
+    #     else:
+    #         raise HTTPException(
+    #             status_code=401,
+    #             detail="Not Authorized to perform requested action"
+    #         )
+    # # Agent can only update his own tasks
+    # elif current_user.role == Role.AGENT:
+    #     if task_to_delete.agent_id == current_user.ID:
+    #         pass
+    #     else:
+    #         raise HTTPException(
+    #             status_code=401,
+    #             detail="Not Authorized to perform requested action"
+    #         )
     if task_to_delete:
         db.delete(task_to_delete)
         db.commit()
@@ -219,14 +256,42 @@ def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Op
     db.commit()
 
 # Get History
-def get_task_history(db: Session,
-                    task_id: int):
-    try:
-        task = db.query(Task).filter(Task.ID == task_id).first()
-        if task:
-            task_history = task.history  # Use the relationship to get the history entries
-            return {"task_id": task.ID, "created_at": task.created_at, "due_date": task.due_date, "history": task_history}
-        else:
-            raise HTTPException(status_code=404, detail="Task not found")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+def get_task_history(db: Session,current_user: get_current_user,  task_ids: Optional[List[int]] = None):
+    if current_user.role not in Role.get_roles():
+        raise HTTPException(status_code=403, detail="User has an invalid role")
+    # Define roles that are allowed to view tasks based on the user's role
+    allowed_roles = {
+        Role.SUPERADMIN: [Role.SUPERADMIN, Role.MANAGER, Role.AGENT],
+        Role.MANAGER: [Role.MANAGER, Role.AGENT],
+        Role.AGENT: [Role.AGENT],
+    }
+    if current_user.role not in allowed_roles.get(current_user.role):
+        raise HTTPException(status_code=403, detail="User not allowed to view tasks")
+    # Filter tasks based on user's role
+    query = db.query(Task)
+    if current_user.role == Role.SUPERADMIN:
+        query = query.filter(or_(Task.agent_id==current_user.ID, Task.agent_role==Role.MANAGER, Task.agent_role==Role.AGENT))
+    elif current_user.role == Role.MANAGER:
+        query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
+    elif current_user.role == Role.AGENT:
+        query = query.filter(Task.agent_id == current_user.ID)
+    if task_ids:
+        query = query.filter(Task.ID.in_(task_ids))
+    tasks = query.all()
+    task_histories = []
+    for task in tasks:
+        task_history = {
+            "task_id": task.ID,
+            "created_at": task.created_at,
+            "due_date": task.due_date,
+            "history": [
+                {
+                    "comments": history.comments,
+                    "status": history.status,
+                    "created_at": history.created_at,
+                }
+                for history in task.history
+            ],
+        }
+        task_histories.append(task_history)
+    return task_histories

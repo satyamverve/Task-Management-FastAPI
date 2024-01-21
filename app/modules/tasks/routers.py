@@ -83,7 +83,7 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db),curre
     Enter the ID of task to delete
     """
     try:
-        deleted_task = delete_task(db, task_id)
+        deleted_task = delete_task(db, current_user, task_id)
         if deleted_task:
             return deleted_task
         else:
@@ -107,20 +107,27 @@ async def view_all_tasks_endpoint(
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 # GET task history
-@router.get("/tasks/history", response_model=TaskHistoryResponse, tags=["Tasks"], summary="View task History")
-async def view_task_history_endpoint(task_id: Optional[int]=None, 
-                                    db: Session = Depends(get_db),
-                                    current_user: get_current_user = Depends()):
+@router.get("/tasks/history", response_model=List[TaskHistoryResponse], tags=["Tasks"], summary="View task History")
+async def view_task_history_endpoint(
+    task_ids: Optional[List[int]] = Query(None, title="Task IDs", description="Filter by task IDs"),
+    db: Session = Depends(get_db),
+    current_user: get_current_user = Depends(),
+):
     """
     History of tasks according to the changes made in tasks
     """
-    return get_task_history(db, task_id)
+    try:
+        return get_task_history(db, current_user,task_ids)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
     
 # LIST all Task
 @router.get("/tasks/all",
             dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST]))],
             response_model=List[ReturnTask], 
-            summary="Get all tasks", tags=["Tasks"])
+            summary="Get all tasks of current user", tags=["Tasks"])
 def get_all_tasks(
     db: Session = Depends(get_db),
     current_user: get_current_user = Depends(),
