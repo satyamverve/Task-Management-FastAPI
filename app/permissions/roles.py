@@ -28,7 +28,6 @@ ROLE_PERMISSIONS = {
             Users.permissions.EDIT,
             Users.permissions.DELETE,
             Users.permissions.VIEW_LIST,
-            Users.permissions.CREATE_TASK,
             Users.permissions.EDIT_TASK,
             Users.permissions.DELETE_TASK
         ]
@@ -37,6 +36,7 @@ ROLE_PERMISSIONS = {
         [
             Users.permissions.VIEW_DETAILS,
             Users.permissions.VIEW_LIST,
+            Users.permissions.EDIT,
         ]
     ]
 }
@@ -47,4 +47,12 @@ def get_role_permissions(role: Role):
         for permission in permissions_group:
             permissions.add(str(permission))
     return list(permissions)
+
+def can_create(current_user_role: Role, user_role: Role) -> bool:
+    """
+    Check if the current user has permission to create a user with the specified role.
+    """
+    if current_user_role == Role.MANAGER and user_role in {Role.MANAGER, Role.SUPERADMIN}:
+        return False
+    return True
 

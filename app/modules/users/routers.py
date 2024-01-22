@@ -122,24 +122,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
     Deletes a user.
     """
     try:
-        user_to_delete = db.query(User).filter(User.ID == user_id).first()
-        if not user_to_delete:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
-        if current_user.role == Role.MANAGER:
-            # Managers can only delete agents, not superadmins or managers
-            if user_to_delete.role != Role.AGENT:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Not enough permissions to access this resource"
-                )
-        # Superadmins can delete both superadmins and managers
-        elif current_user.role == Role.SUPERADMIN:
-            pass
-        db.delete(user_to_delete)
-        db.commit()
+        db_crud.delete_users(db, current_user, user_id)
         return {"message": f"User {user_id} has been deleted successfully!"}
     except ValueError as e:
         raise HTTPException(

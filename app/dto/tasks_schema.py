@@ -35,6 +35,7 @@ class ReturnTask(BaseModel):
     due_date: date
     agent_id: int
     agent_role: Optional[str]
+    created_by_id : Optional[int]
     created_by_role: Optional[str] 
     created_at: datetime
     # owner: UserOut

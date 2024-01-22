@@ -13,7 +13,7 @@ from Final_Demo.app.auth.auth import get_password_hash, verify_password
 from app.models.users import Token
 from datetime import datetime, timedelta
 from app.auth.auth import get_current_user  
-from app.permissions.roles import Role
+from app.permissions.roles import Role, can_create
 
 
 class DuplicateError(Exception):
@@ -22,12 +22,7 @@ TEMP_TOKEN_EXPIRE_MINUTES = 10
 
 # CREATE User
 def add_user(db: Session, user: UserSignUp,current_user: get_current_user):
-    if current_user.role == Role.MANAGER and user.role==Role.MANAGER:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Not enough permissions to access this resource"
-        )
-    if current_user.role == Role.MANAGER and  user.role==Role.SUPERADMIN:
+    if not can_create(current_user.role, user.role):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Not enough permissions to access this resource"
@@ -67,7 +62,6 @@ def update_user(db: Session,user_id:int, user_update: UserUpdate):
 
 # Read User
 def get_user(db: Session, user_id: int):
-    # print("hello")
     user= db.query(User).filter(User.ID == user_id).first()
     if user:
         return user
@@ -75,13 +69,23 @@ def get_user(db: Session, user_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 # DELETE User
-def delete_user(db: Session, user_id: str):
-    user_cursor = db.query(User).filter(User.ID == user_id)
-    if not user_cursor.first():
-        raise ValueError(f"There is no user with email {user_id}")
-    else:
-        user_cursor.delete()
-        db.commit()
+def delete_users(db: Session,
+                current_user: get_current_user,
+                user_id: str):
+    user_to_delete = db.query(User).filter(User.ID == user_id).first()
+    if not user_to_delete:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    if not can_create(current_user.role, user_to_delete.role):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not enough permissions to access this resource"
+        )
+    db.delete(user_to_delete)
+    db.commit()
+    return user_to_delete
 
 # READ Users for Get LIST of Users
 def get_users(db: Session):

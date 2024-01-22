@@ -1,6 +1,6 @@
 # app/modules/tasks/routers.py
 
-from fastapi import Depends, APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from app.config.database import get_db
 from app.models.tasks import Task
@@ -18,7 +18,7 @@ router = APIRouter()
 
 # CREATE tasks
 @router.post("/create/task",
-             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE_TASK])), ],
+             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
              response_model=ReturnTask,tags=["Tasks"], summary="Create a new tasks")
 def create_new_task(
     task: CreateTask,
@@ -58,8 +58,10 @@ def create_new_task(
 #         raise HTTPException(status_code=400, detail="Invalid status provided")
 
 
-# UPDATE Status and make Comments
-@router.put("/update/{task_id}", response_model=UpdateTask,tags=["Tasks"], summary="Update the task status")
+# UPDATE Status
+@router.put("/tasks/update/{task_id}",
+            response_model=UpdateTask,
+            tags=["Tasks"], summary="Update the task status")
 async def update_task_status(
     task_id: int,
     task: CreateHistory,
@@ -76,8 +78,11 @@ async def update_task_status(
         raise HTTPException(status_code=400, detail="Invalid status provided")
 
 
-# delete the existing user
-@router.delete("/tasks/{task_id}", response_model=ReturnTask,tags=["Tasks"], summary="Delete tasks with task_id")
+# DELETE the existing task
+@router.delete("/tasks/delete/{task_id}", 
+               dependencies=[Depends(PermissionChecker([Users.permissions.DELETE])), ],
+               response_model=ReturnTask,tags=["Tasks"], 
+               summary="Delete tasks with task_id")
 async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db),current_user: get_current_user = Depends()):
     """
     Enter the ID of task to delete
@@ -85,14 +90,16 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db),curre
     try:
         deleted_task = delete_task(db, current_user, task_id)
         if deleted_task:
-            return deleted_task
+            raise HTTPException(status_code=204,detail=f"Task with ID {task_id} deleted successsfuly")
+        
         else:
             raise HTTPException(status_code=404, detail="Task not found")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        raise HTTPException(status_code=404, detail=f"{str(e)}")
+
 
 # Filter all tasks with due_date and status
-@router.get("/tasks/", response_model=List[ReturnTask],tags=["Tasks"], summary="Filter all tasks along with due_date and status")
+@router.get("/tasks/filter/", response_model=List[ReturnTask],tags=["Tasks"], summary="Filter all tasks along with due_date and status")
 async def view_all_tasks_endpoint(
     status: Optional[TaskStatus] = None, 
     due_date: Optional[date] = None,
@@ -105,6 +112,7 @@ async def view_all_tasks_endpoint(
         return view_all_tasks(db, current_user, status, due_date)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
 
 # GET task history
 @router.get("/tasks/history", response_model=List[TaskHistoryResponse], tags=["Tasks"], summary="View task History")
@@ -123,11 +131,11 @@ async def view_task_history_endpoint(
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
     
-# LIST all Task
+# LIST all Task for current user
 @router.get("/tasks/all",
             dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST]))],
             response_model=List[ReturnTask], 
-            summary="Get all tasks of current user", tags=["Tasks"])
+            summary="Get all tasks of current user", tags=["General"])
 def get_all_tasks(
     db: Session = Depends(get_db),
     current_user: get_current_user = Depends(),
