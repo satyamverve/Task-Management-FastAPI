@@ -9,8 +9,8 @@ from Final_Demo.app.models.users import User
 from Final_Demo.app.config.database import get_db
 from fastapi import Depends, HTTPException, status
 from typing import List
-from app.permissions.base import ModelPermission, PermissionType
-from app.permissions.roles import Role, get_role_permissions
+from app.permissions.base import ModelPermission
+from app.permissions.roles import get_role_permissions
 from app.data.data_class import settings
 
 class BearAuthException(Exception):

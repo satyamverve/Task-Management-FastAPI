@@ -9,8 +9,12 @@ from contextlib import asynccontextmanager
 from Final_Demo.app.models.users import Base as user_base
 from app.models.tasks import Base as task_base
 from Final_Demo.app.config.database import engine
-from Final_Demo.app.modules.users.routers import router as user_router
-from app.modules.tasks.routers import router as task_router
+from Final_Demo.app.modules.users.user_routers import router as user_router
+from Final_Demo.app.modules.tasks.task_routers import router as task_router
+from Final_Demo.app.modules.authentication.auth_routers import router as auth_router
+
+
+
 from app.modules.login import router as login_router
 
 description = """
@@ -40,6 +44,8 @@ def read_root():
 app.include_router(user_router)
 app.include_router(login_router)
 app.include_router(task_router)
+app.include_router(auth_router)
+
 
 if __name__ == '__main__':
     uvicorn.run(app, host="0.0.0.0", port=8000)

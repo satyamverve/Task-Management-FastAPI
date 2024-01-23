@@ -6,7 +6,7 @@ from app.config.database import get_db
 from app.models.tasks import Task
 from app.dto.tasks_schema import CreateTask, ReturnTask, TaskStatus, TaskHistoryResponse, UpdateTask
 from app.dto.tasks_schema import ReturnTask ,CreateHistory
-from app.modules.tasks.service import create_task, delete_task, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
+from Final_Demo.app.modules.tasks.task_services import create_task, delete_task, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
 from typing import List, Optional
 from datetime import datetime, date
 from app.auth.auth import get_current_user   
