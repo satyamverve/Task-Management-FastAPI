@@ -1,11 +1,14 @@
 # app/modules/tasks/service.py
 
-from fastapi import status, HTTPException, Depends
+import os
+import sys
+sys.path.append("..")
+from fastapi import status, HTTPException, Depends,File, UploadFile
 from typing import List, Optional
 from datetime import date
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
-from app.models.tasks import Task, TaskHistory
+from app.models.tasks import Task, TaskHistory, TaskDocument
 from app.dto.tasks_schema import CreateTask, TaskStatus, ReturnTask,CreateHistory
 from app.auth.auth import get_current_user  
 from app.models.users import User 
@@ -18,13 +21,39 @@ def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Op
     db.commit()
 
 
+# Upload file for a task
+def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_current_user):
+    task = db.query(Task).filter(Task.ID == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task with ID {task_id} not found")
+    if not can_create(current_user.role, task.agent_role):
+        raise HTTPException(status_code=403, detail="Not enough permissions to upload a file for this task")
+    upload_dir = "uploads"
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+    # Save the file
+    try:
+        contents = file.file.read()
+        file_path = f"{upload_dir}/{task_id}_{file.filename}"
+        with open(file_path, 'wb') as f:
+            f.write(contents)
+        # Save file path in the database
+        db_file = TaskDocument(task_id=task_id, document_path=file_path)
+        db.add(db_file)
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+    finally:
+        file.file.close()
+    return {"message": f"File for task {task_id} successfully uploaded"}
+
+
 # CREATE tasks
 def create_task(db: Session, 
                 task: CreateTask, 
                 status: TaskStatus, 
                 current_user: get_current_user
     ):
-    
     assigned_user = None
     if task.agent_id is not None:
         assigned_user = db.query(User).filter(User.ID == task.agent_id).first()
@@ -70,33 +99,6 @@ def create_task(db: Session,
     )
     return return_task
 
-
-# # UPDATE
-# def edit_task(db: Session, task_id: int, updated_task: CreateTask,status: TaskStatus,
-#                 current_user: get_current_user = Depends()):
-#     assigned_user = None
-
-#     existing_task = db.query(Task).filter(Task.ID == task_id).first()
-#     if existing_task:
-#         # Check if the assigned user exists
-#         assigned_user = db.query(User).filter(User.ID == updated_task.agent_id).first()
-#         if not assigned_user:
-#             raise HTTPException(
-#                 status_code=400,
-#                 detail="Assigned user not available. Please provide a valid user ID.",
-#             )
-#         for key, value in updated_task.model_dump().items():
-#             setattr(existing_task, key, value)
-#         # Update the assigned_user relationship
-#         existing_task.assigned_user = assigned_user
-#         existing_task.agent_role = assigned_user.role if assigned_user else None
-#         # Update the status in the task
-#         existing_task.status = status
-#         db.commit()
-#         return existing_task
-#     return None
-
-
 # UPDATE staus
 def update_task(db: Session,
                 task_id: int,
@@ -109,14 +111,14 @@ def update_task(db: Session,
         raise HTTPException(status_code=404, detail='Task Not found')
     # Superadmin can do any CRUD operation
     if current_user.role == Role.SUPERADMIN:
-        pass
+        pass    
     # Manager can update tasks of Agent roles and himself
     elif current_user.role == Role.MANAGER:
         if tasks.agent_role == Role.AGENT and tasks.agent_id == current_user.ID:
             pass
         if tasks.agent_role == Role.MANAGER and tasks.agent_id == current_user.ID:
             pass
-        elif tasks.agent_role == tasks.agent_role== Role.AGENT:
+        elif tasks.agent_role == Role.AGENT:
             pass
         else:
             raise HTTPException(
@@ -151,11 +153,22 @@ def delete_task(db: Session,
     task_to_delete = db.query(Task).filter(Task.ID == task_id).first()
     if task_to_delete is None:
         raise HTTPException(status_code=404, detail='Task Not found')
-    if not can_create(current_user.role, task_to_delete.agent_role):
-        raise HTTPException(
-            status_code=400,
-            detail="Not enough permissions to access this resource"
-        )
+    # Superadmin can do any CRUD operation
+    if current_user.role == Role.SUPERADMIN:
+        pass
+    # Manager can update tasks of Agent roles and himself
+    elif current_user.role == Role.MANAGER:
+        if task_to_delete.agent_role == Role.AGENT and task_to_delete.agent_id == current_user.ID:
+            pass
+        if task_to_delete.agent_role == Role.MANAGER and task_to_delete.agent_id == current_user.ID:
+            pass
+        elif task_to_delete.agent_role== Role.AGENT:
+            pass
+        else:
+            raise HTTPException(
+                status_code=401,
+                detail="Not Authorized to perform requested action"
+            )
     db.delete(task_to_delete)
     db.commit()
     return task_to_delete
@@ -169,33 +182,12 @@ def view_all_tasks(
         due_date: Optional[date] = None
     ):
     query = db.query(Task)
-    if query is None:
-        raise HTTPException(status_code=404, detail='Task Not found')
-    # Superadmin can do any CRUD operation
     if current_user.role == Role.SUPERADMIN:
         pass
-    # Manager can update tasks of Agent roles and himself
     elif current_user.role == Role.MANAGER:
-        if query.agent_role == Role.AGENT and query.agent_id == current_user.ID:
-            pass
-        if query.agent_role == Role.MANAGER and query.agent_id == current_user.ID:
-            pass
-        elif query.agent_role == query.agent_role== Role.AGENT:
-            pass
-        else:
-            raise HTTPException(
-                status_code=401,
-                detail="Not Authorized to perform requested action"
-            )
-    # Agent can only update his own tasks
+        query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
     elif current_user.role == Role.AGENT:
-        if query.agent_id == current_user.ID:
-            pass
-        else:
-            raise HTTPException(
-                status_code=401,
-                detail="Not Authorized to perform requested action"
-            )
+        query = query.filter(Task.agent_id == current_user.ID)
     if status:
         query = query.filter(Task.status == status)
     if due_date:
@@ -205,37 +197,25 @@ def view_all_tasks(
 
 
 # GET task history
-def get_task_history(db: Session,
-                     current_user: get_current_user,  
-                     task_ids: Optional[List[int]] = None):
+def get_task_history(db: Session,current_user: get_current_user,  task_ids: Optional[List[int]] = None):
+    if current_user.role not in Role.get_roles():
+        raise HTTPException(status_code=403, detail="User has an invalid role")
+    # Define roles that are allowed to view tasks based on the user's role
+    allowed_roles = {
+        Role.SUPERADMIN: [Role.SUPERADMIN, Role.MANAGER, Role.AGENT],
+        Role.MANAGER: [Role.MANAGER, Role.AGENT],
+        Role.AGENT: [Role.AGENT],
+    }
+    if current_user.role not in allowed_roles.get(current_user.role):
+        raise HTTPException(status_code=403, detail="User not allowed to view tasks")
+    # Filter tasks based on user's role
     query = db.query(Task)
-    if query is None:
-        raise HTTPException(status_code=404, detail='Task Not found')
-    # Superadmin can do any CRUD operation
     if current_user.role == Role.SUPERADMIN:
-        pass
-    # Manager can update tasks of Agent roles and himself
+        pass        
     elif current_user.role == Role.MANAGER:
-        if query.agent_role == Role.AGENT and query.agent_id == current_user.ID:
-            pass
-        if query.agent_role == Role.MANAGER and query.agent_id == current_user.ID:
-            pass
-        elif query.agent_role == query.agent_role== Role.AGENT:
-            pass
-        else:
-            raise HTTPException(
-                status_code=401,
-                detail="Not Authorized to perform requested action"
-            )
-    # Agent can only update his own tasks
+        query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
     elif current_user.role == Role.AGENT:
-        if query.agent_id == current_user.ID:
-            pass
-        else:
-            raise HTTPException(
-                status_code=401,
-                detail="Not Authorized to perform requested action"
-            )
+        query = query.filter(Task.agent_id == current_user.ID)
     if task_ids:
         query = query.filter(Task.ID.in_(task_ids))
     tasks = query.all()

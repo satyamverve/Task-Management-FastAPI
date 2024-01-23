@@ -12,11 +12,12 @@ class UserSignUp(BaseModel):
     name: str
     role: Role
 
-class UserUpdate(BaseModel):
-    name: Optional[str]
+class RolesUpdate(BaseModel):
     role: Optional[Role]
 
-class UserChangePassword(BaseModel):
+class UserUpdate(BaseModel):
+    name: Optional[str]
+    email: Optional[EmailStr]
     old_password: str
     new_password: str
 

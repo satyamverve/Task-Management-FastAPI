@@ -6,15 +6,15 @@ from app.config.database import get_db
 from app.models.tasks import Task
 from app.dto.tasks_schema import CreateTask, ReturnTask, TaskStatus, TaskHistoryResponse, UpdateTask
 from app.dto.tasks_schema import ReturnTask ,CreateHistory
-from app.modules.tasks.service import create_task, delete_task, view_all_tasks,get_tasks,update_task, get_task_history
+from app.modules.tasks.service import create_task, delete_task, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
 from typing import List, Optional
 from datetime import datetime, date
 from app.auth.auth import get_current_user   
 from Final_Demo.app.auth.auth import PermissionChecker
 from app.permissions.models_permissions import Users
+from fastapi import File, UploadFile
 
 router = APIRouter()
-
 
 # CREATE tasks
 @router.post("/create/task",
@@ -38,30 +38,29 @@ def create_new_task(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
-
-
-# # UPDATE the existing task
-# @router.put("/tasks/{task_id}", response_model=UpdateTask,tags=["Tasks"], summary="Update the tasks")
-# async def edit_task_endpoint(
-#     task_id: int,
-#     updated_task: CreateTask,
-#     status: TaskStatus = Query(..., title="Status", description="Choose the task status from the dropdown."),
-#     db: Session = Depends(get_db),
-#     current_user: get_current_user = Depends(),
-# ):
-#     """
-#     Update the task and please enter null if you have not any user to assign the task
-#     """
-#     try:
-#         return edit_task(db, task_id, updated_task, status, current_user)
-#     except ValueError:
-#         raise HTTPException(status_code=400, detail="Invalid status provided")
-
+# Upload file for a task
+@router.post("/tasks/file_path/{task_id}",
+             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
+             tags=["Tasks"],
+             summary="Upload file for a task")
+def upload_file_for_task(
+    task_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: get_current_user = Depends(),
+):
+    """
+    Upload a file for a specific task.
+    """
+    try:
+        return upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 # UPDATE Status
 @router.put("/tasks/update/{task_id}",
-            response_model=UpdateTask,
-            tags=["Tasks"], summary="Update the task status")
+             response_model=UpdateTask,
+             tags=["Tasks"], summary="Update the task status")
 async def update_task_status(
     task_id: int,
     task: CreateHistory,
@@ -79,10 +78,10 @@ async def update_task_status(
 
 
 # DELETE the existing task
-@router.delete("/tasks/delete/{task_id}", 
+@router.delete("/tasks/delete/{task_id}",
                dependencies=[Depends(PermissionChecker([Users.permissions.DELETE])), ],
-               response_model=ReturnTask,tags=["Tasks"], 
-               summary="Delete tasks with task_id")
+                response_model=ReturnTask,tags=["Tasks"], 
+                summary="Delete tasks with task_id")
 async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db),current_user: get_current_user = Depends()):
     """
     Enter the ID of task to delete
@@ -91,7 +90,6 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db),curre
         deleted_task = delete_task(db, current_user, task_id)
         if deleted_task:
             raise HTTPException(status_code=204,detail=f"Task with ID {task_id} deleted successsfuly")
-        
         else:
             raise HTTPException(status_code=404, detail="Task not found")
     except Exception as e:
@@ -133,7 +131,6 @@ async def view_task_history_endpoint(
     
 # LIST all Task for current user
 @router.get("/tasks/all",
-            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST]))],
             response_model=List[ReturnTask], 
             summary="Get all tasks of current user", tags=["General"])
 def get_all_tasks(

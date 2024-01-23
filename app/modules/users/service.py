@@ -7,18 +7,42 @@ import random
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from Final_Demo.app.models.users import User
-from app.dto.users_schemas import UserSignUp, UserUpdate, UserChangePassword
+from app.dto.users_schemas import UserSignUp, RolesUpdate, UserUpdate
 from sqlalchemy.exc import IntegrityError
 from Final_Demo.app.auth.auth import get_password_hash, verify_password
 from app.models.users import Token
 from datetime import datetime, timedelta
 from app.auth.auth import get_current_user  
 from app.permissions.roles import Role, can_create
+from typing import List, Optional
+from sqlalchemy import or_
+
 
 
 class DuplicateError(Exception):
     pass
 TEMP_TOKEN_EXPIRE_MINUTES = 10
+
+# LIST User with filter by user_id
+def get_users(db: Session, current_user: get_current_user,user_id: Optional[int] = None):
+    query = db.query(User)
+    if current_user.role == Role.SUPERADMIN:
+        pass
+    elif current_user.role == Role.MANAGER:
+        query = query.filter(or_(User.ID == current_user.ID, User.role == Role.AGENT))
+    elif current_user.role == Role.AGENT:
+        query = query.filter(User.ID == current_user.ID)
+    if user_id:
+        query = db.query(User).filter(User.ID == user_id).first()
+        if not query:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return [query]
+    tasks = query.all()
+    return tasks
+
 
 # CREATE User
 def add_user(db: Session, user: UserSignUp,current_user: get_current_user):
@@ -47,26 +71,20 @@ def add_user(db: Session, user: UserSignUp,current_user: get_current_user):
             f"Email {user.email} is already attached to a registered user.")
 
 
-# UPDATE User
-def update_user(db: Session,user_id:int, user_update: UserUpdate):
-    user = db.query(User).filter(User.ID == user_id).first()
-    if not user:
-        raise ValueError(
-            f"There isn't any user with username {user_id}")
-    updated_user = user_update.dict(exclude_unset=True)
+# UPDATE Roles
+def update_roles(db: Session,user_id:int, current_user: get_current_user, user_update: RolesUpdate):
+    user_to_update = db.query(User).filter(User.ID == user_id).first()
+    if not user_to_update:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    updated_user = user_update.model_dump(exclude_unset=True)
     for key, value in updated_user.items():
-        setattr(user, key, value)
+        setattr(user_to_update, key, value)
     db.commit()
-    return user
+    return user_to_update
 
-
-# Read User
-def get_user(db: Session, user_id: int):
-    user= db.query(User).filter(User.ID == user_id).first()
-    if user:
-        return user
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 # DELETE User
 def delete_users(db: Session,
@@ -87,20 +105,28 @@ def delete_users(db: Session,
     db.commit()
     return user_to_delete
 
-# READ Users for Get LIST of Users
-def get_users(db: Session):
-    users = list(db.query(User).all())
-    return users
 
-# Change password
-def user_change_password(db: Session, email: str, user_change_password_body: UserChangePassword):
-    user = db.query(User).filter(User.email == email).first()
-
-    if not verify_password(user_change_password_body.old_password, user.password):
-        raise ValueError(
-            f"Old password provided doesn't match, please try again")
-    user.password = get_password_hash(user_change_password_body.new_password)
-    db.commit()
+# Update User
+def update_user(db: Session, user: UserUpdate,current_user: get_current_user):
+    user_to_update = db.query(User).filter(User.ID == current_user.ID).first()
+    if not user_to_update:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    # Update optional fields if provided
+    if user.name is not None:
+        user_to_update.name = user.name
+    if user.name is None:
+        pass
+    if user.email is not None:
+        user_to_update.email = user.email
+    # Update password if provided
+    if verify_password(user.old_password, user_to_update.password):  
+        user_to_update.password = get_password_hash(user.new_password)
+        db.commit()
+    else:
+        raise ValueError("Old password provided doesn't match, please try again")
 
 # Reset password 
 def user_reset_password(db: Session, email: str, new_password: str):

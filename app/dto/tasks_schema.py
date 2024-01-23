@@ -21,8 +21,6 @@ class TaskStatus(str, Enum):
 class CreateTask(BaseModel):
     title: str
     description: str
-    # documents: List[str] = []
-    # status: TaskStatus
     due_date: date
     agent_id: Optional[int]=None
         
@@ -30,7 +28,6 @@ class ReturnTask(BaseModel):
     ID: int
     title: str
     description: str
-    # documents: List[str] = []
     status: TaskStatus
     due_date: date
     agent_id: int
@@ -38,7 +35,6 @@ class ReturnTask(BaseModel):
     created_by_id : Optional[int]
     created_by_role: Optional[str] 
     created_at: datetime
-    # owner: UserOut
     class config:
         orm_mode = True
         exclude = ['created_at', 'updated_at']
@@ -56,7 +52,6 @@ class TaskHistory(BaseModel):
 
 class CreateHistory(BaseModel):
     comments : Optional[str]
-    # status: TaskStatus  
 
 class TaskHistoryResponse(BaseModel):
     task_id: Optional[int]
@@ -68,4 +63,4 @@ class TaskHistoryResponse(BaseModel):
             datetime: lambda v: v.strftime('%Y-%m-%d %H:%M:%S'),  # Format datetime
             date: lambda v: v.strftime('%Y-%m-%d')  # Format date
         }
-    
+

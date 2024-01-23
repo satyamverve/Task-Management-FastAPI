@@ -16,7 +16,6 @@ class Task(Base):
     ID = Column(Integer, primary_key=True, index=True)
     title = Column(String(100), index=True) 
     description = Column(String(250))
-    documents = Column(String(250))  
     status = Column(Enum(TaskStatus))
     due_date= Column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))
     agent_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'))
@@ -27,8 +26,7 @@ class Task(Base):
     updated_at = Column(TIMESTAMP, nullable=True,server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     assigned_user = relationship(User, foreign_keys=[agent_id])
     owner = relationship(User, foreign_keys=[created_by_id])
-
-
+    documents = relationship("TaskDocument", back_populates="task", cascade="all, delete-orphan")
 
 class TaskHistory(Base):
     __tablename__ = "task_history"
@@ -39,5 +37,11 @@ class TaskHistory(Base):
     created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
     task = relationship("Task", back_populates="history")
 
-
 Task.history = relationship("TaskHistory", order_by=TaskHistory.created_at, back_populates="task")
+
+class TaskDocument(Base):
+    __tablename__ = "task_documents"
+    ID = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("tasks.ID", ondelete='CASCADE', onupdate='NO ACTION'))
+    document_path = Column(String(255), nullable=False)
+    task = relationship("Task", back_populates="documents")

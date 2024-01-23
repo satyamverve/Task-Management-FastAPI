@@ -8,8 +8,4 @@ class Users(ModelPermissionsMixin):
         'EDIT',
         'CHANGE_PASSWORD',
         'VIEW_ROLES',
-        'CREATE_AGENT',
-        'CREATE_TASK',
-        'DELETE_TASK',
-        'EDIT_TASK'
     ]

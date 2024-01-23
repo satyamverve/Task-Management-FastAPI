@@ -25,18 +25,13 @@ ROLE_PERMISSIONS = {
         [
             Users.permissions.CREATE,
             Users.permissions.VIEW_DETAILS,
-            Users.permissions.EDIT,
             Users.permissions.DELETE,
             Users.permissions.VIEW_LIST,
-            Users.permissions.EDIT_TASK,
-            Users.permissions.DELETE_TASK
         ]
     ],
     Role.AGENT: [
         [
             Users.permissions.VIEW_DETAILS,
-            Users.permissions.VIEW_LIST,
-            Users.permissions.EDIT,
         ]
     ]
 }
