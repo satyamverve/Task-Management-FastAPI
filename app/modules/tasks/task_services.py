@@ -28,7 +28,7 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         raise HTTPException(status_code=404, detail=f"Task with ID {task_id} not found")
     if not can_create(current_user.role, task.agent_role):
         raise HTTPException(status_code=403, detail="Not enough permissions to upload a file for this task")
-    upload_dir = "uploads"
+    upload_dir = "static/uploads"
     if not os.path.exists(upload_dir):
         os.makedirs(upload_dir)
     # Save the file

@@ -3,7 +3,7 @@
 from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey, Date
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from app.dto.tasks_schema import TaskStatus
-from Final_Demo.app.config.database import Base
+from app.config.database import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from app.models.users import User
