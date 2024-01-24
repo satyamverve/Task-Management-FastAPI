@@ -1,72 +1,43 @@
 # app/modules/tasks/routers.py
 
-from fastapi import Depends, APIRouter, HTTPException, Query, status
+import os
+from fastapi import Depends, APIRouter, HTTPException, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.config.database import get_db
-from app.models.tasks import Task
-from app.dto.tasks_schema import CreateTask, ReturnTask, TaskStatus, TaskHistoryResponse, UpdateTask
+from app.dto.tasks_schema import CreateTask, DocumentResponseModel, ReturnTask, TaskStatus, TaskHistoryResponse, UpdateTask
 from app.dto.tasks_schema import ReturnTask ,CreateHistory
-from Final_Demo.app.modules.tasks.task_services import create_task, delete_task, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
-from typing import List, Optional
-from datetime import datetime, date
+from app.modules.tasks.task_services import create_task, delete_task, list_uploaded_documents_of_task_service, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
+from typing import Dict, List, Optional, Union
+from datetime import date
 from app.auth.auth import get_current_user   
 from Final_Demo.app.auth.auth import PermissionChecker
 from app.permissions.models_permissions import Users
 from fastapi import File, UploadFile
+from fastapi import Form
 
 router = APIRouter()
 
 # CREATE tasks
 @router.post("/task/create",
-             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
-             response_model=ReturnTask,tags=["Tasks"], summary="Create a new tasks")
-def create_new_task(
-    task: CreateTask,
-    status: TaskStatus = Query(
-        ...,
-        title="Status",
-        description="Choose the task status from the dropdown.",
-    ),
-    db: Session = Depends(get_db),
+              response_model=ReturnTask,
+              tags=["Tasks"],
+                summary="Create the new task")
+def create_task_route(
+    title: str = Form(...),
+    description: str = Form(...),
+    due_date: date = Form(...),
+    agent_id: Optional[int] = Form(None),
+    status: TaskStatus = Form(...),
     current_user: get_current_user = Depends(),
-):
-    """
-    Create new tasks and please enter null if you have not any user to assign the task
-    """
-    try:
-        return create_task(db=db, task=task,status=status, current_user=current_user)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
-
-
-# Upload file for a task
-@router.post("/tasks/upload/{task_id}",
-             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
-             tags=["Tasks"],
-             summary="Upload file for a task")
-def upload_file_for_task(
-    task_id: int,
-    file: UploadFile = File(...),
+    file: UploadFile = File(None),
     db: Session = Depends(get_db),
-    current_user: get_current_user = Depends(),
 ):
-    """
-    Upload a file for a specific task.
-    """
-    try:
-        result = upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
-        # Construct the full URL path assuming the file is named "2_1.jpg"
-        base_url = "http://127.0.0.1:8000"
-        file_name = file.filename
-        document_path = f"static/uploads/{task_id}_{file_name}"
-        full_url = f"{base_url}/{document_path}"
-        # Return the full URL path
-        return {"document_path": full_url, "task_id": task_id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+    task = CreateTask(title=title, description=description, due_date=due_date, agent_id=agent_id)
+    return create_task(db=db, task=task, status=status, current_user=current_user, file=file)
 
 
-# UPDATE Status
+# UPDATE task
 @router.put("/tasks/update/{task_id}",
              response_model=UpdateTask,
              tags=["Tasks"], summary="Update the task status")
@@ -137,7 +108,53 @@ async def view_task_history_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
+
+# Upload file for a task
+@router.post("/tasks/upload/{task_id}",
+             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
+             tags=["Tasks"],
+             summary="Upload file for a task")
+def upload_file_for_task(
+    task_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: get_current_user = Depends(),
+):
+    """
+    Upload a file for a specific task.
+    """
+    try:
+        result = upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
+        # Construct the full URL path 
+        base_url = "http://127.0.0.1:8000"
+        file_name = file.filename
+        document_path = f"static/uploads/{task_id}_{file_name}"
+        full_url = f"{base_url}/{document_path}"
+        # Return the full URL path
+        return {"document_path": full_url, "task_id": task_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
     
+
+# Get the absolute path to the "static" directory
+static_directory = os.path.join(os.path.dirname(os.path.abspath("/static/uploads")), "static")
+# Access the uploaded documents
+@router.get("/{document_path}", response_class=FileResponse,tags=["Tasks"])
+def read_document(document_path: str):
+    document_full_path = os.path.join(static_directory, document_path)  
+    if os.path.exists(document_full_path):
+        return FileResponse(document_full_path, filename=document_path)
+    raise HTTPException(status_code=404, detail="Document not found")
+
+
+# get the list of documents uploaded
+@router.get("/{task_id}/documents", 
+            response_model=List[Dict[str, Union[int, List[DocumentResponseModel]]]], 
+            tags=["Tasks"],summary="Get the path of the uploaded documents")
+def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):
+    return list_uploaded_documents_of_task_service(db, task_id)
+
+
 # LIST all Task for current user
 @router.get("/tasks/all",
             response_model=List[ReturnTask], 
@@ -155,3 +172,4 @@ def get_all_tasks(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")       
+    

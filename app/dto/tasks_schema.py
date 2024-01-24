@@ -65,3 +65,5 @@ class TaskHistoryResponse(BaseModel):
             date: lambda v: v.strftime('%Y-%m-%d')  # Format date
         }
 
+class DocumentResponseModel(BaseModel):
+    document_path: str

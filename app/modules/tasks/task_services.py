@@ -4,12 +4,12 @@ import os
 import sys
 sys.path.append("..")
 from fastapi import status, HTTPException, Depends,File, UploadFile
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 from datetime import date
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app.models.tasks import Task, TaskHistory, TaskDocument
-from app.dto.tasks_schema import CreateTask, TaskStatus, ReturnTask,CreateHistory
+from app.dto.tasks_schema import CreateTask, DocumentResponseModel, TaskStatus, ReturnTask,CreateHistory
 from app.auth.auth import get_current_user  
 from app.models.users import User 
 from app.permissions.roles import Role, can_create
@@ -21,83 +21,78 @@ def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Op
     db.commit()
 
 
-# Upload file for a task
-def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_current_user):
-    task = db.query(Task).filter(Task.ID == task_id).first()
-    if not task:
-        raise HTTPException(status_code=404, detail=f"Task with ID {task_id} not found")
-    if not can_create(current_user.role, task.agent_role):
-        raise HTTPException(status_code=403, detail="Not enough permissions to upload a file for this task")
-    upload_dir = "static/uploads"
-    if not os.path.exists(upload_dir):
-        os.makedirs(upload_dir)
-    # Save the file
+# CREATE tasks with optional file upload
+def create_task(
+    db: Session,
+    task: CreateTask,
+    status: TaskStatus,
+    current_user: get_current_user,
+    file: UploadFile = None,
+):
     try:
-        contents = file.file.read()
-        file_path = f"{upload_dir}/{task_id}_{file.filename}"
-        with open(file_path, 'wb') as f:
-            f.write(contents)
-        # Save file path in the database
-        db_file = TaskDocument(task_id=task_id, document_path=file_path)
-        db.add(db_file)
+        assigned_user = None
+        if task.agent_id is not None:
+            assigned_user = db.query(User).filter(User.ID == task.agent_id).first()
+            if not assigned_user:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Assigned user not available. Please provide a valid user ID.",
+                )
+        agent_id_value = assigned_user.ID
+        # Use the provided status enum directly
+        status_value = status
+        db_task = Task(
+            title=task.title,
+            description=task.description,
+            due_date=task.due_date,
+            created_by_id=current_user.ID,
+            created_by_role=current_user.role,
+            agent_id=agent_id_value,
+            agent_role=assigned_user.role if assigned_user else None,
+            status=status_value,
+        )
+        if not can_create(current_user.role, db_task.agent_role):
+            raise HTTPException(
+                status_code=400,
+                detail="Not enough permissions to access this resource"
+            )
+        # Save the file if provided
+        if file:
+            upload_dir = "static/uploads"
+            if not os.path.exists(upload_dir):
+                os.makedirs(upload_dir)
+            contents = file.file.read()
+            file_path = f"{upload_dir}/{current_user.ID}_{file.filename}"
+            with open(file_path, 'wb') as f:
+                f.write(contents)
+            # Save file path in the database
+            db_file = TaskDocument(task=db_task, document_path=file_path)
+            db.add(db_file)
+        # Save the task in the database
+        db.add(db_task)
         db.commit()
+        db.refresh(db_task)
+        role_info = f"{current_user.role}"
+        id_info = f"{current_user.ID}"
+        return_task = ReturnTask(
+            ID=db_task.ID,
+            title=db_task.title,
+            description=db_task.description,
+            status=db_task.status,
+            due_date=db_task.due_date,
+            agent_id=db_task.agent_id,
+            agent_role=db_task.agent_role,
+            created_by_id=id_info,
+            created_by_role=role_info,
+            created_at=db_task.created_at,
+        )
+        return return_task
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
     finally:
-        file.file.close()
-    return {"message": f"File for task {task_id} successfully uploaded"}
-
-
-# CREATE tasks
-def create_task(db: Session, 
-                task: CreateTask, 
-                status: TaskStatus, 
-                current_user: get_current_user
-    ):
-    assigned_user = None
-    if task.agent_id is not None:
-        assigned_user = db.query(User).filter(User.ID == task.agent_id).first()
-        if not assigned_user:
-            raise HTTPException(
-                status_code=400,
-                detail="Assigned user not available. Please provide a valid user ID.",
-            )
-    agent_id_value = assigned_user.ID 
-    # Use the provided status enum directly
-    status_value = status
-    db_task = Task(
-        title=task.title,
-        description=task.description,
-        due_date=task.due_date,
-        created_by_id=current_user.ID,
-        created_by_role=current_user.role,
-        agent_id=agent_id_value,
-        agent_role=assigned_user.role if assigned_user else None,
-        status=status_value
-    )
-    if not can_create(current_user.role, db_task.agent_role):
-        raise HTTPException(
-            status_code=400,
-            detail="Not enough permissions to access this resource"
-        )
-    db.add(db_task)
-    db.commit()
-    db.refresh(db_task)
-    role_info = f"{current_user.role}"
-    id_info=f"{current_user.ID}"
-    return_task = ReturnTask(
-        ID=db_task.ID,
-        title=db_task.title,
-        description=db_task.description,
-        status=db_task.status,
-        due_date=db_task.due_date,
-        agent_id=db_task.agent_id, 
-        agent_role=db_task.agent_role,
-        created_by_id=id_info,
-        created_by_role=role_info,
-        created_at=db_task.created_at,
-    )
-    return return_task
+        if file:
+            file.file.close()
+    
 
 # UPDATE staus
 def update_task(db: Session,
@@ -244,3 +239,47 @@ def get_tasks(db: Session,
             ):
     tasks = db.query(Task).filter(Task.agent_id == current_user.ID).all()
     return tasks
+
+
+# GET the list of uploaded documents
+def list_uploaded_documents_of_task_service(db: Session, 
+                                            task_id: int) -> List[Dict[str, Union[int, List[DocumentResponseModel]]]]:
+    documents = db.query(TaskDocument).filter(TaskDocument.task_id == task_id).all()
+    if not documents:
+        raise HTTPException(status_code=404, detail=f"No documents found for task_id {task_id}")
+    document_list = []
+    for document in documents:
+        document_list.append(
+            DocumentResponseModel(task_id=document.task_id, document_path=document.document_path)
+        )
+    response_data = [
+        {"task_id": task_id, "documents": document_list}
+    ]
+    return response_data
+
+
+# Upload file for a task
+def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_current_user):
+    task = db.query(Task).filter(Task.ID == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task with ID {task_id} not found")
+    if not can_create(current_user.role, task.agent_role):
+        raise HTTPException(status_code=403, detail="Not enough permissions to upload a file for this task")
+    upload_dir = "static/uploads"
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+    # Save the file
+    try:
+        contents = file.file.read()
+        file_path = f"{upload_dir}/{task_id}_{file.filename}"
+        with open(file_path, 'wb') as f:
+            f.write(contents)
+        # Save file path in the database
+        db_file = TaskDocument(task_id=task_id, document_path=file_path)
+        db.add(db_file)
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+    finally:
+        file.file.close()
+    return {"message": f"File for task {task_id} successfully uploaded"}

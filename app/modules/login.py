@@ -14,7 +14,7 @@ from fastapi.responses import HTMLResponse
 
 router = APIRouter()
 
-@router.post("/token", response_model=Token, summary="Authorize as a user", tags=["Authentication"])
+@router.post("/users/login", response_model=Token, summary="Authorize as a user", tags=["Authenticate the Users"])
 def authorize(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     Logs in a user.

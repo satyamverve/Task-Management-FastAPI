@@ -40,9 +40,6 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Get the absolute path to the "static" directory
-static_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
-
 # Mount the static directory for serving uploaded files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -51,13 +48,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def read_root():
     return {"message": "This is the root path"}
 
-# Example endpoint to serve uploaded documents
-@app.get("/get_document/{document_path}", response_class=FileResponse)
-def read_document(document_path: str):
-    document_full_path = os.path.join(static_directory, document_path)
-    if os.path.exists(document_full_path):
-        return FileResponse(document_full_path, filename=document_path)
-    raise HTTPException(status_code=404, detail="Document not found")
+
 
 app.include_router(user_router)
 app.include_router(login_router)
