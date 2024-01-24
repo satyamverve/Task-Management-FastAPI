@@ -2,11 +2,11 @@
 
 from __future__ import annotations 
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
-from Final_Demo.app.config.database import Base
+from app.config.database import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship, declarative_base
-from Final_Demo.app.config.database import Base
+from app.config.database import Base
 
 Base = declarative_base()
 

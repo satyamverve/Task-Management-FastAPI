@@ -23,6 +23,7 @@ class CreateTask(BaseModel):
     description: str
     due_date: date
     agent_id: Optional[int]=None
+    
         
 class ReturnTask(BaseModel):
     ID: int

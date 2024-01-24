@@ -17,7 +17,7 @@ from fastapi import File, UploadFile
 router = APIRouter()
 
 # CREATE tasks
-@router.post("/create/task",
+@router.post("/task/create",
              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
              response_model=ReturnTask,tags=["Tasks"], summary="Create a new tasks")
 def create_new_task(
@@ -38,8 +38,9 @@ def create_new_task(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
+
 # Upload file for a task
-@router.post("/tasks/file_path/{task_id}",
+@router.post("/tasks/upload/{task_id}",
              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
              tags=["Tasks"],
              summary="Upload file for a task")
@@ -53,9 +54,17 @@ def upload_file_for_task(
     Upload a file for a specific task.
     """
     try:
-        return upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
+        result = upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
+        # Construct the full URL path assuming the file is named "2_1.jpg"
+        base_url = "http://127.0.0.1:8000"
+        file_name = file.filename
+        document_path = f"static/uploads/{task_id}_{file_name}"
+        full_url = f"{base_url}/{document_path}"
+        # Return the full URL path
+        return {"document_path": full_url, "task_id": task_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
 
 # UPDATE Status
 @router.put("/tasks/update/{task_id}",

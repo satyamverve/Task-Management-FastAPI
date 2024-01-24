@@ -1,25 +1,24 @@
 # main.py
-
+import os
 import sys
-sys.path.append("..")
-import uvicorn
-from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from Final_Demo.app.models.users import Base as user_base
+from app.models.users import Base as user_base
 from app.models.tasks import Base as task_base
-from Final_Demo.app.config.database import engine
-from Final_Demo.app.modules.users.user_routers import router as user_router
-from Final_Demo.app.modules.tasks.task_routers import router as task_router
-from Final_Demo.app.modules.authentication.auth_routers import router as auth_router
-
-
+from app.config.database import engine
+from app.modules.users.user_routers import router as user_router
+from app.modules.tasks.task_routers import router as task_router
+from app.modules.authentication.auth_routers import router as auth_router
+from fastapi.staticfiles import StaticFiles
 
 from app.modules.login import router as login_router
 
 description = """
 FastAPI application for Task Management.
 """
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     user_base.metadata.create_all(bind=engine)
@@ -27,25 +26,44 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    lifespan=lifespan
+    lifespan=lifespan,
+    title="Your API Title",
+    description=description,
+    version="1.0.0",
 )
 
 app.add_middleware(
-    CORSMiddleware, 
+    CORSMiddleware,
     allow_origins=['*'],
+    allow_credentials=True,
     allow_methods=['*'],
     allow_headers=["*"]
 )
 
+# Get the absolute path to the "static" directory
+static_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+
+# Mount the static directory for serving uploaded files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
 @app.get("/", tags=["General"])
 def read_root():
     return {"message": "This is the root path"}
+
+# Example endpoint to serve uploaded documents
+@app.get("/get_document/{document_path}", response_class=FileResponse)
+def read_document(document_path: str):
+    document_full_path = os.path.join(static_directory, document_path)
+    if os.path.exists(document_full_path):
+        return FileResponse(document_full_path, filename=document_path)
+    raise HTTPException(status_code=404, detail="Document not found")
 
 app.include_router(user_router)
 app.include_router(login_router)
 app.include_router(task_router)
 app.include_router(auth_router)
 
-
 if __name__ == '__main__':
+    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
