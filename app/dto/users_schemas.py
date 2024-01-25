@@ -1,16 +1,29 @@
 # app/dto/users_schema.py
 
 from __future__ import annotations
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 from typing import Optional
 from app.permissions.roles import Role
+
+class UserLoginSchema(BaseModel):
+    email: EmailStr = Field(...)
+    password: str = Field(...)
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "email": "sk@x.com",
+                "password": "weakpassword"
+            }
+        }
 
 class UserSignUp(BaseModel):
     email: EmailStr
     password: Optional[str]
     name: str
     role: Role
+    
 
 class RolesUpdate(BaseModel):
     role: Optional[Role]

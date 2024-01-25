@@ -1,29 +1,23 @@
-# app/auth/auth.py
-
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from Final_Demo.app.models.users import User
-from Final_Demo.app.config.database import get_db
+from app.models.users import User
+from app.config.database import get_db
 from fastapi import Depends, HTTPException, status
-from typing import List
+from typing import List, Dict
 from app.permissions.base import ModelPermission
 from app.permissions.roles import get_role_permissions
 from app.data.data_class import settings
+from app.auth.auth_bearer import JWTBearer
+import time
 
-class BearAuthException(Exception):
-    pass
+jwt_bearer = JWTBearer()
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-SECRET_KEY = settings.secret_key
-ALGORITHM = settings.algorithm
+JWT_SECRET = settings.secret_key
+JWT_ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -31,70 +25,59 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-def create_access_token(data: str, expire_minutes=ACCESS_TOKEN_EXPIRE_MINUTES):
-    to_encode = {"sub": data}
-    expire = datetime.utcnow() + timedelta(minutes=expire_minutes)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+def token_response(token: str):
+    return {
+        "access_token": token
+    }
 
-def get_token_payload(token: str = Depends(oauth2_scheme)):
+def signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:
+    expiration_time = time.time() + expire_minutes
+    payload = {
+        "data": data,   
+        "expires": expiration_time
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return token
+
+
+def decodeJWT(token: str = Depends(JWTBearer())) -> dict:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        payload_sub: str = payload.get("sub")
-        if payload_sub is None:
-            raise BearAuthException("Token could not be validated")
-        return payload_sub
+        decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return decoded_token
     except JWTError:
-        raise BearAuthException("Token could not be validated")
-
-def authenticate_user(db: Session, user_email: str, password: str):
-    user = db.query(User).filter(User.email == user_email).first()
-    if not user:
-        return False
-    if not verify_password(password, user.password):
-        return False
-    return user
+        return {}
 
 def get_user_by_email(db: Session, user_email: str):
     user = db.query(User).filter(User.email == user_email).first()
     return user
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
-    try:
-        user_email = get_token_payload(token)
-    except BearAuthException:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate bearer token",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
-    user = db.query(User).filter(User.email == user_email).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized, could not validate credentials.",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+def get_current_user(token: str = Depends(JWTBearer()), db: Session = Depends(get_db)) -> User:
+    decoded_token = decodeJWT(token)
+    user_email = decoded_token.get('data')  # Extract the email from the decoded token
+    user = get_user_by_email(db, user_email)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user credentials")
     return user
+
 
 def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get_db)):
     try:
-        user_email = get_token_payload(access_token)
-    except BearAuthException:
+        decoded_token = decodeJWT(access_token)
+        user_email = decoded_token.get('data')
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate bearer token",
-            headers={"WWW-Authenticate": "Bearer"}
         )
+    if not user_email:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired temp_token")
+
     user = db.query(User).filter(User.email == user_email).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized, could not validate credentials.",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired temp_token")
     return user
+
+
 
 class PermissionChecker:
     def __init__(self, permissions_required: List[ModelPermission]):
@@ -107,4 +90,3 @@ class PermissionChecker:
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Not enough permissions to access this resource")
         return user
-    

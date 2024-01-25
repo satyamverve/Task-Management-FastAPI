@@ -22,22 +22,25 @@ def user_reset_password(db: Session, email: str, new_password: str):
 
 # update the acess_token status which was stored in Token model
 def update_token_status(db: Session, expire_minutes: int):
-    expired_tokens = db.query(Token).filter(Token.is_expired == expire_minutes).first()
-    Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)
-    if expired_tokens:
-        expired_tokens.is_expired
-        db.commit()
-        return True
-    return False
+    expired_tokens = db.query(Token).filter(Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes), Token.is_expired == False).all()
+
+    for token in expired_tokens:
+        token.is_expired = True
+
+    db.commit()
+    return len(expired_tokens) > 0
+
 
 # update the status of password 
-def update_password_change_status(db: Session, temp_token: str):
-    """
-    Update the reset_password column to True for the given temp_token.
-    """
-    reset_token = db.query(Token).filter(Token.token == temp_token).first()
-    if reset_token:
-        reset_token.reset_password = True
+def user_reset_password(db: Session, email: str, new_password: str):
+    user = db.query(User).filter(User.email == email).first()
+
+    # Check if the user has a valid non-expired token
+    if user.temp_token and not user.temp_token.is_expired:
+        user.password = get_password_hash(new_password)
+        # Expire the token after password reset
+        user.temp_token.is_expired = True
         db.commit()
         return True
-    return False
+    else:
+        return False

@@ -2,7 +2,7 @@
 
 import sys
 sys.path.append("..")
-from Final_Demo.app.auth.auth import  create_access_token, get_user_by_email,get_current_user_via_temp_token
+from Final_Demo.app.auth.auth import get_user_by_email, signJWT as create_access_token, get_current_user_via_temp_token
 from Final_Demo.app.config.database import get_db
 from Final_Demo.app.dto.users_schemas import Token
 from fastapi.responses import HTMLResponse
@@ -70,6 +70,7 @@ def user_reset_password_template(request: Request, user: User = Depends(get_curr
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
+
 
 # Forgot password
 @router.post("/forgot_password",

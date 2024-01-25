@@ -43,31 +43,33 @@ def get_users(db: Session, current_user: get_current_user,user_id: Optional[int]
     return tasks
 
 
-# CREATE User
-def add_user(db: Session, user: UserSignUp,current_user: get_current_user):
-    if not can_create(current_user.role, user.role):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Not enough permissions to access this resource"
-        )
-    password = user.password
-    if not password:
-        characters = string.ascii_letters + string.digits + string.punctuation
-        password = ''.join(random.choice(characters) for i in range(10))
-    user = User(
-        email=user.email,
-        password=get_password_hash(password),
-        name=user.name,
-        role=user.role
-    )
-    try:
-        db.add(user)
-        db.commit()
-        return user, password
-    except IntegrityError:
-        db.rollback()
-        raise DuplicateError(
-            f"Email {user.email} is already attached to a registered user.")
+# # CREATE User
+# def create_user(db: Session, user: UserSignUp, current_user: get_current_user):
+#     if not can_create(current_user.role, user.role):
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="Not enough permissions to access this resource"
+#         )
+#     password = user.password
+#     if not password:
+#         characters = string.ascii_letters + string.digits + string.punctuation
+#         password = ''.join(random.choice(characters) for i in range(10))
+#     hashed_password = get_password_hash(password)
+#     user_db = User(
+#         email=user.email,
+#         password=hashed_password,
+#         name=user.name,
+#         role=user.role
+#     )
+#     try:
+#         db.add(user_db)
+#         db.commit()
+#         return user_db, password
+#     except IntegrityError:
+#         db.rollback()
+#         raise DuplicateError(
+#             f"Email {user.email} is already attached to a registered user.")
+
 
 
 # UPDATE Roles
