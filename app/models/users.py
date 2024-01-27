@@ -27,6 +27,7 @@ class User(Base):
 
 class Token(Base):
     __tablename__ = "password_reset_tokens" 
+    ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
     token = Column(String(250), primary_key=True, index=True)
     user_email= Column(String(200), ForeignKey(User.email, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     reset_password = Column(Boolean, default=False)
@@ -34,3 +35,6 @@ class Token(Base):
     created_at = Column(TIMESTAMP, nullable=False,server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=True,server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     user = relationship("User", back_populates="temp_token")
+    @property
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}

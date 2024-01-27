@@ -1,13 +1,14 @@
 # app.modules.users.service.py
 
+import app.models
 import sys
 sys.path.append("..")
 import string
 import random
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Body
 from sqlalchemy.orm import Session
 from Final_Demo.app.models.users import User
-from app.dto.users_schemas import UserSignUp, RolesUpdate, UserUpdate
+from app.dto.users_schemas import RolesUpdate, Token, UserSignUp, UserUpdate
 from sqlalchemy.exc import IntegrityError
 from Final_Demo.app.auth.auth import get_password_hash, verify_password
 from app.models.users import Token
@@ -16,8 +17,6 @@ from app.auth.auth import get_current_user
 from app.permissions.roles import Role, can_create
 from typing import List, Optional
 from sqlalchemy import or_
-
-
 
 class DuplicateError(Exception):
     pass
@@ -43,33 +42,52 @@ def get_users(db: Session, current_user: get_current_user,user_id: Optional[int]
     return tasks
 
 
-# # CREATE User
-# def create_user(db: Session, user: UserSignUp, current_user: get_current_user):
-#     if not can_create(current_user.role, user.role):
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Not enough permissions to access this resource"
-#         )
-#     password = user.password
-#     if not password:
-#         characters = string.ascii_letters + string.digits + string.punctuation
-#         password = ''.join(random.choice(characters) for i in range(10))
-#     hashed_password = get_password_hash(password)
-#     user_db = User(
-#         email=user.email,
+# CREATE User
+def add_user(db: Session, user: UserSignUp,current_user: get_current_user):
+    if not can_create(current_user.role, user.role):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not enough permissions to access this resource"
+        )
+    password = user.password
+    if not password:
+        characters = string.ascii_letters + string.digits + string.punctuation
+        password = ''.join(random.choice(characters) for i in range(10))
+    user = User(
+        email=user.email,
+        password=get_password_hash(password),
+        name=user.name,
+        role=user.role
+    )
+    try:
+        db.add(user)
+        db.commit()
+        return user, password
+    except IntegrityError:
+        db.rollback()
+        raise DuplicateError(
+            f"Email {user.email} is already attached to a registered user.")
+
+# def create_user(db: Session, user_data: dict):
+
+#     hashed_password = get_password_hash(user_data["password"])
+#     new_user = User(
+#         email=user_data["email"],
+#         name=user_data["name"],
 #         password=hashed_password,
-#         name=user.name,
-#         role=user.role
+#         role=user_data["role"]
 #     )
+
+#     return signJWT(user_data["email"])
 #     try:
-#         db.add(user_db)
+#         db.add(new_user)
 #         db.commit()
+#         db.refresh(new_user)
 #         return user_db, password
 #     except IntegrityError:
 #         db.rollback()
 #         raise DuplicateError(
 #             f"Email {user.email} is already attached to a registered user.")
-
 
 
 # UPDATE Roles
@@ -129,3 +147,35 @@ def update_user(db: Session, user: UserUpdate,current_user: get_current_user):
     else:
         raise ValueError("Old password provided doesn't match, please try again")
 
+
+# Reset password 
+def user_reset_password(db: Session, email: str, new_password: str):
+    try:
+        user = db.query(User).filter(User.email == email).first()
+        user.password = get_password_hash(new_password)
+        db.commit()
+    except Exception:
+        return False
+    return True
+
+# update the acess_token status which was stored in Token model
+def update_token_status(db: Session, expire_minutes: int):
+    expired_tokens = db.query(Token).filter(Token.is_expired == expire_minutes).first()
+    Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)
+    if expired_tokens:
+        expired_tokens.is_expired
+        db.commit()
+        return True
+    return False
+
+# update the status of password 
+def update_password_change_status(db: Session, temp_token: str):
+    """
+    Update the reset_password column to True for the given temp_token.
+    """
+    reset_token = db.query(Token).filter(Token.token == temp_token).first()
+    if reset_token:
+        reset_token.reset_password = True
+        db.commit()
+        return True
+    return False

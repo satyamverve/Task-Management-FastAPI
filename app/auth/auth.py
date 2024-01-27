@@ -11,6 +11,7 @@ from app.data.data_class import settings
 from app.auth.auth_bearer import JWTBearer
 import time
 
+
 jwt_bearer = JWTBearer()
 
 JWT_SECRET = settings.secret_key

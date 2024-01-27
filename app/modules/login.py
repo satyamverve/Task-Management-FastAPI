@@ -1,10 +1,10 @@
 # app/modules/login.py
 
 import sys
-from Final_Demo.app.auth.auth import signJWT, verify_password
-from Final_Demo.app.models.users import User
-from Final_Demo.app.config.database import get_db
-from Final_Demo.app.dto.users_schemas import Token, UserLoginSchema
+from app.auth.auth import signJWT, verify_password
+from app.models.users import User
+from app.config.database import get_db
+from app.dto.users_schemas import Token, UserLoginSchema
 from fastapi import Body, Depends, APIRouter
 from sqlalchemy.orm import Session
 
@@ -16,7 +16,7 @@ def check_user(data: UserLoginSchema, db: Session):
         return db_user
     return None
 
-@router.post("/user/login", tags=["user"])
+@router.post("/user/login", tags=["User Login"])
 async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):
     db_user = check_user(user, db)
     if db_user:

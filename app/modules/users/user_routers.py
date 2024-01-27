@@ -1,67 +1,51 @@
 # app.modules.users.routes.py
 
 import sys
-from app.models import users
-
+from fastapi import Body, Depends, APIRouter, HTTPException, status, Form, Query, Request
+from fastapi.responses import HTMLResponse
+from app.models import users, User, Token
 from app.auth.auth_bearer import JWTBearer
-sys.path.append("..")
-
-from fastapi import Body, Depends, APIRouter, HTTPException, status
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from typing import List, Dict
-from app.auth.auth import  get_current_user, PermissionChecker, get_password_hash, signJWT, token_response
+from app.auth.auth import get_current_user, PermissionChecker, get_password_hash, signJWT, token_response, get_current_user_via_temp_token, get_user_by_email
 from app.permissions.models_permissions import Users
 from app.permissions.roles import get_role_permissions, Role
-from app.config.database import get_db
+from app.config.database import get_db  
 from app.modules.users import user_services as db_crud
-from app.dto.users_schemas import  UserSignUp, UserUpdate, UserOut,RolesUpdate, Token
-from app.email_notifications.notify import send_registration_notification
+from app.dto.users_schemas import UserSignUp, UserUpdate, UserOut, RolesUpdate, Token
+from app.email_notifications.notify import send_registration_notification, send_reset_password_mail
 from fastapi.templating import Jinja2Templates
-from app.models.users import User
 from typing import List, Optional
 
+# token time forgot password(token to be exipred in minutes) 
+TEMP_TOKEN_EXPIRE_MINUTES = 10
 
+#load the html templates 
 templates = Jinja2Templates(directory='./app/templates')
 
 router = APIRouter(prefix="")
 
-# # CREATE User 
-# @router.post("/user/create",
-#              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],
-#              response_model=Token, summary="Register users", tags=["Users"])
-# async def create_user_route(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-#     """
-#     Registers a user.
-#     """
-#     try:
-#         user_created, password = db_crud.create_user(db, user, current_user)
-#         # Additional logic if needed
-#         return signJWT(user_created.email)
-    # except db_crud.DuplicateError as e:
-    #     raise HTTPException(status_code=403, detail=f"{e}")
-    # except Exception as e:
-    #     raise HTTPException(
-    #         status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
+# # create users
+# @router.post("/user/signup", tags=["user"])
+# async def create_user(user: UserSignUp = Body(...), db: Session = Depends(get_db), current_user: get_current_user = Depends()):
+#     return db_crud.create_user(db, user, current_user)
 
-@router.post("/user/signup", tags=["user"])
-async def create_user(user: UserSignUp = Body(...), db: Session = Depends(get_db)):
+# CREATE User 
+@router.post("/user/create",
+             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],
+             response_model=UserOut, summary="Register users", tags=["Users"])
+async def create_user(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Registers an user.
+    """
     try:
-        hashed_password = get_password_hash(user.password)
-
-        # Create a new User instance with the provided data
-        new_user = User(
-            email=user.email,
-            name=user.name,
-            password=hashed_password,
-            role=user.role
+        user_created, password = db_crud.add_user(db, user, current_user)
+        await send_registration_notification(
+            password=password, 
+            recipient_email=user_created.email
         )
-
-        # Add the new user to the database
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)  # Refresh to get the updated data from the database
-
-        return signJWT(user.email)
+        return user_created
     except db_crud.DuplicateError as e:
         raise HTTPException(status_code=403, detail=f"{e}")
     except Exception as e:
@@ -69,10 +53,9 @@ async def create_user(user: UserSignUp = Body(...), db: Session = Depends(get_db
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
 
-
 # LIST User with filter by user_id
 @router.get("/user/all",
-            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST])),Depends(JWTBearer())],
+            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST]))],
             response_model=List[UserOut], summary="Get all users", tags=["Users"])
 def get_users(user_id: Optional[int] = None, 
               db: Session = Depends(get_db),
@@ -145,6 +128,7 @@ def update_user(user: UserUpdate, current_user: User = Depends(get_current_user)
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
+#get the info of current user
 @router.get("/user/logged", response_model=UserOut, summary="Get info of the current user", tags=["General"])
 async def get_info_current_user(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """
@@ -175,12 +159,75 @@ def get_user_roles(db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
-def update_password_change_status(db: Session, temp_token: str):
-    reset_token = db.query(Token).filter(Token.token == temp_token).first()
 
-    if reset_token and not reset_token.is_expired:
-        reset_token.reset_password = True
-        db.commit()
-        return True
-    else:
-        return False
+
+# Reset Password
+@router.post("/reset_password", summary="Reset password for users", tags=["Authentication"])
+def user_reset_password(request: Request, user: User = Depends(get_current_user_via_temp_token),
+                        db: Session = Depends(get_db), new_password: str = Form(...)):
+    """
+    Reset the password for the authenticated user.
+    """
+    try:
+        result = db_crud.user_reset_password(db, user.email, new_password)
+        return templates.TemplateResponse("reset_password_result.html", {"request": request, "success": result})
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
+
+
+# Retrieve the access token from incoming http(here is /forgot_password) in the html template
+@router.get("/token_template",
+              response_class=HTMLResponse,
+              summary="Retrieve access token", tags=["Authentication"])
+def user_reset_password_template(request: Request, access_token: str = Query(None), db: Session = Depends(get_db), user: User = Depends(get_current_user_via_temp_token)):
+    """
+    Retrieve the access token from incoming http(here is /forgot_password) and make this token valid until token expire time
+    """
+    try:
+        return templates.TemplateResponse(
+            "reset_password.html",
+            {
+                "request": request, 
+                "user": user, 
+                "access_token": access_token
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
+
+
+# Forgot password
+@router.post("/forgot_password",
+              summary="Forgotten Password", tags=["Authentication"])
+async def user_forgot_password(request: Request, user_email: str, db: Session = Depends(get_db)):
+    """
+    Triggers forgot password mechanism for a user.
+    """
+    try:
+        user = get_user_by_email(db=db, user_email=user_email)
+        if not user:
+            return {
+            "result": f"There is no user with this {user_email} username"
+        }
+        else:
+            access_token = signJWT(data=user_email, expire_minutes=TEMP_TOKEN_EXPIRE_MINUTES)
+            # Store the token in the PasswordResetToken table
+            # reset_token = Token(
+            #     token=access_token,
+            #     user_email=user_email,
+            #     reset_password=False,  # Initially set to False
+            #     is_expired=False,  # Initially set to False
+            # )
+            # db.add(reset_token)
+            # db.commit()
+            url = f"{request.base_url}token_template?access_token={access_token}"
+            await send_reset_password_mail(recipient_email=user_email, user=user, url=url, expire_in_minutes=TEMP_TOKEN_EXPIRE_MINUTES)
+        return {
+            "result": f"An email has been sent to {user_email} with a link for password reset."
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")

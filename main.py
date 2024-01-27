@@ -10,7 +10,7 @@ from app.models.tasks import Base as task_base
 from app.config.database import engine
 from app.modules.users.user_routers import router as user_router
 from app.modules.tasks.task_routers import router as task_router
-from app.modules.authentication.auth_routers import router as auth_router
+# from app.modules.authentication.auth_routers import router as auth_router
 from fastapi.staticfiles import StaticFiles
 
 from app.modules.login import router as login_router
@@ -53,7 +53,7 @@ def read_root():
 app.include_router(user_router)
 app.include_router(login_router)
 app.include_router(task_router)
-app.include_router(auth_router)
+# app.include_router(auth_router)
 
 if __name__ == '__main__':
     import uvicorn
