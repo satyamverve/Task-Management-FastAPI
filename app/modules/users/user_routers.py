@@ -18,20 +18,70 @@ from app.email_notifications.notify import send_registration_notification, send_
 from fastapi.templating import Jinja2Templates
 from typing import List, Optional
 
-# token time forgot password(token to be exipred in minutes) 
+# Token expiration time for forgot password
 TEMP_TOKEN_EXPIRE_MINUTES = 10
 
-#load the html templates 
+# Load HTML templates
 templates = Jinja2Templates(directory='./app/templates')
 
 router = APIRouter(prefix="")
 
-# # create users
-# @router.post("/user/signup", tags=["user"])
-# async def create_user(user: UserSignUp = Body(...), db: Session = Depends(get_db), current_user: get_current_user = Depends()):
-#     return db_crud.create_user(db, user, current_user)
+# Function to LIST all user roles with permissions
+@router.get("/roles/all",
+            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], 
+            response_model=List[Dict[str, List[str]]], summary="Get all user roles with permissions", tags=["Roles"])
+def get_user_roles(db: Session = Depends(get_db)):
+    """
+    Returns all user roles with their associated permissions.
+    """
+    try:
+        roles_with_permissions = []
+        for role in Role:
+            role_permissions = get_role_permissions(role)
+            roles_with_permissions.append({role.value: role_permissions})
+        return roles_with_permissions
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
-# CREATE User 
+# Function to update user roles
+@router.patch("/roles/update/{user_id}",
+                dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_DETAILS, Users.permissions.EDIT]))],
+                response_model=UserOut,
+                summary="Update users role", tags=["Roles"])
+def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Update role of user.
+    """
+    try:
+        updated_role = db_crud.update_roles(db, user_id,current_user, user_update)
+        return updated_role 
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred. Report this message to support: {e}")
+
+
+# Function to get users with optional filtering by user_id
+@router.get("/user/all",
+            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST]))],
+            response_model=List[UserOut], summary="Get all users", tags=["Users"])
+def get_users(user_id: Optional[int] = None, 
+              db: Session = Depends(get_db),
+              current_user: get_current_user = Depends()):
+    """
+    Get list of all users with optional filter by user_id.
+    """
+    try:
+        users = db_crud.get_users(db,current_user, user_id=user_id)
+        return users
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}") 
+
+# Function to add a new user
 @router.post("/user/create",
              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],
              response_model=UserOut, summary="Register users", tags=["Users"])
@@ -52,46 +102,26 @@ async def create_user(user: UserSignUp, db: Session = Depends(get_db), current_u
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
-
-# LIST User with filter by user_id
-@router.get("/user/all",
-            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_LIST]))],
-            response_model=List[UserOut], summary="Get all users", tags=["Users"])
-def get_users(user_id: Optional[int] = None, 
-              db: Session = Depends(get_db),
-              current_user: get_current_user = Depends()):
+# Function to update user information
+@router.patch("/user/update",
+              summary="Update user", tags=["Users"])
+def update_user(user: UserUpdate, current_user: User = Depends(get_current_user),
+                         db: Session = Depends(get_db)):
     """
-    Get list of all users with optional filter by user_id.
+    Changes password, email, name for user.
     """
     try:
-        users = db_crud.get_users(db,current_user, user_id=user_id)
-        return users
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")    
-
-
-# UPDATE Roles
-@router.patch("/roles/update/{user_id}",
-                dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_DETAILS, Users.permissions.EDIT]))],
-                response_model=UserOut,
-                summary="Update users role", tags=["Roles"])
-def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """
-    Update role of user.
-    """
-    try:
-        updated_role = db_crud.update_roles(db, user_id,current_user, user_update)
-        return updated_role 
+        db_crud.update_user(db, user, current_user)
+        return {"result": f"User with ID {current_user.ID}'s password has been updated!"}
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+            status_code=400, detail=f"{e}")
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred. Report this message to support: {e}")
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
 
-# DELETE User
+# Function to delete a user
 @router.delete("/user/{user_id}",
                dependencies=[Depends(PermissionChecker([Users.permissions.DELETE]))],
                summary="Delete users", tags=["Users"])
@@ -110,25 +140,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
 
-# Update User
-@router.patch("/user/update",
-              summary="Update user", tags=["Users"])
-def update_user(user: UserUpdate, current_user: User = Depends(get_current_user),
-                         db: Session = Depends(get_db)):
-    """
-    Changes password, email, name for user.
-    """
-    try:
-        db_crud.update_user(db, user, current_user)
-        return {"result": f"User with ID {current_user.ID}'s password has been updated!"}
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400, detail=f"{e}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
-
-#get the info of current user
+# Function to get information of the current user
 @router.get("/user/logged", response_model=UserOut, summary="Get info of the current user", tags=["General"])
 async def get_info_current_user(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """
@@ -141,28 +153,8 @@ async def get_info_current_user(current_user: User = Depends(get_current_user), 
             status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
 
-# LIST Roles with Permissions
-@router.get("/roles/all",
-            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], 
-            response_model=List[Dict[str, List[str]]], summary="Get all user roles with permissions", tags=["Roles"])
-def get_user_roles(db: Session = Depends(get_db)):
-    """
-    Returns all user roles with their associated permissions.
-    """
-    try:
-        roles_with_permissions = []
-        for role in Role:
-            role_permissions = get_role_permissions(role)
-            roles_with_permissions.append({role.value: role_permissions})
-        return roles_with_permissions
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
-
-
-
-# Reset Password
-@router.post("/reset_password", summary="Reset password for users", tags=["Authentication"])
+# Function to reset user password for registered users
+@router.post("/reset_password", summary="Reset password for users", tags=["Forgot Password"])
 def user_reset_password(request: Request, user: User = Depends(get_current_user_via_temp_token),
                         db: Session = Depends(get_db), new_password: str = Form(...)):
     """
@@ -180,7 +172,7 @@ def user_reset_password(request: Request, user: User = Depends(get_current_user_
 # Retrieve the access token from incoming http(here is /forgot_password) in the html template
 @router.get("/token_template",
               response_class=HTMLResponse,
-              summary="Retrieve access token", tags=["Authentication"])
+              summary="Retrieve access token", tags=["Forgot Password"])
 def user_reset_password_template(request: Request, access_token: str = Query(None), db: Session = Depends(get_db), user: User = Depends(get_current_user_via_temp_token)):
     """
     Retrieve the access token from incoming http(here is /forgot_password) and make this token valid until token expire time
@@ -201,7 +193,7 @@ def user_reset_password_template(request: Request, access_token: str = Query(Non
 
 # Forgot password
 @router.post("/forgot_password",
-              summary="Forgotten Password", tags=["Authentication"])
+              summary="Forgotten Password", tags=["Forgot Password"])
 async def user_forgot_password(request: Request, user_email: str, db: Session = Depends(get_db)):
     """
     Triggers forgot password mechanism for a user.

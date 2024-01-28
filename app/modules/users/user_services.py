@@ -18,10 +18,25 @@ from app.permissions.roles import Role, can_create
 from typing import List, Optional
 from sqlalchemy import or_
 
+# Custom exception for duplicate error
 class DuplicateError(Exception):
     pass
 
-# LIST User with filter by user_id
+# Function to update user roles
+def update_roles(db: Session,user_id:int, current_user: get_current_user, user_update: RolesUpdate):
+    user_to_update = db.query(User).filter(User.ID == user_id).first()
+    if not user_to_update:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    updated_user = user_update.model_dump(exclude_unset=True)
+    for key, value in updated_user.items():
+        setattr(user_to_update, key, value)
+    db.commit()
+    return user_to_update
+
+# Function to get users with optional filtering by user_id
 def get_users(db: Session, current_user: get_current_user,user_id: Optional[int] = None):
     query = db.query(User)
     if current_user.role == Role.SUPERADMIN:
@@ -42,8 +57,9 @@ def get_users(db: Session, current_user: get_current_user,user_id: Optional[int]
     return tasks
 
 
-# CREATE User
+# Function to add a new user
 def add_user(db: Session, user: UserSignUp,current_user: get_current_user):
+    # using a can_create function defined in app/permissions/roles.py
     if not can_create(current_user.role, user.role):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -68,64 +84,8 @@ def add_user(db: Session, user: UserSignUp,current_user: get_current_user):
         raise DuplicateError(
             f"Email {user.email} is already attached to a registered user.")
 
-# def create_user(db: Session, user_data: dict):
 
-#     hashed_password = get_password_hash(user_data["password"])
-#     new_user = User(
-#         email=user_data["email"],
-#         name=user_data["name"],
-#         password=hashed_password,
-#         role=user_data["role"]
-#     )
-
-#     return signJWT(user_data["email"])
-#     try:
-#         db.add(new_user)
-#         db.commit()
-#         db.refresh(new_user)
-#         return user_db, password
-#     except IntegrityError:
-#         db.rollback()
-#         raise DuplicateError(
-#             f"Email {user.email} is already attached to a registered user.")
-
-
-# UPDATE Roles
-def update_roles(db: Session,user_id:int, current_user: get_current_user, user_update: RolesUpdate):
-    user_to_update = db.query(User).filter(User.ID == user_id).first()
-    if not user_to_update:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    updated_user = user_update.model_dump(exclude_unset=True)
-    for key, value in updated_user.items():
-        setattr(user_to_update, key, value)
-    db.commit()
-    return user_to_update
-
-
-# DELETE User
-def delete_users(db: Session,
-                current_user: get_current_user,
-                user_id: str):
-    user_to_delete = db.query(User).filter(User.ID == user_id).first()
-    if not user_to_delete:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    if not can_create(current_user.role, user_to_delete.role):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Not enough permissions to access this resource"
-        )
-    db.delete(user_to_delete)
-    db.commit()
-    return user_to_delete
-
-
-# Update User
+# Function to update user information
 def update_user(db: Session, user: UserUpdate,current_user: get_current_user):
     user_to_update = db.query(User).filter(User.ID == current_user.ID).first()
     if not user_to_update:
@@ -148,7 +108,28 @@ def update_user(db: Session, user: UserUpdate,current_user: get_current_user):
         raise ValueError("Old password provided doesn't match, please try again")
 
 
-# Reset password 
+# Function to delete a user
+def delete_users(db: Session,
+                current_user: get_current_user,
+                user_id: str):
+    user_to_delete = db.query(User).filter(User.ID == user_id).first()
+    if not user_to_delete:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    # using a can_create function defined in app/permissions/roles.py
+    if not can_create(current_user.role, user_to_delete.role):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not enough permissions to access this resource"
+        )
+    db.delete(user_to_delete)
+    db.commit()
+    return user_to_delete
+
+
+# Function to update password change status
 def user_reset_password(db: Session, email: str, new_password: str):
     try:
         user = db.query(User).filter(User.email == email).first()
@@ -158,7 +139,7 @@ def user_reset_password(db: Session, email: str, new_password: str):
         return False
     return True
 
-# update the acess_token status which was stored in Token model
+# Function to update the acess_token status which was stored in Token model
 def update_token_status(db: Session, expire_minutes: int):
     expired_tokens = db.query(Token).filter(Token.is_expired == expire_minutes).first()
     Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)
@@ -168,7 +149,8 @@ def update_token_status(db: Session, expire_minutes: int):
         return True
     return False
 
-# update the status of password 
+
+# Function to update the status of password 
 def update_password_change_status(db: Session, temp_token: str):
     """
     Update the reset_password column to True for the given temp_token.
