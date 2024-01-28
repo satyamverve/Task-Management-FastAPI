@@ -148,7 +148,7 @@ def read_document(document_path: str):
 
 
 # get the list of documents uploaded
-@router.get("/{task_id}/documents", 
+@router.get("/documents/{task_id}", 
             response_model=List[Dict[str, Union[int, List[DocumentResponseModel]]]], 
             tags=["Tasks"],summary="Get the path of the uploaded documents")
 def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):
