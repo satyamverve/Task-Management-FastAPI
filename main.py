@@ -1,4 +1,5 @@
 # main.py
+
 import os
 import sys
 from fastapi import FastAPI, File, UploadFile, HTTPException
@@ -15,23 +16,28 @@ from fastapi.staticfiles import StaticFiles
 
 from app.modules.login import router as login_router
 
+# Application description
 description = """
-FastAPI application for Task Management.
+FastAPI Task Management: A robust API for efficient task tracking and management, featuring user authentication, predefined(SUPERADMIN, MANAGER, AGENT) role-based access control that gives seamless integration with modern front-end technologies.
 """
 
+# Async context manager for database setup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     user_base.metadata.create_all(bind=engine)
     task_base.metadata.create_all(bind=engine)
     yield
 
+# Create FastAPI app instance
 app = FastAPI(
+    title='Task Management System API',
     lifespan=lifespan,
-    title="Your API Title",
     description=description,
     version="1.0.0",
+    
 )
 
+# CORS Middleware configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
@@ -43,18 +49,18 @@ app.add_middleware(
 # Mount the static directory for serving uploaded files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
+# Root path endpoint
 @app.get("/", tags=["General"])
 def read_root():
     return {"message": "This is the root path"}
 
-
-
+# Include routers
 app.include_router(user_router)
 app.include_router(login_router)
 app.include_router(task_router)
 # app.include_router(auth_router)
 
+# Run the application using uvicorn
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

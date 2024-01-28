@@ -2352,7 +2352,7 @@
         "kind": 2,
         "importPath": "app.modules.tasks.task_routers",
         "description": "app.modules.tasks.task_routers",
-        "peekOfCode": "def read_document(document_path: str):\n    document_full_path = os.path.join(static_directory, document_path)  \n    if os.path.exists(document_full_path):\n        return FileResponse(document_full_path, filename=document_path)\n    raise HTTPException(status_code=404, detail=\"Document not found\")\n# get the list of documents uploaded\n@router.get(\"/{task_id}/documents\", \n            response_model=List[Dict[str, Union[int, List[DocumentResponseModel]]]], \n            tags=[\"Tasks\"],summary=\"Get the path of the uploaded documents\")\ndef list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):",
+        "peekOfCode": "def read_document(document_path: str):\n    document_full_path = os.path.join(static_directory, document_path)  \n    if os.path.exists(document_full_path):\n        return FileResponse(document_full_path, filename=document_path)\n    raise HTTPException(status_code=404, detail=\"Document not found\")\n# get the list of documents uploaded\n@router.get(\"/documents/{task_id}\", \n            response_model=List[Dict[str, Union[int, List[DocumentResponseModel]]]], \n            tags=[\"Tasks\"],summary=\"Get the path of the uploaded documents\")\ndef list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):",
         "detail": "app.modules.tasks.task_routers",
         "documentation": {}
     },
@@ -2388,7 +2388,7 @@
         "kind": 5,
         "importPath": "app.modules.tasks.task_routers",
         "description": "app.modules.tasks.task_routers",
-        "peekOfCode": "static_directory = os.path.join(os.path.dirname(os.path.abspath(\"/static/uploads\")), \"static\")\n# Access the uploaded documents\n@router.get(\"/{document_path}\", response_class=FileResponse,tags=[\"Tasks\"])\ndef read_document(document_path: str):\n    document_full_path = os.path.join(static_directory, document_path)  \n    if os.path.exists(document_full_path):\n        return FileResponse(document_full_path, filename=document_path)\n    raise HTTPException(status_code=404, detail=\"Document not found\")\n# get the list of documents uploaded\n@router.get(\"/{task_id}/documents\", ",
+        "peekOfCode": "static_directory = os.path.join(os.path.dirname(os.path.abspath(\"/static/uploads\")), \"static\")\n# Access the uploaded documents\n@router.get(\"/{document_path}\", response_class=FileResponse,tags=[\"Tasks\"])\ndef read_document(document_path: str):\n    document_full_path = os.path.join(static_directory, document_path)  \n    if os.path.exists(document_full_path):\n        return FileResponse(document_full_path, filename=document_path)\n    raise HTTPException(status_code=404, detail=\"Document not found\")\n# get the list of documents uploaded\n@router.get(\"/documents/{task_id}\", ",
         "detail": "app.modules.tasks.task_routers",
         "documentation": {}
     },
@@ -2757,7 +2757,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def read_root():\n    return {\"message\": \"This is the root path\"}\napp.include_router(user_router)\napp.include_router(login_router)\napp.include_router(task_router)\n# app.include_router(auth_router)\nif __name__ == '__main__':\n    import uvicorn\n    uvicorn.run(app, host=\"0.0.0.0\", port=8000)",
+        "peekOfCode": "def read_root():\n    return {\"message\": \"This is the root path\"}\n# Include routers\napp.include_router(user_router)\napp.include_router(login_router)\napp.include_router(task_router)\n# app.include_router(auth_router)\n# Run the application using uvicorn\nif __name__ == '__main__':\n    import uvicorn",
         "detail": "main",
         "documentation": {}
     },
@@ -2766,7 +2766,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "description = \"\"\"\nFastAPI application for Task Management.\n\"\"\"\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    user_base.metadata.create_all(bind=engine)\n    task_base.metadata.create_all(bind=engine)\n    yield\napp = FastAPI(\n    lifespan=lifespan,",
+        "peekOfCode": "description = \"\"\"\nFastAPI Task Management: A robust API for efficient task tracking and management, featuring user authentication, predefined(SUPERADMIN, MANAGER, AGENT) role-based access control that gives seamless integration with modern front-end technologies.\n\"\"\"\n# Async context manager for database setup\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    user_base.metadata.create_all(bind=engine)\n    task_base.metadata.create_all(bind=engine)\n    yield\n# Create FastAPI app instance",
         "detail": "main",
         "documentation": {}
     },
@@ -2775,7 +2775,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "app = FastAPI(\n    lifespan=lifespan,\n    title=\"Your API Title\",\n    description=description,\n    version=\"1.0.0\",\n)\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=['*'],\n    allow_credentials=True,",
+        "peekOfCode": "app = FastAPI(\n    title='Task Management System API',\n    lifespan=lifespan,\n    description=description,\n    version=\"1.0.0\",\n)\n# CORS Middleware configuration\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=['*'],",
         "detail": "main",
         "documentation": {}
     }
