@@ -200,14 +200,6 @@
         "documentation": {}
     },
     {
-        "label": "Base",
-        "importPath": "app.config.database",
-        "description": "app.config.database",
-        "isExtraImport": true,
-        "detail": "app.config.database",
-        "documentation": {}
-    },
-    {
         "label": "get_db",
         "importPath": "app.config.database",
         "description": "app.config.database",
@@ -800,6 +792,14 @@
         "documentation": {}
     },
     {
+        "label": "settings",
+        "importPath": "app.data.data_class",
+        "description": "app.data.data_class",
+        "isExtraImport": true,
+        "detail": "app.data.data_class",
+        "documentation": {}
+    },
+    {
         "label": "JWTBearer",
         "importPath": "app.auth.auth_bearer",
         "description": "app.auth.auth_bearer",
@@ -1300,6 +1300,38 @@
         "documentation": {}
     },
     {
+        "label": "TIMESTAMP",
+        "importPath": "sqlalchemy.sql.sqltypes",
+        "description": "sqlalchemy.sql.sqltypes",
+        "isExtraImport": true,
+        "detail": "sqlalchemy.sql.sqltypes",
+        "documentation": {}
+    },
+    {
+        "label": "TIMESTAMP",
+        "importPath": "sqlalchemy.sql.sqltypes",
+        "description": "sqlalchemy.sql.sqltypes",
+        "isExtraImport": true,
+        "detail": "sqlalchemy.sql.sqltypes",
+        "documentation": {}
+    },
+    {
+        "label": "text",
+        "importPath": "sqlalchemy.sql.expression",
+        "description": "sqlalchemy.sql.expression",
+        "isExtraImport": true,
+        "detail": "sqlalchemy.sql.expression",
+        "documentation": {}
+    },
+    {
+        "label": "text",
+        "importPath": "sqlalchemy.sql.expression",
+        "description": "sqlalchemy.sql.expression",
+        "isExtraImport": true,
+        "detail": "sqlalchemy.sql.expression",
+        "documentation": {}
+    },
+    {
         "label": "TaskStatus",
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
@@ -1409,38 +1441,6 @@
         "description": "app.dto.tasks_schema",
         "isExtraImport": true,
         "detail": "app.dto.tasks_schema",
-        "documentation": {}
-    },
-    {
-        "label": "TIMESTAMP",
-        "importPath": "sqlalchemy.sql.sqltypes",
-        "description": "sqlalchemy.sql.sqltypes",
-        "isExtraImport": true,
-        "detail": "sqlalchemy.sql.sqltypes",
-        "documentation": {}
-    },
-    {
-        "label": "TIMESTAMP",
-        "importPath": "sqlalchemy.sql.sqltypes",
-        "description": "sqlalchemy.sql.sqltypes",
-        "isExtraImport": true,
-        "detail": "sqlalchemy.sql.sqltypes",
-        "documentation": {}
-    },
-    {
-        "label": "text",
-        "importPath": "sqlalchemy.sql.expression",
-        "description": "sqlalchemy.sql.expression",
-        "isExtraImport": true,
-        "detail": "sqlalchemy.sql.expression",
-        "documentation": {}
-    },
-    {
-        "label": "text",
-        "importPath": "sqlalchemy.sql.expression",
-        "description": "sqlalchemy.sql.expression",
-        "isExtraImport": true,
-        "detail": "sqlalchemy.sql.expression",
         "documentation": {}
     },
     {
@@ -1902,7 +1902,7 @@
         "kind": 2,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "def verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\ndef get_password_hash(password):\n    return pwd_context.hash(password)\ndef token_response(token: str):\n    return {\n        \"access_token\": token\n    }\ndef signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:\n    expiration_time = time.time() + expire_minutes",
+        "peekOfCode": "def verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\n# Function to generate hashed password\ndef get_password_hash(password):\n    return pwd_context.hash(password)\n# Function to create a token response\ndef token_response(token: str):\n    return {\n        \"access_token\": token\n    }",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -1911,7 +1911,7 @@
         "kind": 2,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "def get_password_hash(password):\n    return pwd_context.hash(password)\ndef token_response(token: str):\n    return {\n        \"access_token\": token\n    }\ndef signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:\n    expiration_time = time.time() + expire_minutes\n    payload = {\n        \"data\": data,   ",
+        "peekOfCode": "def get_password_hash(password):\n    return pwd_context.hash(password)\n# Function to create a token response\ndef token_response(token: str):\n    return {\n        \"access_token\": token\n    }\n# Function to sign a JWT token\ndef signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:\n    expiration_time = time.time() + expire_minutes",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -1920,7 +1920,7 @@
         "kind": 2,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "def token_response(token: str):\n    return {\n        \"access_token\": token\n    }\ndef signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:\n    expiration_time = time.time() + expire_minutes\n    payload = {\n        \"data\": data,   \n        \"expires\": expiration_time\n    }",
+        "peekOfCode": "def token_response(token: str):\n    return {\n        \"access_token\": token\n    }\n# Function to sign a JWT token\ndef signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:\n    expiration_time = time.time() + expire_minutes\n    payload = {\n        \"data\": data,\n        \"expires\": expiration_time",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -1929,7 +1929,7 @@
         "kind": 2,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "def signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:\n    expiration_time = time.time() + expire_minutes\n    payload = {\n        \"data\": data,   \n        \"expires\": expiration_time\n    }\n    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)\n    return token\ndef decodeJWT(token: str = Depends(JWTBearer())) -> dict:\n    try:",
+        "peekOfCode": "def signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:\n    expiration_time = time.time() + expire_minutes\n    payload = {\n        \"data\": data,\n        \"expires\": expiration_time\n    }\n    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)\n    return token\n# Function to decode a JWT token\ndef decodeJWT(token: str = Depends(JWTBearer())) -> dict:",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -1938,7 +1938,7 @@
         "kind": 2,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "def decodeJWT(token: str = Depends(JWTBearer())) -> dict:\n    try:\n        decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])\n        return decoded_token\n    except JWTError:\n        return {}\ndef get_user_by_email(db: Session, user_email: str):\n    user = db.query(User).filter(User.email == user_email).first()\n    return user\ndef get_current_user(token: str = Depends(JWTBearer()), db: Session = Depends(get_db)) -> User:",
+        "peekOfCode": "def decodeJWT(token: str = Depends(JWTBearer())) -> dict:\n    try:\n        decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])\n        return decoded_token\n    except JWTError:\n        return {}\n# Function to retrieve a user by email from the database\ndef get_user_by_email(db: Session, user_email: str):\n    user = db.query(User).filter(User.email == user_email).first()\n    return user",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -1947,7 +1947,7 @@
         "kind": 2,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "def get_user_by_email(db: Session, user_email: str):\n    user = db.query(User).filter(User.email == user_email).first()\n    return user\ndef get_current_user(token: str = Depends(JWTBearer()), db: Session = Depends(get_db)) -> User:\n    decoded_token = decodeJWT(token)\n    user_email = decoded_token.get('data')  # Extract the email from the decoded token\n    user = get_user_by_email(db, user_email)\n    if user is None:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid user credentials\")\n    return user",
+        "peekOfCode": "def get_user_by_email(db: Session, user_email: str):\n    user = db.query(User).filter(User.email == user_email).first()\n    return user\n# Function to get the current user using a JWT token\ndef get_current_user(token: str = Depends(JWTBearer()), db: Session = Depends(get_db)) -> User:\n    decoded_token = decodeJWT(token)\n    user_email = decoded_token.get('data')  # Extract the email from the decoded token\n    user = get_user_by_email(db, user_email)\n    if user is None:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid user credentials\")",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -1956,7 +1956,7 @@
         "kind": 2,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "def get_current_user(token: str = Depends(JWTBearer()), db: Session = Depends(get_db)) -> User:\n    decoded_token = decodeJWT(token)\n    user_email = decoded_token.get('data')  # Extract the email from the decoded token\n    user = get_user_by_email(db, user_email)\n    if user is None:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid user credentials\")\n    return user\ndef get_current_user_via_temp_token(access_token: str, db: Session = Depends(get_db)):\n    try:\n        decoded_token = decodeJWT(access_token)",
+        "peekOfCode": "def get_current_user(token: str = Depends(JWTBearer()), db: Session = Depends(get_db)) -> User:\n    decoded_token = decodeJWT(token)\n    user_email = decoded_token.get('data')  # Extract the email from the decoded token\n    user = get_user_by_email(db, user_email)\n    if user is None:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid user credentials\")\n    return user\n# Function to get the current user using a temporary access token\ndef get_current_user_via_temp_token(access_token: str, db: Session = Depends(get_db)):\n    try:",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -1974,7 +1974,7 @@
         "kind": 5,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "jwt_bearer = JWTBearer()\nJWT_SECRET = settings.secret_key\nJWT_ALGORITHM = settings.algorithm\nACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\ndef get_password_hash(password):\n    return pwd_context.hash(password)\ndef token_response(token: str):",
+        "peekOfCode": "jwt_bearer = JWTBearer()\n# JWT settings\nJWT_SECRET = settings.secret_key\nJWT_ALGORITHM = settings.algorithm\nACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes\n# Password hashing context\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\n# Function to verify plaintext password against hashed password\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -1983,7 +1983,7 @@
         "kind": 5,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "JWT_SECRET = settings.secret_key\nJWT_ALGORITHM = settings.algorithm\nACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\ndef get_password_hash(password):\n    return pwd_context.hash(password)\ndef token_response(token: str):\n    return {",
+        "peekOfCode": "JWT_SECRET = settings.secret_key\nJWT_ALGORITHM = settings.algorithm\nACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes\n# Password hashing context\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\n# Function to verify plaintext password against hashed password\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\n# Function to generate hashed password\ndef get_password_hash(password):",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -1992,7 +1992,7 @@
         "kind": 5,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "JWT_ALGORITHM = settings.algorithm\nACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\ndef get_password_hash(password):\n    return pwd_context.hash(password)\ndef token_response(token: str):\n    return {\n        \"access_token\": token",
+        "peekOfCode": "JWT_ALGORITHM = settings.algorithm\nACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes\n# Password hashing context\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\n# Function to verify plaintext password against hashed password\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\n# Function to generate hashed password\ndef get_password_hash(password):\n    return pwd_context.hash(password)",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -2001,7 +2001,7 @@
         "kind": 5,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\ndef get_password_hash(password):\n    return pwd_context.hash(password)\ndef token_response(token: str):\n    return {\n        \"access_token\": token\n    }",
+        "peekOfCode": "ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes\n# Password hashing context\npwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\n# Function to verify plaintext password against hashed password\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\n# Function to generate hashed password\ndef get_password_hash(password):\n    return pwd_context.hash(password)\n# Function to create a token response",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -2010,7 +2010,7 @@
         "kind": 5,
         "importPath": "app.auth.auth",
         "description": "app.auth.auth",
-        "peekOfCode": "pwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\ndef get_password_hash(password):\n    return pwd_context.hash(password)\ndef token_response(token: str):\n    return {\n        \"access_token\": token\n    }\ndef signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:",
+        "peekOfCode": "pwd_context = CryptContext(schemes=[\"bcrypt\"], deprecated=\"auto\")\n# Function to verify plaintext password against hashed password\ndef verify_password(plain_password, hashed_password):\n    return pwd_context.verify(plain_password, hashed_password)\n# Function to generate hashed password\ndef get_password_hash(password):\n    return pwd_context.hash(password)\n# Function to create a token response\ndef token_response(token: str):\n    return {",
         "detail": "app.auth.auth",
         "documentation": {}
     },
@@ -2019,7 +2019,7 @@
         "kind": 6,
         "importPath": "app.auth.auth_bearer",
         "description": "app.auth.auth_bearer",
-        "peekOfCode": "class JWTBearer(HTTPBearer):\n    def __init__(self, auto_error: bool = True):\n        super(JWTBearer, self).__init__(auto_error=auto_error)\n    async def __call__(self, request: Request):\n        credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)\n        if credentials:\n            if not credentials.scheme == \"Bearer\":\n                raise HTTPException(status_code=403, detail=\"Invalid authentication scheme.\")\n            if not self.verify_jwt(credentials.credentials):\n                raise HTTPException(status_code=403, detail=\"Invalid token or expired token.\")",
+        "peekOfCode": "class JWTBearer(HTTPBearer):\n    def __init__(self, auto_error: bool = True):\n        \"\"\"\n        Initializes the JWTBearer class.\n        Parameters:\n        - auto_error (bool): If True, automatically raises an HTTPException on authentication error.\n        \"\"\"\n        super(JWTBearer, self).__init__(auto_error=auto_error)\n    async def __call__(self, request: Request):\n        \"\"\"",
         "detail": "app.auth.auth_bearer",
         "documentation": {}
     },
@@ -2028,7 +2028,7 @@
         "kind": 2,
         "importPath": "app.config.database",
         "description": "app.config.database",
-        "peekOfCode": "def get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n# def get_db():\n#     db = SessionLocal()\n#     try:\n#         yield db",
+        "peekOfCode": "def get_db():\n    \"\"\"\n    Dependency function to provide a database session.\n    Yields:\n    - session: The SQLAlchemy database session.\n    Closes the session after use to manage database connections efficiently.\n    \"\"\"\n    db = SessionLocal()\n    try:\n        yield db",
         "detail": "app.config.database",
         "documentation": {}
     },
@@ -2037,7 +2037,7 @@
         "kind": 5,
         "importPath": "app.config.database",
         "description": "app.config.database",
-        "peekOfCode": "DATABASE_URL = f\"mysql+pymysql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}\"\nengine = create_engine(DATABASE_URL)\nSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\nBase = declarative_base()\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()",
+        "peekOfCode": "DATABASE_URL = f\"mysql+pymysql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}\"\n# SQLAlchemy engine for database connection\nengine = create_engine(DATABASE_URL)\n# SessionLocal is a factory for creating database sessions\nSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\n# Base class for SQLAlchemy models\nBase = declarative_base()\ndef get_db():\n    \"\"\"\n    Dependency function to provide a database session.",
         "detail": "app.config.database",
         "documentation": {}
     },
@@ -2046,7 +2046,7 @@
         "kind": 5,
         "importPath": "app.config.database",
         "description": "app.config.database",
-        "peekOfCode": "engine = create_engine(DATABASE_URL)\nSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\nBase = declarative_base()\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n# def get_db():",
+        "peekOfCode": "engine = create_engine(DATABASE_URL)\n# SessionLocal is a factory for creating database sessions\nSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\n# Base class for SQLAlchemy models\nBase = declarative_base()\ndef get_db():\n    \"\"\"\n    Dependency function to provide a database session.\n    Yields:\n    - session: The SQLAlchemy database session.",
         "detail": "app.config.database",
         "documentation": {}
     },
@@ -2055,7 +2055,7 @@
         "kind": 5,
         "importPath": "app.config.database",
         "description": "app.config.database",
-        "peekOfCode": "SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\nBase = declarative_base()\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n# def get_db():\n#     db = SessionLocal()",
+        "peekOfCode": "SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\n# Base class for SQLAlchemy models\nBase = declarative_base()\ndef get_db():\n    \"\"\"\n    Dependency function to provide a database session.\n    Yields:\n    - session: The SQLAlchemy database session.\n    Closes the session after use to manage database connections efficiently.\n    \"\"\"",
         "detail": "app.config.database",
         "documentation": {}
     },
@@ -2064,7 +2064,7 @@
         "kind": 5,
         "importPath": "app.config.database",
         "description": "app.config.database",
-        "peekOfCode": "Base = declarative_base()\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n# def get_db():\n#     db = SessionLocal()\n#     try:",
+        "peekOfCode": "Base = declarative_base()\ndef get_db():\n    \"\"\"\n    Dependency function to provide a database session.\n    Yields:\n    - session: The SQLAlchemy database session.\n    Closes the session after use to manage database connections efficiently.\n    \"\"\"\n    db = SessionLocal()\n    try:",
         "detail": "app.config.database",
         "documentation": {}
     },
@@ -2073,7 +2073,16 @@
         "kind": 6,
         "importPath": "app.data.data_class",
         "description": "app.data.data_class",
-        "peekOfCode": "class Settings(BaseSettings):\n    database_username: str\n    database_password: str\n    database_hostname: str\n    database_port: str\n    database_name: str\n    secret_key: str\n    algorithm: str\n    access_token_expire_minutes: int\n    class Config:",
+        "peekOfCode": "class Settings(BaseSettings):\n    \"\"\"\n    Settings class for managing application configuration parameters.\n    Attributes:\n    - mail_username (str): Username for the email service.\n    - mail_password (str): Password for the email service.\n    - mail_from (str): Email address used as the sender in email notifications.\n    - mail_port (int): Port number for the email service.\n    - database_username (str): Username for the database connection.\n    - database_password (str): Password for the database connection.",
+        "detail": "app.data.data_class",
+        "documentation": {}
+    },
+    {
+        "label": "settings",
+        "kind": 5,
+        "importPath": "app.data.data_class",
+        "description": "app.data.data_class",
+        "peekOfCode": "settings = Settings()",
         "detail": "app.data.data_class",
         "documentation": {}
     },
@@ -2082,7 +2091,7 @@
         "kind": 6,
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
-        "peekOfCode": "class TaskStatus(str, Enum):\n    NotAssigned = \"Not-Assigned\"\n    Assigned = \"Assigned\"\n    InProgress = \"In-Progress\"\n    OnHold = \"On-Hold\"\n    Completed = \"Completed\"\n    @classmethod\n    def get_status(cls):\n        return list(cls.__members__)\nclass CreateTask(BaseModel):",
+        "peekOfCode": "class TaskStatus(str, Enum):\n    \"\"\"\n    Enumeration for representing the status of a task.\n    Provides predefined status options for tasks.\n    \"\"\"\n    NotAssigned = \"Not-Assigned\"\n    Assigned = \"Assigned\"\n    InProgress = \"In-Progress\"\n    OnHold = \"On-Hold\"\n    Completed = \"Completed\"",
         "detail": "app.dto.tasks_schema",
         "documentation": {}
     },
@@ -2091,7 +2100,7 @@
         "kind": 6,
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
-        "peekOfCode": "class CreateTask(BaseModel):\n    title: str\n    description: str\n    due_date: date\n    agent_id: Optional[int]=None\nclass ReturnTask(BaseModel):\n    ID: int\n    title: str\n    description: str\n    status: TaskStatus",
+        "peekOfCode": "class CreateTask(BaseModel):\n    \"\"\"\n    Pydantic model for creating a new task.\n    \"\"\"\n    title: str\n    description: str\n    due_date: date\n    agent_id: Optional[int] = None\nclass ReturnTask(BaseModel):\n    \"\"\"",
         "detail": "app.dto.tasks_schema",
         "documentation": {}
     },
@@ -2100,7 +2109,7 @@
         "kind": 6,
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
-        "peekOfCode": "class ReturnTask(BaseModel):\n    ID: int\n    title: str\n    description: str\n    status: TaskStatus\n    due_date: date\n    agent_id: int\n    agent_role: Optional[str]\n    created_by_id : Optional[int]\n    created_by_role: Optional[str] ",
+        "peekOfCode": "class ReturnTask(BaseModel):\n    \"\"\"\n    Pydantic model for returning task details.\n    \"\"\"\n    ID: int\n    title: str\n    description: str\n    status: TaskStatus\n    due_date: date\n    agent_id: int",
         "detail": "app.dto.tasks_schema",
         "documentation": {}
     },
@@ -2109,7 +2118,7 @@
         "kind": 6,
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
-        "peekOfCode": "class UpdateTask(ReturnTask):\n    updated_at: datetime\n    class config:\n        orm_mode=True\n        exclude = ['created_at', 'updated_at']\nclass TaskHistory(BaseModel):\n    comments : Optional[str]\n    status: TaskStatus  \n    created_at: datetime\nclass CreateHistory(BaseModel):",
+        "peekOfCode": "class UpdateTask(ReturnTask):\n    \"\"\"\n    Pydantic model for updating task details.\n    \"\"\"\n    updated_at: datetime\n    class Config:\n        orm_mode = True\n        exclude = ['created_at', 'updated_at']\nclass TaskHistory(BaseModel):\n    \"\"\"",
         "detail": "app.dto.tasks_schema",
         "documentation": {}
     },
@@ -2118,7 +2127,7 @@
         "kind": 6,
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
-        "peekOfCode": "class TaskHistory(BaseModel):\n    comments : Optional[str]\n    status: TaskStatus  \n    created_at: datetime\nclass CreateHistory(BaseModel):\n    comments : Optional[str]\nclass TaskHistoryResponse(BaseModel):\n    task_id: Optional[int]\n    due_date: date\n    history: List[TaskHistory]",
+        "peekOfCode": "class TaskHistory(BaseModel):\n    \"\"\"\n    Pydantic model for representing task history entries.\n    \"\"\"\n    comments: Optional[str]\n    status: TaskStatus\n    created_at: datetime\nclass CreateHistory(BaseModel):\n    \"\"\"\n    Pydantic model for creating a new task history entry.",
         "detail": "app.dto.tasks_schema",
         "documentation": {}
     },
@@ -2127,7 +2136,7 @@
         "kind": 6,
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
-        "peekOfCode": "class CreateHistory(BaseModel):\n    comments : Optional[str]\nclass TaskHistoryResponse(BaseModel):\n    task_id: Optional[int]\n    due_date: date\n    history: List[TaskHistory]\n    class Config:\n        orm_mode = True\n        json_encoders = {\n            datetime: lambda v: v.strftime('%Y-%m-%d %H:%M:%S'),  # Format datetime",
+        "peekOfCode": "class CreateHistory(BaseModel):\n    \"\"\"\n    Pydantic model for creating a new task history entry.\n    \"\"\"\n    comments: Optional[str]\nclass TaskHistoryResponse(BaseModel):\n    \"\"\"\n    Pydantic model for returning task history details.\n    \"\"\"\n    task_id: Optional[int]",
         "detail": "app.dto.tasks_schema",
         "documentation": {}
     },
@@ -2136,7 +2145,7 @@
         "kind": 6,
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
-        "peekOfCode": "class TaskHistoryResponse(BaseModel):\n    task_id: Optional[int]\n    due_date: date\n    history: List[TaskHistory]\n    class Config:\n        orm_mode = True\n        json_encoders = {\n            datetime: lambda v: v.strftime('%Y-%m-%d %H:%M:%S'),  # Format datetime\n            date: lambda v: v.strftime('%Y-%m-%d')  # Format date\n        }",
+        "peekOfCode": "class TaskHistoryResponse(BaseModel):\n    \"\"\"\n    Pydantic model for returning task history details.\n    \"\"\"\n    task_id: Optional[int]\n    due_date: date\n    history: List[TaskHistory]\n    class Config:\n        orm_mode = True\n        json_encoders = {",
         "detail": "app.dto.tasks_schema",
         "documentation": {}
     },
@@ -2145,7 +2154,7 @@
         "kind": 6,
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
-        "peekOfCode": "class DocumentResponseModel(BaseModel):\n    document_path: str",
+        "peekOfCode": "class DocumentResponseModel(BaseModel):\n    \"\"\"\n    Pydantic model for returning document response details.\n    \"\"\"\n    document_path: str",
         "detail": "app.dto.tasks_schema",
         "documentation": {}
     },
@@ -2154,7 +2163,7 @@
         "kind": 6,
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
-        "peekOfCode": "class UserLoginSchema(BaseModel):\n    email: EmailStr = Field(...)\n    password: str = Field(...)\n    class Config:\n        schema_extra = {\n            \"example\": {\n                \"email\": \"sk@x.com\",\n                \"password\": \"weakpassword\"\n            }\n        }",
+        "peekOfCode": "class UserLoginSchema(BaseModel):\n    \"\"\"\n    Pydantic model for user login credentials.\n    \"\"\"\n    email: EmailStr = Field(...)\n    password: str = Field(...)\n    class Config:\n        schema_extra = {\n            \"example\": {\n                \"email\": \"sk@x.com\",",
         "detail": "app.dto.users_schemas",
         "documentation": {}
     },
@@ -2163,7 +2172,7 @@
         "kind": 6,
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
-        "peekOfCode": "class UserSignUp(BaseModel):\n    email: EmailStr\n    password: Optional[str]\n    name: str\n    role: Role\nclass RolesUpdate(BaseModel):\n    role: Optional[Role]\nclass UserUpdate(BaseModel):\n    name: Optional[str]\n    email: Optional[EmailStr]",
+        "peekOfCode": "class UserSignUp(BaseModel):\n    \"\"\"\n    Pydantic model for user registration.\n    \"\"\"\n    email: EmailStr\n    password: Optional[str]\n    name: str\n    role: Role\nclass RolesUpdate(BaseModel):\n    \"\"\"",
         "detail": "app.dto.users_schemas",
         "documentation": {}
     },
@@ -2172,7 +2181,7 @@
         "kind": 6,
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
-        "peekOfCode": "class RolesUpdate(BaseModel):\n    role: Optional[Role]\nclass UserUpdate(BaseModel):\n    name: Optional[str]\n    email: Optional[EmailStr]\n    old_password: str\n    new_password: str\nclass UserOut(BaseModel):\n    ID : int\n    email: EmailStr",
+        "peekOfCode": "class RolesUpdate(BaseModel):\n    \"\"\"\n    Pydantic model for updating user roles.\n    \"\"\"\n    role: Optional[Role]\nclass UserUpdate(BaseModel):\n    \"\"\"\n    Pydantic model for updating user details.\n    \"\"\"\n    name: Optional[str]",
         "detail": "app.dto.users_schemas",
         "documentation": {}
     },
@@ -2181,7 +2190,7 @@
         "kind": 6,
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
-        "peekOfCode": "class UserUpdate(BaseModel):\n    name: Optional[str]\n    email: Optional[EmailStr]\n    old_password: str\n    new_password: str\nclass UserOut(BaseModel):\n    ID : int\n    email: EmailStr\n    name: Optional[str]\n    role: Role",
+        "peekOfCode": "class UserUpdate(BaseModel):\n    \"\"\"\n    Pydantic model for updating user details.\n    \"\"\"\n    name: Optional[str]\n    email: Optional[EmailStr]\n    old_password: str\n    new_password: str\nclass UserOut(BaseModel):\n    \"\"\"",
         "detail": "app.dto.users_schemas",
         "documentation": {}
     },
@@ -2190,7 +2199,7 @@
         "kind": 6,
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
-        "peekOfCode": "class UserOut(BaseModel):\n    ID : int\n    email: EmailStr\n    name: Optional[str]\n    role: Role\n    created_at: datetime\n    updated_at: datetime\n    class Config:\n        from_attributes = True\nclass Token(BaseModel):",
+        "peekOfCode": "class UserOut(BaseModel):\n    \"\"\"\n    Pydantic model for returning user details.\n    \"\"\"\n    ID: int\n    email: EmailStr\n    name: Optional[str]\n    role: Role\n    created_at: datetime\n    updated_at: datetime",
         "detail": "app.dto.users_schemas",
         "documentation": {}
     },
@@ -2199,7 +2208,7 @@
         "kind": 6,
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
-        "peekOfCode": "class Token(BaseModel):\n    access_token: str\n    token_type: str",
+        "peekOfCode": "class Token(BaseModel):\n    \"\"\"\n    Pydantic model for representing authentication token details.\n    \"\"\"\n    access_token: str\n    token_type: str",
         "detail": "app.dto.users_schemas",
         "documentation": {}
     },
@@ -2208,7 +2217,7 @@
         "kind": 5,
         "importPath": "app.email_notifications.notify",
         "description": "app.email_notifications.notify",
-        "peekOfCode": "logger = logging.getLogger(\"uvicorn\")\nssl._create_default_https_context = ssl._create_unverified_context\n# load_dotenv()\n# SENDER_GMAIL = os.environ[\"SENDER_GMAIL\"]\n# SENDER_GMAIL_PASSWORD = os.environ[\"SENDER_GMAIL_PASSWORD\"]\ndirname = os.path.dirname(__file__)\ntemplates_folder = os.path.join(dirname, '../templates')\nconf = ConnectionConfig(\n    MAIL_USERNAME = \"satyamk.verve@gmail.com\",\n    MAIL_PASSWORD = \"xeoa gloi jlcp gujj\",",
+        "peekOfCode": "logger = logging.getLogger(\"uvicorn\")\n# Disable SSL/TLS certificate verification to allow connections to servers with self-signed certificates\nssl._create_default_https_context = ssl._create_unverified_context\n# Load environment variables from the .env file\nload_dotenv()\n# Define the directory path for email templates\ndirname = os.path.dirname(__file__)\ntemplates_folder = os.path.join(dirname, '../templates')\n# Configure the email connection\nconf = ConnectionConfig(",
         "detail": "app.email_notifications.notify",
         "documentation": {}
     },
@@ -2217,7 +2226,7 @@
         "kind": 5,
         "importPath": "app.email_notifications.notify",
         "description": "app.email_notifications.notify",
-        "peekOfCode": "ssl._create_default_https_context = ssl._create_unverified_context\n# load_dotenv()\n# SENDER_GMAIL = os.environ[\"SENDER_GMAIL\"]\n# SENDER_GMAIL_PASSWORD = os.environ[\"SENDER_GMAIL_PASSWORD\"]\ndirname = os.path.dirname(__file__)\ntemplates_folder = os.path.join(dirname, '../templates')\nconf = ConnectionConfig(\n    MAIL_USERNAME = \"satyamk.verve@gmail.com\",\n    MAIL_PASSWORD = \"xeoa gloi jlcp gujj\",\n    MAIL_FROM = \"satyamk.verve@gmail.com\",",
+        "peekOfCode": "ssl._create_default_https_context = ssl._create_unverified_context\n# Load environment variables from the .env file\nload_dotenv()\n# Define the directory path for email templates\ndirname = os.path.dirname(__file__)\ntemplates_folder = os.path.join(dirname, '../templates')\n# Configure the email connection\nconf = ConnectionConfig(\n    MAIL_USERNAME=settings.mail_username,\n    MAIL_PASSWORD=settings.mail_password,",
         "detail": "app.email_notifications.notify",
         "documentation": {}
     },
@@ -2226,7 +2235,7 @@
         "kind": 5,
         "importPath": "app.email_notifications.notify",
         "description": "app.email_notifications.notify",
-        "peekOfCode": "dirname = os.path.dirname(__file__)\ntemplates_folder = os.path.join(dirname, '../templates')\nconf = ConnectionConfig(\n    MAIL_USERNAME = \"satyamk.verve@gmail.com\",\n    MAIL_PASSWORD = \"xeoa gloi jlcp gujj\",\n    MAIL_FROM = \"satyamk.verve@gmail.com\",\n    MAIL_PORT = 587,\n    MAIL_SERVER = \"smtp.gmail.com\",\n    MAIL_FROM_NAME=\"FastAPI Demo\",\n    MAIL_STARTTLS = True,",
+        "peekOfCode": "dirname = os.path.dirname(__file__)\ntemplates_folder = os.path.join(dirname, '../templates')\n# Configure the email connection\nconf = ConnectionConfig(\n    MAIL_USERNAME=settings.mail_username,\n    MAIL_PASSWORD=settings.mail_password,\n    MAIL_FROM=settings.mail_from,\n    MAIL_PORT=settings.mail_port,\n    MAIL_SERVER=\"smtp.gmail.com\",\n    MAIL_FROM_NAME=\"FastAPI Demo\",",
         "detail": "app.email_notifications.notify",
         "documentation": {}
     },
@@ -2235,7 +2244,7 @@
         "kind": 5,
         "importPath": "app.email_notifications.notify",
         "description": "app.email_notifications.notify",
-        "peekOfCode": "templates_folder = os.path.join(dirname, '../templates')\nconf = ConnectionConfig(\n    MAIL_USERNAME = \"satyamk.verve@gmail.com\",\n    MAIL_PASSWORD = \"xeoa gloi jlcp gujj\",\n    MAIL_FROM = \"satyamk.verve@gmail.com\",\n    MAIL_PORT = 587,\n    MAIL_SERVER = \"smtp.gmail.com\",\n    MAIL_FROM_NAME=\"FastAPI Demo\",\n    MAIL_STARTTLS = True,\n    MAIL_SSL_TLS = False,",
+        "peekOfCode": "templates_folder = os.path.join(dirname, '../templates')\n# Configure the email connection\nconf = ConnectionConfig(\n    MAIL_USERNAME=settings.mail_username,\n    MAIL_PASSWORD=settings.mail_password,\n    MAIL_FROM=settings.mail_from,\n    MAIL_PORT=settings.mail_port,\n    MAIL_SERVER=\"smtp.gmail.com\",\n    MAIL_FROM_NAME=\"FastAPI Demo\",\n    MAIL_STARTTLS=True,",
         "detail": "app.email_notifications.notify",
         "documentation": {}
     },
@@ -2244,7 +2253,7 @@
         "kind": 5,
         "importPath": "app.email_notifications.notify",
         "description": "app.email_notifications.notify",
-        "peekOfCode": "conf = ConnectionConfig(\n    MAIL_USERNAME = \"satyamk.verve@gmail.com\",\n    MAIL_PASSWORD = \"xeoa gloi jlcp gujj\",\n    MAIL_FROM = \"satyamk.verve@gmail.com\",\n    MAIL_PORT = 587,\n    MAIL_SERVER = \"smtp.gmail.com\",\n    MAIL_FROM_NAME=\"FastAPI Demo\",\n    MAIL_STARTTLS = True,\n    MAIL_SSL_TLS = False,\n    USE_CREDENTIALS = True,",
+        "peekOfCode": "conf = ConnectionConfig(\n    MAIL_USERNAME=settings.mail_username,\n    MAIL_PASSWORD=settings.mail_password,\n    MAIL_FROM=settings.mail_from,\n    MAIL_PORT=settings.mail_port,\n    MAIL_SERVER=\"smtp.gmail.com\",\n    MAIL_FROM_NAME=\"FastAPI Demo\",\n    MAIL_STARTTLS=True,\n    MAIL_SSL_TLS=False,\n    USE_CREDENTIALS=True,",
         "detail": "app.email_notifications.notify",
         "documentation": {}
     },
@@ -2253,7 +2262,7 @@
         "kind": 6,
         "importPath": "app.models.tasks",
         "description": "app.models.tasks",
-        "peekOfCode": "class Task(Base):\n    __tablename__ = \"tasks\"\n    ID = Column(Integer, primary_key=True, index=True)\n    title = Column(String(100), index=True) \n    description = Column(String(250))\n    status = Column(Enum(TaskStatus))\n    due_date= Column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))\n    agent_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'))\n    agent_role = Column(String(50))\n    created_by_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)",
+        "peekOfCode": "class Task(Base):\n    # Define the table name\n    __tablename__ = \"tasks\"\n    # Task model columns\n    ID = Column(Integer, primary_key=True, index=True)\n    title = Column(String(100), index=True)\n    description = Column(String(250))\n    status = Column(Enum(TaskStatus))\n    due_date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))\n    agent_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'))",
         "detail": "app.models.tasks",
         "documentation": {}
     },
@@ -2262,7 +2271,7 @@
         "kind": 6,
         "importPath": "app.models.tasks",
         "description": "app.models.tasks",
-        "peekOfCode": "class TaskHistory(Base):\n    __tablename__ = \"task_history\"\n    ID = Column(Integer, primary_key=True, index=True)\n    task_id = Column(Integer, ForeignKey(\"tasks.ID\"))\n    comments = Column(String(250))\n    status = Column(Enum(TaskStatus))\n    created_at = Column(TIMESTAMP, nullable=False,server_default=text(\"CURRENT_TIMESTAMP\"))\n    task = relationship(\"Task\", back_populates=\"history\")\nTask.history = relationship(\"TaskHistory\", order_by=TaskHistory.created_at, back_populates=\"task\")\nclass TaskDocument(Base):",
+        "peekOfCode": "class TaskHistory(Base):\n    # Define the table name\n    __tablename__ = \"task_history\"\n    # TaskHistory model columns\n    ID = Column(Integer, primary_key=True, index=True)\n    task_id = Column(Integer, ForeignKey(\"tasks.ID\"))\n    comments = Column(String(250))\n    status = Column(Enum(TaskStatus))\n    created_at = Column(TIMESTAMP, nullable=False, server_default=text(\"CURRENT_TIMESTAMP\"))\n    # Relationship with Task model",
         "detail": "app.models.tasks",
         "documentation": {}
     },
@@ -2271,7 +2280,7 @@
         "kind": 6,
         "importPath": "app.models.tasks",
         "description": "app.models.tasks",
-        "peekOfCode": "class TaskDocument(Base):\n    __tablename__ = \"task_documents\"\n    ID = Column(Integer, primary_key=True, index=True)\n    task_id = Column(Integer, ForeignKey(\"tasks.ID\", ondelete='CASCADE', onupdate='NO ACTION'))\n    document_path = Column(String(255), nullable=False)\n    task = relationship(\"Task\", back_populates=\"documents\")",
+        "peekOfCode": "class TaskDocument(Base):\n    # Define the table name\n    __tablename__ = \"task_documents\"\n    # TaskDocument model columns\n    ID = Column(Integer, primary_key=True, index=True)\n    task_id = Column(Integer, ForeignKey(\"tasks.ID\", ondelete='CASCADE', onupdate='NO ACTION'))\n    document_path = Column(String(255), nullable=False)\n    # Relationship with Task model\n    task = relationship(\"Task\", back_populates=\"documents\")",
         "detail": "app.models.tasks",
         "documentation": {}
     },
@@ -2280,7 +2289,7 @@
         "kind": 5,
         "importPath": "app.models.tasks",
         "description": "app.models.tasks",
-        "peekOfCode": "Base = declarative_base()\nclass Task(Base):\n    __tablename__ = \"tasks\"\n    ID = Column(Integer, primary_key=True, index=True)\n    title = Column(String(100), index=True) \n    description = Column(String(250))\n    status = Column(Enum(TaskStatus))\n    due_date= Column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))\n    agent_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'))\n    agent_role = Column(String(50))",
+        "peekOfCode": "Base = declarative_base()\nclass Task(Base):\n    # Define the table name\n    __tablename__ = \"tasks\"\n    # Task model columns\n    ID = Column(Integer, primary_key=True, index=True)\n    title = Column(String(100), index=True)\n    description = Column(String(250))\n    status = Column(Enum(TaskStatus))\n    due_date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))",
         "detail": "app.models.tasks",
         "documentation": {}
     },
@@ -2289,7 +2298,7 @@
         "kind": 5,
         "importPath": "app.models.tasks",
         "description": "app.models.tasks",
-        "peekOfCode": "Task.history = relationship(\"TaskHistory\", order_by=TaskHistory.created_at, back_populates=\"task\")\nclass TaskDocument(Base):\n    __tablename__ = \"task_documents\"\n    ID = Column(Integer, primary_key=True, index=True)\n    task_id = Column(Integer, ForeignKey(\"tasks.ID\", ondelete='CASCADE', onupdate='NO ACTION'))\n    document_path = Column(String(255), nullable=False)\n    task = relationship(\"Task\", back_populates=\"documents\")",
+        "peekOfCode": "Task.history = relationship(\"TaskHistory\", order_by=TaskHistory.created_at, back_populates=\"task\")\nclass TaskDocument(Base):\n    # Define the table name\n    __tablename__ = \"task_documents\"\n    # TaskDocument model columns\n    ID = Column(Integer, primary_key=True, index=True)\n    task_id = Column(Integer, ForeignKey(\"tasks.ID\", ondelete='CASCADE', onupdate='NO ACTION'))\n    document_path = Column(String(255), nullable=False)\n    # Relationship with Task model\n    task = relationship(\"Task\", back_populates=\"documents\")",
         "detail": "app.models.tasks",
         "documentation": {}
     },
@@ -2298,7 +2307,7 @@
         "kind": 6,
         "importPath": "app.models.users",
         "description": "app.models.users",
-        "peekOfCode": "class User(Base):\n    __tablename__ = \"users\"\n    ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)\n    name = Column(String(150), nullable=True)\n    email = Column(String(200), primary_key=True, index=True, unique=True)\n    password = Column(String(250))\n    role = Column(String(50))\n    created_at = Column(TIMESTAMP, nullable=False,server_default=text(\"CURRENT_TIMESTAMP\"))\n    updated_at = Column(TIMESTAMP, nullable=True,server_default=text(\"CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\"))\n    temp_token = relationship(\"Token\", back_populates=\"user\", uselist=False)",
+        "peekOfCode": "class User(Base):\n    # Define the table name\n    __tablename__ = \"users\"\n    # User model columns\n    ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)\n    name = Column(String(150), nullable=True)\n    email = Column(String(200), primary_key=True, index=True, unique=True)\n    password = Column(String(250))\n    role = Column(String(50))\n    created_at = Column(TIMESTAMP, nullable=False, server_default=text(\"CURRENT_TIMESTAMP\"))",
         "detail": "app.models.users",
         "documentation": {}
     },
@@ -2307,7 +2316,7 @@
         "kind": 6,
         "importPath": "app.models.users",
         "description": "app.models.users",
-        "peekOfCode": "class Token(Base):\n    __tablename__ = \"password_reset_tokens\" \n    ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)\n    token = Column(String(250), primary_key=True, index=True)\n    user_email= Column(String(200), ForeignKey(User.email, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)\n    reset_password = Column(Boolean, default=False)\n    is_expired = Column(Boolean, default=False)\n    created_at = Column(TIMESTAMP, nullable=False,server_default=text(\"CURRENT_TIMESTAMP\"))\n    updated_at = Column(TIMESTAMP, nullable=True,server_default=text(\"CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\"))\n    user = relationship(\"User\", back_populates=\"temp_token\")",
+        "peekOfCode": "class Token(Base):\n    # Define the table name\n    __tablename__ = \"password_reset_tokens\"\n    # Token model columns\n    ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)\n    token = Column(String(250), primary_key=True, index=True)\n    user_email = Column(String(200), ForeignKey(User.email, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)\n    reset_password = Column(Boolean, default=False)\n    is_expired = Column(Boolean, default=False)\n    created_at = Column(TIMESTAMP, nullable=False, server_default=text(\"CURRENT_TIMESTAMP\"))",
         "detail": "app.models.users",
         "documentation": {}
     },
@@ -2316,7 +2325,7 @@
         "kind": 5,
         "importPath": "app.models.users",
         "description": "app.models.users",
-        "peekOfCode": "Base = declarative_base()\nclass User(Base):\n    __tablename__ = \"users\"\n    ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)\n    name = Column(String(150), nullable=True)\n    email = Column(String(200), primary_key=True, index=True, unique=True)\n    password = Column(String(250))\n    role = Column(String(50))\n    created_at = Column(TIMESTAMP, nullable=False,server_default=text(\"CURRENT_TIMESTAMP\"))\n    updated_at = Column(TIMESTAMP, nullable=True,server_default=text(\"CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\"))",
+        "peekOfCode": "Base = declarative_base()\nclass User(Base):\n    # Define the table name\n    __tablename__ = \"users\"\n    # User model columns\n    ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)\n    name = Column(String(150), nullable=True)\n    email = Column(String(200), primary_key=True, index=True, unique=True)\n    password = Column(String(250))\n    role = Column(String(50))",
         "detail": "app.models.users",
         "documentation": {}
     },
@@ -2465,11 +2474,11 @@
         "documentation": {}
     },
     {
-        "label": "get_users",
+        "label": "get_user_roles",
         "kind": 2,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "def get_users(user_id: Optional[int] = None, \n              db: Session = Depends(get_db),\n              current_user: get_current_user = Depends()):\n    \"\"\"\n    Get list of all users with optional filter by user_id.\n    \"\"\"\n    try:\n        users = db_crud.get_users(db,current_user, user_id=user_id)\n        return users\n    except Exception as e:",
+        "peekOfCode": "def get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"\n    try:\n        roles_with_permissions = []\n        for role in Role:\n            role_permissions = get_role_permissions(role)\n            roles_with_permissions.append({role.value: role_permissions})\n        return roles_with_permissions",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2483,11 +2492,11 @@
         "documentation": {}
     },
     {
-        "label": "delete_user",
+        "label": "get_users",
         "kind": 2,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):\n    \"\"\"\n    Deletes a user.\n    \"\"\"\n    try:\n        db_crud.delete_users(db, current_user, user_id)\n        return {\"message\": f\"User {user_id} has been deleted successfully!\"}\n    except ValueError as e:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))",
+        "peekOfCode": "def get_users(user_id: Optional[int] = None, \n              db: Session = Depends(get_db),\n              current_user: get_current_user = Depends()):\n    \"\"\"\n    Get list of all users with optional filter by user_id.\n    \"\"\"\n    try:\n        users = db_crud.get_users(db,current_user, user_id=user_id)\n        return users\n    except Exception as e:",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2501,11 +2510,11 @@
         "documentation": {}
     },
     {
-        "label": "get_user_roles",
+        "label": "delete_user",
         "kind": 2,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "def get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"\n    try:\n        roles_with_permissions = []\n        for role in Role:\n            role_permissions = get_role_permissions(role)\n            roles_with_permissions.append({role.value: role_permissions})\n        return roles_with_permissions",
+        "peekOfCode": "def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):\n    \"\"\"\n    Deletes a user.\n    \"\"\"\n    try:\n        db_crud.delete_users(db, current_user, user_id)\n        return {\"message\": f\"User {user_id} has been deleted successfully!\"}\n    except ValueError as e:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2532,7 +2541,7 @@
         "kind": 5,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "TEMP_TOKEN_EXPIRE_MINUTES = 10\n#load the html templates \ntemplates = Jinja2Templates(directory='./app/templates')\nrouter = APIRouter(prefix=\"\")\n# # create users\n# @router.post(\"/user/signup\", tags=[\"user\"])\n# async def create_user(user: UserSignUp = Body(...), db: Session = Depends(get_db), current_user: get_current_user = Depends()):\n#     return db_crud.create_user(db, user, current_user)\n# CREATE User \n@router.post(\"/user/create\",",
+        "peekOfCode": "TEMP_TOKEN_EXPIRE_MINUTES = 10\n# Load HTML templates\ntemplates = Jinja2Templates(directory='./app/templates')\nrouter = APIRouter(prefix=\"\")\n# Function to LIST all user roles with permissions\n@router.get(\"/roles/all\",\n            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], \n            response_model=List[Dict[str, List[str]]], summary=\"Get all user roles with permissions\", tags=[\"Roles\"])\ndef get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2541,7 +2550,7 @@
         "kind": 5,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "templates = Jinja2Templates(directory='./app/templates')\nrouter = APIRouter(prefix=\"\")\n# # create users\n# @router.post(\"/user/signup\", tags=[\"user\"])\n# async def create_user(user: UserSignUp = Body(...), db: Session = Depends(get_db), current_user: get_current_user = Depends()):\n#     return db_crud.create_user(db, user, current_user)\n# CREATE User \n@router.post(\"/user/create\",\n             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],\n             response_model=UserOut, summary=\"Register users\", tags=[\"Users\"])",
+        "peekOfCode": "templates = Jinja2Templates(directory='./app/templates')\nrouter = APIRouter(prefix=\"\")\n# Function to LIST all user roles with permissions\n@router.get(\"/roles/all\",\n            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], \n            response_model=List[Dict[str, List[str]]], summary=\"Get all user roles with permissions\", tags=[\"Roles\"])\ndef get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2550,7 +2559,7 @@
         "kind": 5,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "router = APIRouter(prefix=\"\")\n# # create users\n# @router.post(\"/user/signup\", tags=[\"user\"])\n# async def create_user(user: UserSignUp = Body(...), db: Session = Depends(get_db), current_user: get_current_user = Depends()):\n#     return db_crud.create_user(db, user, current_user)\n# CREATE User \n@router.post(\"/user/create\",\n             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],\n             response_model=UserOut, summary=\"Register users\", tags=[\"Users\"])\nasync def create_user(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):",
+        "peekOfCode": "router = APIRouter(prefix=\"\")\n# Function to LIST all user roles with permissions\n@router.get(\"/roles/all\",\n            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], \n            response_model=List[Dict[str, List[str]]], summary=\"Get all user roles with permissions\", tags=[\"Roles\"])\ndef get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"\n    try:",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2559,7 +2568,16 @@
         "kind": 6,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "class DuplicateError(Exception):\n    pass\n# LIST User with filter by user_id\ndef get_users(db: Session, current_user: get_current_user,user_id: Optional[int] = None):\n    query = db.query(User)\n    if current_user.role == Role.SUPERADMIN:\n        pass\n    elif current_user.role == Role.MANAGER:\n        query = query.filter(or_(User.ID == current_user.ID, User.role == Role.AGENT))\n    elif current_user.role == Role.AGENT:",
+        "peekOfCode": "class DuplicateError(Exception):\n    pass\n# Function to update user roles\ndef update_roles(db: Session,user_id:int, current_user: get_current_user, user_update: RolesUpdate):\n    user_to_update = db.query(User).filter(User.ID == user_id).first()\n    if not user_to_update:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )",
+        "detail": "app.modules.users.user_services",
+        "documentation": {}
+    },
+    {
+        "label": "update_roles",
+        "kind": 2,
+        "importPath": "app.modules.users.user_services",
+        "description": "app.modules.users.user_services",
+        "peekOfCode": "def update_roles(db: Session,user_id:int, current_user: get_current_user, user_update: RolesUpdate):\n    user_to_update = db.query(User).filter(User.ID == user_id).first()\n    if not user_to_update:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )\n    updated_user = user_update.model_dump(exclude_unset=True)\n    for key, value in updated_user.items():\n        setattr(user_to_update, key, value)",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
@@ -2577,25 +2595,7 @@
         "kind": 2,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "def add_user(db: Session, user: UserSignUp,current_user: get_current_user):\n    if not can_create(current_user.role, user.role):\n        raise HTTPException(\n            status_code=status.HTTP_400_BAD_REQUEST,\n            detail=\"Not enough permissions to access this resource\"\n        )\n    password = user.password\n    if not password:\n        characters = string.ascii_letters + string.digits + string.punctuation\n        password = ''.join(random.choice(characters) for i in range(10))",
-        "detail": "app.modules.users.user_services",
-        "documentation": {}
-    },
-    {
-        "label": "update_roles",
-        "kind": 2,
-        "importPath": "app.modules.users.user_services",
-        "description": "app.modules.users.user_services",
-        "peekOfCode": "def update_roles(db: Session,user_id:int, current_user: get_current_user, user_update: RolesUpdate):\n    user_to_update = db.query(User).filter(User.ID == user_id).first()\n    if not user_to_update:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )\n    updated_user = user_update.model_dump(exclude_unset=True)\n    for key, value in updated_user.items():\n        setattr(user_to_update, key, value)",
-        "detail": "app.modules.users.user_services",
-        "documentation": {}
-    },
-    {
-        "label": "delete_users",
-        "kind": 2,
-        "importPath": "app.modules.users.user_services",
-        "description": "app.modules.users.user_services",
-        "peekOfCode": "def delete_users(db: Session,\n                current_user: get_current_user,\n                user_id: str):\n    user_to_delete = db.query(User).filter(User.ID == user_id).first()\n    if not user_to_delete:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )\n    if not can_create(current_user.role, user_to_delete.role):",
+        "peekOfCode": "def add_user(db: Session, user: UserSignUp,current_user: get_current_user):\n    # using a can_create function defined in app/permissions/roles.py\n    if not can_create(current_user.role, user.role):\n        raise HTTPException(\n            status_code=status.HTTP_400_BAD_REQUEST,\n            detail=\"Not enough permissions to access this resource\"\n        )\n    password = user.password\n    if not password:\n        characters = string.ascii_letters + string.digits + string.punctuation",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
@@ -2609,11 +2609,20 @@
         "documentation": {}
     },
     {
+        "label": "delete_users",
+        "kind": 2,
+        "importPath": "app.modules.users.user_services",
+        "description": "app.modules.users.user_services",
+        "peekOfCode": "def delete_users(db: Session,\n                current_user: get_current_user,\n                user_id: str):\n    user_to_delete = db.query(User).filter(User.ID == user_id).first()\n    if not user_to_delete:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )\n    # using a can_create function defined in app/permissions/roles.py",
+        "detail": "app.modules.users.user_services",
+        "documentation": {}
+    },
+    {
         "label": "user_reset_password",
         "kind": 2,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "def user_reset_password(db: Session, email: str, new_password: str):\n    try:\n        user = db.query(User).filter(User.email == email).first()\n        user.password = get_password_hash(new_password)\n        db.commit()\n    except Exception:\n        return False\n    return True\n# update the acess_token status which was stored in Token model\ndef update_token_status(db: Session, expire_minutes: int):",
+        "peekOfCode": "def user_reset_password(db: Session, email: str, new_password: str):\n    try:\n        user = db.query(User).filter(User.email == email).first()\n        user.password = get_password_hash(new_password)\n        db.commit()\n    except Exception:\n        return False\n    return True\n# Function to update the acess_token status which was stored in Token model\ndef update_token_status(db: Session, expire_minutes: int):",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
@@ -2622,7 +2631,7 @@
         "kind": 2,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "def update_token_status(db: Session, expire_minutes: int):\n    expired_tokens = db.query(Token).filter(Token.is_expired == expire_minutes).first()\n    Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)\n    if expired_tokens:\n        expired_tokens.is_expired\n        db.commit()\n        return True\n    return False\n# update the status of password \ndef update_password_change_status(db: Session, temp_token: str):",
+        "peekOfCode": "def update_token_status(db: Session, expire_minutes: int):\n    expired_tokens = db.query(Token).filter(Token.is_expired == expire_minutes).first()\n    Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)\n    if expired_tokens:\n        expired_tokens.is_expired\n        db.commit()\n        return True\n    return False\n# Function to update the status of password \ndef update_password_change_status(db: Session, temp_token: str):",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
@@ -2640,7 +2649,7 @@
         "kind": 2,
         "importPath": "app.modules.login",
         "description": "app.modules.login",
-        "peekOfCode": "def check_user(data: UserLoginSchema, db: Session):\n    db_user = db.query(User).filter(User.email == data.email).first()\n    if db_user and verify_password(data.password, db_user.password):\n        return db_user\n    return None\n@router.post(\"/user/login\", tags=[\"User Login\"])\nasync def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):\n    db_user = check_user(user, db)\n    if db_user:\n        return signJWT(db_user.email)",
+        "peekOfCode": "def check_user(data: UserLoginSchema, db: Session):\n    \"\"\"\n    Helper function to check user credentials during login.\n    Parameters:\n    - data (UserLoginSchema): The login data containing email and password.\n    - db (Session): The SQLAlchemy database session.\n    Returns:\n    - User: The user if credentials are valid, else None.\n    \"\"\"\n    db_user = db.query(User).filter(User.email == data.email).first()",
         "detail": "app.modules.login",
         "documentation": {}
     },
@@ -2649,7 +2658,7 @@
         "kind": 5,
         "importPath": "app.modules.login",
         "description": "app.modules.login",
-        "peekOfCode": "router = APIRouter()\ndef check_user(data: UserLoginSchema, db: Session):\n    db_user = db.query(User).filter(User.email == data.email).first()\n    if db_user and verify_password(data.password, db_user.password):\n        return db_user\n    return None\n@router.post(\"/user/login\", tags=[\"User Login\"])\nasync def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):\n    db_user = check_user(user, db)\n    if db_user:",
+        "peekOfCode": "router = APIRouter()\ndef check_user(data: UserLoginSchema, db: Session):\n    \"\"\"\n    Helper function to check user credentials during login.\n    Parameters:\n    - data (UserLoginSchema): The login data containing email and password.\n    - db (Session): The SQLAlchemy database session.\n    Returns:\n    - User: The user if credentials are valid, else None.\n    \"\"\"",
         "detail": "app.modules.login",
         "documentation": {}
     },
@@ -2703,7 +2712,7 @@
         "kind": 6,
         "importPath": "app.permissions.models_permissions",
         "description": "app.permissions.models_permissions",
-        "peekOfCode": "class Users(ModelPermissionsMixin):\n    __PERMISSIONS__ = [\n        'VIEW',\n        'EDIT',\n        'CHANGE_PASSWORD',\n        'VIEW_ROLES',\n    ]",
+        "peekOfCode": "class Users(ModelPermissionsMixin):\n    # List of permissions associated with the Users model\n    __PERMISSIONS__ = [\n        'VIEW',\n        'EDIT',\n        'CHANGE_PASSWORD',\n        'VIEW_ROLES',\n    ]",
         "detail": "app.permissions.models_permissions",
         "documentation": {}
     },
@@ -2712,7 +2721,7 @@
         "kind": 6,
         "importPath": "app.permissions.roles",
         "description": "app.permissions.roles",
-        "peekOfCode": "class Role(str, Enum):\n    SUPERADMIN = \"SUPERADMIN\"\n    MANAGER = \"MANAGER\"\n    AGENT= \"AGENT\"\n    @classmethod\n    def get_roles(cls):\n        values = []\n        for member in cls:\n            values.append(f\"{member.value}\")\n        return values",
+        "peekOfCode": "class Role(str, Enum):\n    SUPERADMIN = \"SUPERADMIN\"\n    MANAGER = \"MANAGER\"\n    AGENT= \"AGENT\"\n    # Method to get a list of all role values\n    @classmethod\n    def get_roles(cls):\n        values = []\n        for member in cls:\n            values.append(f\"{member.value}\")",
         "detail": "app.permissions.roles",
         "documentation": {}
     },
@@ -2721,7 +2730,7 @@
         "kind": 2,
         "importPath": "app.permissions.roles",
         "description": "app.permissions.roles",
-        "peekOfCode": "def get_role_permissions(role: Role):\n    permissions = set()\n    for permissions_group in ROLE_PERMISSIONS[role]:\n        for permission in permissions_group:\n            permissions.add(str(permission))\n    return list(permissions)\ndef can_create(current_user_role: Role, user_role: Role) -> bool:\n    \"\"\"\n    Check if the current user has permission to create a user with the specified role.\n    \"\"\"",
+        "peekOfCode": "def get_role_permissions(role: Role):\n    permissions = set()\n    for permissions_group in ROLE_PERMISSIONS[role]:\n        for permission in permissions_group:\n            permissions.add(str(permission))\n    return list(permissions)\n# Function to check if the current user has permission to create a user with the specified role\ndef can_create(current_user_role: Role, user_role: Role) -> bool:\n    \"\"\"\n    Check if the current user has permission to create a user with the specified role.",
         "detail": "app.permissions.roles",
         "documentation": {}
     },
