@@ -5,6 +5,7 @@ import sys
 sys.path.append("..")
 from fastapi import status, HTTPException, Depends,File, UploadFile
 from typing import Dict, List, Optional, Union
+from pydantic import ValidationError
 from datetime import date
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -33,9 +34,10 @@ def create_task(
         if task.agent_id is not None:
             assigned_user = db.query(User).filter(User.ID == task.agent_id).first()
             if not assigned_user:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Assigned user not available. Please provide a valid user ID.",
+                return ResponseData(
+                    status=False,
+                    message="Assigned user not available. Please provide a valid user ID.",
+                    data={}
                 )
         agent_id_value = assigned_user.ID
         status_value = status
@@ -50,10 +52,11 @@ def create_task(
             status=status_value,
         )
         if not can_create(current_user.role, db_task.agent_role):
-            raise HTTPException(
-                status_code=400,
-                detail="Not enough permissions to access this resource"
-            )
+            return ResponseData(
+            status=False,
+            message="Not enough permissions to access this resource",
+            data={},
+        )
         document_path = None
         if file:
             upload_dir = "static/uploads"
@@ -111,12 +114,17 @@ def create_task(
             data=return_data,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        # Return a ResponseData with empty values
+        return ResponseData(
+            status=False,
+            message=" Assigned user not available. Please provide a valid user ID.",
+            data={},
+        )
     finally:
         if file:
             file.file.close()
-    
 
+    
 # UPDATE staus
 def update_task(
     db: Session,
@@ -128,7 +136,11 @@ def update_task(
     try:
         tasks = db.query(Task).filter(Task.ID == task_id).first()
         if tasks is None:
-            raise HTTPException(status_code=404, detail='Task Not found')
+            return ResponseData(
+                status=False,
+                message='Task Not found',
+                data={}
+            )
         # Superadmin can do any CRUD operation
         if current_user.role == Role.SUPERADMIN:
             pass
@@ -141,18 +153,20 @@ def update_task(
             elif tasks.agent_role == Role.AGENT:
                 pass
             else:
-                raise HTTPException(
-                    status_code=401,
-                    detail="Not Authorized to perform the requested action"
+                return ResponseData(
+                    status=False,
+                    message="Not Authorized to perform the requested action",
+                    data={}
                 )
         # Agent can only update his own tasks
         elif current_user.role == Role.AGENT:
             if tasks.agent_id == current_user.ID:
                 pass
             else:
-                raise HTTPException(
-                    status_code=401,
-                    detail="Not Authorized to perform the requested action"
+                return ResponseData(
+                    status=False,
+                    message="Not Authorized to perform the requested action",
+                    data={}
                 )
         # Update the task details
         for key, value in task.model_dump(exclude_unset=True).items():
@@ -185,7 +199,11 @@ def update_task(
             data=return_data,
         )
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid status provided")
+        return ResponseData(
+            status=False,
+            message="Invalid status provided",
+            data={}
+        )
 
 
 
@@ -196,8 +214,28 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
         document_paths = list_uploaded_documents_of_task_service(db, task_id)
         task_to_delete = db.query(Task).filter(Task.ID == task_id).first()
         if task_to_delete is None:
-            raise HTTPException(status_code=404, detail='Task Not found')
-        
+            return ResponseData(
+                status=False,
+                message='Task Not found',
+                data={}
+            )
+        # Superadmin can do any CRUD operation
+        if current_user.role == Role.SUPERADMIN:
+            pass
+        # Manager can update tasks of Agent roles and himself
+        elif current_user.role == Role.MANAGER:
+            if task_to_delete.agent_role == Role.AGENT and task_to_delete.agent_id == current_user.ID:
+                pass
+            if task_to_delete.agent_role == Role.MANAGER and task_to_delete.agent_id == current_user.ID:
+                pass
+            elif task_to_delete.agent_role== Role.AGENT:
+                pass
+            else:
+                return ResponseData(
+                    status=False,
+                    message="Not Authorized to perform the requested action",
+                    data={}
+                )
         db.delete(task_to_delete)
         db.commit()
         
@@ -221,7 +259,13 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             data=return_data,
         )
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"{str(e)}")
+        # Return a ResponseData with empty values
+        return ResponseData(
+            status=False,
+            message=f"Task with ID {task_id} not available",
+            data={},
+        )
+
 
 
 # Filter all tasks with due_date and status
@@ -232,6 +276,7 @@ def view_all_tasks(
         due_date: Optional[date] = None
     ):
     try:
+        
         query = db.query(Task)
         if current_user.role == Role.SUPERADMIN:
             pass
@@ -246,78 +291,119 @@ def view_all_tasks(
 
         tasks = query.all()
 
+        tasks_data = []
+        for task in tasks:
+            document_paths = db.query(TaskDocument.document_path).filter(TaskDocument.task_id == task.ID).all()
+            task_data = {
+                "ID": task.ID,
+                "title": task.title,
+                "description": task.description,
+                "status": task.status,
+                "due_date": task.due_date,
+                "agent_id": task.agent_id,
+                "agent_role": task.agent_role,
+                "created_by_id": task.created_by_id,
+                "created_by_role": task.created_by_role,
+                "created_at": task.created_at,
+                "document_path": [path[0] for path in document_paths]
+            }
+            tasks_data.append(task_data)
+
         return_data = ResponseData(
             status=True,
             message="All tasks",
-            data={
-                "tasks": [
-                    {
-                        "ID": task.ID,
-                        "title": task.title,
-                        "description": task.description,
-                        "status": task.status,
-                        "due_date": task.due_date,
-                        "agent_id": task.agent_id,
-                        "agent_role": task.agent_role,
-                        "created_by_id": task.created_by_id,
-                        "created_by_role": task.created_by_role,
-                        "created_at": task.created_at,
-                        "document_path": None,  # Modify this based on your requirements
-                    }
-                    for task in tasks
-                ]
-            }
+            data={"tasks": tasks_data}
         )
-
         return return_data.dict()
+    except ValidationError:
+        return ResponseData(
+            status=False,
+            message="Please check your status and input a valid status type",
+            data={}
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
-
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
 
 
 # GET task history
-def get_task_history(db: Session,current_user: get_current_user,  task_ids: Optional[List[int]] = None):
-    if current_user.role not in Role.get_roles():
-        raise HTTPException(status_code=403, detail="User has an invalid role")
-    # Define roles that are allowed to view tasks based on the user's role
-    allowed_roles = {
-        Role.SUPERADMIN: [Role.SUPERADMIN, Role.MANAGER, Role.AGENT],
-        Role.MANAGER: [Role.MANAGER, Role.AGENT],
-        Role.AGENT: [Role.AGENT],
-    }
-    if current_user.role not in allowed_roles.get(current_user.role):
-        raise HTTPException(status_code=403, detail="User not allowed to view tasks")
-    # Filter tasks based on user's role
-    query = db.query(Task)
-    if current_user.role == Role.SUPERADMIN:
-        pass        
-    elif current_user.role == Role.MANAGER:
-        query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
-    elif current_user.role == Role.AGENT:
-        query = query.filter(Task.agent_id == current_user.ID)
-    if task_ids:
-        query = query.filter(Task.ID.in_(task_ids))
-    tasks = query.all()
-    task_histories = []
-    for task in tasks:
-        task_history = {
-            "task_id": task.ID,
-            "created_at": task.created_at,
-            "due_date": task.due_date,
-            "history": [
-                {
-                    "comments": history.comments,
-                    "status": history.status,
-                    "created_at": history.created_at,
-                }
-                for history in task.history
-            ],
+def get_task_history(db: Session, current_user: get_current_user, task_ids: Optional[List[int]] = None):
+    try:
+        if current_user.role not in Role.get_roles():
+            return ResponseData(
+            status=False,
+            message="User has an invalid role",
+            data={},
+        )
+        
+        # Define roles that are allowed to view tasks based on the user's role
+        allowed_roles = {
+            Role.SUPERADMIN: [Role.SUPERADMIN, Role.MANAGER, Role.AGENT],
+            Role.MANAGER: [Role.MANAGER, Role.AGENT],
+            Role.AGENT: [Role.AGENT],
         }
-        task_histories.append(task_history)
-    return task_histories
+        
+        if current_user.role not in allowed_roles.get(current_user.role):
+            return ResponseData(
+            status=False,
+            message="User not allowed to view tasks",
+            data={},
+        )
+        
+        # Filter tasks based on user's role
+        query = db.query(Task)
+        
+        if current_user.role == Role.SUPERADMIN:
+            pass        
+        elif current_user.role == Role.MANAGER:
+            query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
+        elif current_user.role == Role.AGENT:
+            query = query.filter(Task.agent_id == current_user.ID)
+        
+        if task_ids:
+            query = query.filter(Task.ID.in_(task_ids))
+        
+        tasks = query.all()
+        task_histories = []
+        
+        for task in tasks:
+            task_history = {
+                "task_id": task.ID,
+                "created_at": task.created_at,
+                "due_date": task.due_date,
+                "history": [
+                    {
+                        "comments": history.comments,
+                        "status": history.status,
+                        "created_at": history.created_at,
+                    }
+                    for history in task.history
+                ],
+            }
+            task_histories.append(task_history)
+        
+        return_data = {
+            "task_histories": task_histories
+        }
+        
+        return ResponseData(
+            status=True,
+            message="Task history retrieved successfully",
+            data=return_data,
+        )
+    except Exception as e:
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
+
 
 # LIST all Task for current user
-def get_tasks(db: Session, current_user: get_current_user):
+def get_tasks(db: Session, current_user: get_current_user) -> ResponseData:
     tasks = (
         db.query(Task, TaskDocument.document_path)
         .outerjoin(TaskDocument, TaskDocument.task_id == Task.ID)
@@ -347,7 +433,13 @@ def get_tasks(db: Session, current_user: get_current_user):
 
         return_tasks.append(return_task)
 
-    return return_tasks
+    data = {"tasks": return_tasks}
+    return ResponseData(
+        status=True,
+        message="Tasks retrieved successfully",
+        data=data,
+    )
+
 
 # GET the list of uploaded documents
 def list_uploaded_documents_of_task_service(db: Session, task_id: int) -> ResponseData:
@@ -378,14 +470,21 @@ def list_uploaded_documents_of_task_service(db: Session, task_id: int) -> Respon
     )
 
 
-
 # Upload file for a task
 def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_current_user):
     task = db.query(Task).filter(Task.ID == task_id).first()
     if not task:
-        raise HTTPException(status_code=404, detail=f"Task with ID {task_id} not found")
+        return ResponseData(
+                status=False,
+                message=f"Task with ID {task_id} not found",
+                data={}
+            )
     if not can_create(current_user.role, task.agent_role):
-        raise HTTPException(status_code=403, detail="Not enough permissions to upload a file for this task")
+        return ResponseData(
+                status=False,
+                message="Not enough permissions to upload a file for this task",
+                data={}
+            )
     upload_dir = "static/uploads"
     if not os.path.exists(upload_dir):
         os.makedirs(upload_dir)
@@ -399,8 +498,31 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         db_file = TaskDocument(task_id=task_id, document_path=file_path)
         db.add(db_file)
         db.commit()
+        # Access the ID of the newly created TaskDocument
+        document_id = db_file.ID
+            # Construct the full URL path 
+        base_url = "http://127.0.0.1:8000"
+        document_path = f"static/uploads/{task_id}_{file.filename}"
+        full_url = f"{base_url}/{document_path}"
+
+        # Construct the response data
+        response_data = {
+            "document_id": document_id,
+            "document_path": full_url,
+            "task_id": task_id,
+        }
+
+        return ResponseData(
+            status=True, 
+            message=f"Your file is successfulley uploaded.", 
+            data=response_data)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
     finally:
         file.file.close()
-    return {"message": f"File for task {task_id} successfully uploaded"}
+    
+    
