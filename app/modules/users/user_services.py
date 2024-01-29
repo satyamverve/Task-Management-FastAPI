@@ -1,21 +1,18 @@
 # app.modules.users.service.py
 
-import app.models
 import sys
 sys.path.append("..")
 import string
 import random
-from fastapi import HTTPException, status, Body
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from Final_Demo.app.models.users import User
-from app.dto.users_schemas import RolesUpdate, Token, UserSignUp, UserUpdate
+from app.models.users import User, Token
+from app.dto.users_schemas import RolesUpdate, UserSignUp, UserUpdate
 from sqlalchemy.exc import IntegrityError
-from Final_Demo.app.auth.auth import get_password_hash, verify_password
-from app.models.users import Token
+from app.auth.auth import get_password_hash, verify_password, get_current_user
 from datetime import datetime, timedelta
-from app.auth.auth import get_current_user  
 from app.permissions.roles import Role, can_create
-from typing import List, Optional
+from typing import Optional
 from sqlalchemy import or_
 
 # Custom exception for duplicate error

@@ -1,12 +1,10 @@
 # app/dto/tasks_schema.py
 
 from __future__ import annotations
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from datetime import date, datetime
 from typing import Optional, List
 from enum import Enum
-from app.dto.users_schemas import UserOut
-from app.permissions.roles import Role
 
 class TaskStatus(str, Enum):
     """
@@ -49,11 +47,20 @@ class ReturnTask(BaseModel):
     created_by_id: Optional[int]
     created_by_role: Optional[str]
     created_at: datetime
+    document_path: Optional[str]
 
     class Config:
         orm_mode = True
         exclude = ['created_at', 'updated_at']
 
+class ResponseData(BaseModel):
+    status: bool
+    message: str
+    data: dict
+    class Config:
+        orm_mode = True
+
+        
 class UpdateTask(ReturnTask):
     """
     Pydantic model for updating task details.
@@ -98,3 +105,5 @@ class DocumentResponseModel(BaseModel):
     Pydantic model for returning document response details.
     """
     document_path: str
+
+

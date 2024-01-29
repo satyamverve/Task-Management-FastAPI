@@ -1,25 +1,23 @@
 # app.modules.users.routes.py
 
-import sys
-from fastapi import Body, Depends, APIRouter, HTTPException, status, Form, Query, Request
+from fastapi import BackgroundTasks, Depends, APIRouter, HTTPException, status, Form, Query, Request
 from fastapi.responses import HTMLResponse
-from app.models import users, User, Token
-from app.auth.auth_bearer import JWTBearer
+from app.models import User, Token
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from typing import List, Dict
-from app.auth.auth import get_current_user, PermissionChecker, get_password_hash, signJWT, token_response, get_current_user_via_temp_token, get_user_by_email
+from app.auth.auth import get_current_user, PermissionChecker, signJWT, get_current_user_via_temp_token, get_user_by_email
 from app.permissions.models_permissions import Users
 from app.permissions.roles import get_role_permissions, Role
 from app.config.database import get_db  
 from app.modules.users import user_services as db_crud
-from app.dto.users_schemas import UserSignUp, UserUpdate, UserOut, RolesUpdate, Token
+from app.dto.users_schemas import UserSignUp, UserUpdate, UserOut, RolesUpdate
 from app.email_notifications.notify import send_registration_notification, send_reset_password_mail
 from fastapi.templating import Jinja2Templates
 from typing import List, Optional
 
 # Token expiration time for forgot password
-TEMP_TOKEN_EXPIRE_MINUTES = 10
+TEMP_TOKEN_EXPIRE_MINUTES = 1
 
 # Load HTML templates
 templates = Jinja2Templates(directory='./app/templates')
@@ -140,19 +138,6 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred. Report this message to support: {e}")
 
 
-# Function to get information of the current user
-@router.get("/user/logged", response_model=UserOut, summary="Get info of the current user", tags=["General"])
-async def get_info_current_user(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """
-    Get information of the current user.
-    """
-    try:
-        return db.query(User).filter(User.ID == current_user.ID).first()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")
-
-
 # Function to reset user password for registered users
 @router.post("/reset_password", summary="Reset password for users", tags=["Forgot Password"])
 def user_reset_password(request: Request, user: User = Depends(get_current_user_via_temp_token),
@@ -162,6 +147,10 @@ def user_reset_password(request: Request, user: User = Depends(get_current_user_
     """
     try:
         result = db_crud.user_reset_password(db, user.email, new_password)
+        # Update token status and is_expired status using the same expire_minutes value
+        db_crud.update_token_status(db, TEMP_TOKEN_EXPIRE_MINUTES)
+        db_crud.update_password_change_status(db, user.temp_token.token)
+        BackgroundTasks.add_task(db_crud.update_password_change_status, db, user.temp_token.token)
         return templates.TemplateResponse("reset_password_result.html", {"request": request, "success": result})
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -206,15 +195,15 @@ async def user_forgot_password(request: Request, user_email: str, db: Session = 
         }
         else:
             access_token = signJWT(data=user_email, expire_minutes=TEMP_TOKEN_EXPIRE_MINUTES)
-            # Store the token in the PasswordResetToken table
-            # reset_token = Token(
-            #     token=access_token,
-            #     user_email=user_email,
-            #     reset_password=False,  # Initially set to False
-            #     is_expired=False,  # Initially set to False
-            # )
-            # db.add(reset_token)
-            # db.commit()
+            # Store the token in the password_reset_tokens table
+            reset_token = Token(
+                token=access_token,
+                user_email=user_email,
+                reset_password=False,  # Initially set to False
+                is_expired=False,  # Initially set to False
+            )
+            db.add(reset_token)
+            db.commit()
             url = f"{request.base_url}token_template?access_token={access_token}"
             await send_reset_password_mail(recipient_email=user_email, user=user, url=url, expire_in_minutes=TEMP_TOKEN_EXPIRE_MINUTES)
         return {

@@ -5,22 +5,24 @@ from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.config.database import get_db
-from app.dto.tasks_schema import CreateTask, DocumentResponseModel, ReturnTask, TaskStatus, TaskHistoryResponse, UpdateTask
+from app.dto.tasks_schema import CreateTask, DocumentResponseModel, ResponseData, ReturnTask, TaskStatus, TaskHistoryResponse
 from app.dto.tasks_schema import ReturnTask ,CreateHistory
 from app.modules.tasks.task_services import create_task, delete_task, list_uploaded_documents_of_task_service, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
-from typing import Dict, List, Optional, Union
+from typing import List, Dict, Optional, Union
 from datetime import date
 from app.auth.auth import get_current_user   
-from Final_Demo.app.auth.auth import PermissionChecker
+from app.auth.auth import PermissionChecker
 from app.permissions.models_permissions import Users
 from fastapi import File, UploadFile
 from fastapi import Form
+
 
 router = APIRouter()
 
 # CREATE tasks
 @router.post("/task/create",
-              response_model=ReturnTask,
+              response_model=ResponseData,
+              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
               tags=["Tasks"],
                 summary="Create the new task")
 def create_task_route(
@@ -39,7 +41,7 @@ def create_task_route(
 
 # UPDATE task
 @router.put("/tasks/update/{task_id}",
-             response_model=UpdateTask,
+             response_model=ResponseData,
              tags=["Tasks"], summary="Update the task status")
 async def update_task_status(
     task_id: int,
@@ -60,24 +62,21 @@ async def update_task_status(
 # DELETE the existing task
 @router.delete("/tasks/delete/{task_id}",
                dependencies=[Depends(PermissionChecker([Users.permissions.DELETE])), ],
-                response_model=ReturnTask,tags=["Tasks"], 
-                summary="Delete tasks with task_id")
-async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db),current_user: get_current_user = Depends()):
+               response_model=ResponseData, tags=["Tasks"], 
+               summary="Delete tasks with task_id")
+async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db), current_user: get_current_user = Depends()):
     """
     Enter the ID of task to delete
     """
     try:
         deleted_task = delete_task(db, current_user, task_id)
-        if deleted_task:
-            raise HTTPException(status_code=204,detail=f"Task with ID {task_id} deleted successsfuly")
-        else:
-            raise HTTPException(status_code=404, detail="Task not found")
+        return deleted_task
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"{str(e)}")
+        raise HTTPException(status_code=500, detail=f"{str(e)}")
 
 
 # Filter all tasks with due_date and status
-@router.get("/tasks/filter/", response_model=List[ReturnTask],tags=["Tasks"], summary="Filter all tasks along with due_date and status")
+@router.get("/tasks/filter/", response_model=ResponseData,tags=["Tasks"], summary="Filter all tasks along with due_date and status")
 async def view_all_tasks_endpoint(
     status: Optional[TaskStatus] = None, 
     due_date: Optional[date] = None,
@@ -149,11 +148,11 @@ def read_document(document_path: str):
 
 # get the list of documents uploaded
 @router.get("/documents/{task_id}", 
-            response_model=List[Dict[str, Union[int, List[DocumentResponseModel]]]], 
-            tags=["Tasks"],summary="Get the path of the uploaded documents")
+            response_model=ResponseData,
+            tags=["Tasks"],
+            summary="Get the path of the uploaded documents")
 def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):
     return list_uploaded_documents_of_task_service(db, task_id)
-
 
 # LIST all Task for current user
 @router.get("/tasks/all",

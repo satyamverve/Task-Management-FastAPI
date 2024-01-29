@@ -16,7 +16,7 @@ class UserLoginSchema(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "email": "sk@x.com",
+                "email": "email@gmail.com",
                 "password": "weakpassword"
             }
         }
@@ -59,9 +59,7 @@ class UserOut(BaseModel):
     class Config:
         from_attributes = True
 
-class Token(BaseModel):
-    """
-    Pydantic model for representing authentication token details.
-    """
-    access_token: str
-    token_type: str
+class LoginResponse(BaseModel):
+    status: bool
+    message: str
+    data: dict
