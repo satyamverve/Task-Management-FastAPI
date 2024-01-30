@@ -1,0 +1,20 @@
+{
+    "random_key_1": "Assigned user not available. Please provide a valid user ID.",
+    "random_key_2": "Not enough permissions to access this resource",
+    "random_key_3": "Task Not found",
+    "random_key_4": "Your file is successfulley uploaded.",
+    "random_key_5": "Task history retrieved successfully",
+    "random_key_6": "Please check your input",
+    "random_key_7": "User has an invalid role",
+    "random_key_8": "User not allowed to view tasks",
+    "random_key_9": "No documents found for task_id {task_id}",
+    "random_key_10": "An unexpected error occurred: {str(e)}",
+    "random_key_11": "You have not selected any document",
+    "random_key_12": "Not enough permissions to upload a file for this task",
+    "random_key_14": "We found your document",
+    "random_key_15": "Please check your document path",
+    "random_key_16": "Task Created successfully",
+    "random_key_17": "Task Deleted successfully",
+    "random_key_18": "All available tasks",
+    "random_key_19": "Documents for task_id {task_id} retrieved successfully"
+}

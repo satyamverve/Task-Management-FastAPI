@@ -9,7 +9,7 @@
 
 ## access the fastapi app from others system:
 <search: http://<your-local-ip>:8000>
-
+w
 # CREATE THE ".env" file and add the below details
 >> Create at the root directory
 # .env

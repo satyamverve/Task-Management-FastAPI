@@ -4,7 +4,7 @@ import os
 from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from app.config.database import get_db
+from app.config.database import get_db, data
 from app.dto.tasks_schema import CreateTask, ResponseData, TaskStatus
 from app.dto.tasks_schema import CreateHistory
 from app.modules.tasks.task_services import create_task, delete_task, list_uploaded_documents_of_task_service, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
@@ -61,7 +61,7 @@ async def update_task_status(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
 
@@ -81,7 +81,7 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db), curr
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
     
@@ -101,7 +101,7 @@ async def view_all_tasks_endpoint(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
     
@@ -121,7 +121,7 @@ async def view_task_history_endpoint(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
     
@@ -143,7 +143,7 @@ def get_all_tasks(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
 
@@ -168,7 +168,7 @@ def upload_file_for_task(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
 
@@ -184,7 +184,7 @@ def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db))
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
     
@@ -200,19 +200,19 @@ def read_document(document_path: str):
         if os.path.exists(document_full_path):
             return ResponseData(
                 status=True,
-                message="We found your document",
+                message=data["random_key_14"],
                 data={FileResponse(document_full_path, filename=document_path)},
             )
         else:
             return ResponseData(
                 status=False,
-                message="Please check your document path",
+                message=data["random_key_15"],
                 data={},
             )
     except Exception as e:
         return ResponseData(
         status=False,
-        message=f"An unexpected error occurred: {str(e)}",
+        message=data["random_key_10"],
         data={},
     )
    

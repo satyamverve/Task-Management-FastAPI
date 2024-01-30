@@ -14,6 +14,7 @@ from app.dto.tasks_schema import CreateTask, DocumentResponseModel, ResponseData
 from app.auth.auth import get_current_user  
 from app.models.users import User 
 from app.permissions.roles import Role, can_create
+from app.config.database import data
 
 # Log History
 def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Optional[str] = None):
@@ -36,7 +37,7 @@ def create_task(
             if not assigned_user:
                 return ResponseData(
                     status=False,
-                    message="Assigned user not available. Please provide a valid user ID.",
+                    message=data["random_key_1"],
                     data={}
                 )
         agent_id_value = assigned_user.ID
@@ -46,6 +47,7 @@ def create_task(
             description=task.description,
             due_date=task.due_date,
             created_by_id=current_user.ID,
+            updated_by_id=current_user.ID,
             created_by_role=current_user.role,
             agent_id=agent_id_value,
             agent_role=assigned_user.role if assigned_user else None,
@@ -54,7 +56,7 @@ def create_task(
         if not can_create(current_user.role, db_task.agent_role):
             return ResponseData(
             status=False,
-            message="Not enough permissions to access this resource",
+            message=data["random_key_2"],
             data={},
         )
         document_path = None
@@ -66,7 +68,7 @@ def create_task(
             file_path = f"{upload_dir}/{current_user.ID}_{file.filename}"
             with open(file_path, 'wb') as f:
                 f.write(contents)
-            db_file = TaskDocument(task=db_task, document_path=file_path)
+            db_file = TaskDocument(task=db_task, document_path=file_path, created_by_id=current_user.ID)
             db.add(db_file)
             base_url = "http://127.0.0.1:8000"
             document_path = f"static/uploads/{current_user.ID}_{file.filename}"
@@ -76,6 +78,7 @@ def create_task(
         db.refresh(db_task)
         role_info = f"{current_user.role}"
         id_info = f"{current_user.ID}"
+        update_info=f"{current_user.ID}"
         return_task = ReturnTask(
             ID=db_task.ID,  
             title=db_task.title,
@@ -85,6 +88,7 @@ def create_task(
             agent_id=db_task.agent_id,
             agent_role=db_task.agent_role,
             created_by_id=id_info,
+            updated_by_id= update_info,
             created_by_role=role_info,
             created_at=db_task.created_at,
             document_path=document_path
@@ -100,20 +104,21 @@ def create_task(
             "agent_id": return_task.agent_id,
             "agent_role": return_task.agent_role,
             "created_by_id": return_task.created_by_id,
+            "updated_by_id": return_task.updated_by_id,
             "created_by_role": return_task.created_by_role,
             "created_at": return_task.created_at,
             "document_path": return_task.document_path,
         }
         return ResponseData(
             status=True,
-            message="Task Created successfully",
+            message=data['random_key_16'],
             data=return_data,
         )
     except Exception as e:
         # Return a ResponseData with empty values
         return ResponseData(
             status=False,
-            message=" Assigned user not available. Please provide a valid user ID.",
+            message=data["random_key_1"],
             data={},
         )
     finally:
@@ -134,7 +139,7 @@ def update_task(
         if tasks is None:
             return ResponseData(
                 status=False,
-                message='Task Not found',
+                message=data["random_key_3"],
                 data={}
             )
         # Superadmin can do any CRUD operation
@@ -151,7 +156,7 @@ def update_task(
             else:
                 return ResponseData(
                     status=False,
-                    message="Not Authorized to perform the requested action",
+                    message=data["random_key_4"],
                     data={}
                 )
         # Agent can only update his own tasks
@@ -161,7 +166,8 @@ def update_task(
             else:
                 return ResponseData(
                     status=False,
-                    message="Not Authorized to perform the requested action",
+                    message=data["random_key_4"],
+
                     data={}
                 )
         # Update the task details
@@ -182,19 +188,20 @@ def update_task(
             "agent_id": tasks.agent_id,
             "agent_role": tasks.agent_role,
             "created_by_id": tasks.created_by_id,
+            "updated_by_id": current_user.ID,
             "created_by_role": tasks.created_by_role,
             "created_at": tasks.created_at,
             "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
         }
         return ResponseData(
             status=True,
-            message=f"Task with ID {task_id} updated successfully",
+            message=data["random_key_16"],
             data=return_data,
         )
     except ValueError:
         return ResponseData(
             status=False,
-            message="Invalid status provided",
+            message=data["random_key_6"],
             data={}
         )
 
@@ -209,7 +216,7 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
         if task_to_delete is None:
             return ResponseData(
                 status=False,
-                message='Task Not found',
+                message=data["random_key_3"],
                 data={}
             )
         # Superadmin can do any CRUD operation
@@ -222,7 +229,7 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             if task_to_delete.agent_role == Role.MANAGER and task_to_delete.agent_id == current_user.ID:
                 return ResponseData(
                     status=False,
-                    message="Not Authorized to perform the requested action",
+                    message=data["random_key_4"],
                     data={}
                 )
             elif task_to_delete.agent_role== Role.AGENT:
@@ -230,7 +237,7 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             else:
                 return ResponseData(
                     status=False,
-                    message="Not Authorized to perform the requested action",
+                    message=data["random_key_4"],
                     data={}
                 )
         db.delete(task_to_delete)
@@ -244,23 +251,23 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             "agent_id": task_to_delete.agent_id,
             "agent_role": task_to_delete.agent_role,
             "created_by_id": task_to_delete.created_by_id,
+            "updated_by_id": current_user.ID,
             "created_by_role": task_to_delete.created_by_role,
             "created_at": task_to_delete.created_at,
             "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
         }
         return ResponseData(
             status=True,
-            message=f"Task with ID {task_id} deleted successfully",
+            message=data["random_key_17"],
             data=return_data,
         )
     except Exception as e:
         # Return a ResponseData with empty values
         return ResponseData(
             status=False,
-            message=f"Task with ID {task_id} not available",
+            message=data["random_key_3"],
             data={},
         )
-
 
 
 # Filter all tasks with due_date and status
@@ -295,6 +302,7 @@ def view_all_tasks(
                 "agent_id": task.agent_id,
                 "agent_role": task.agent_role,
                 "created_by_id": task.created_by_id,
+                "updated_by_id": task.updated_by_id,
                 "created_by_role": task.created_by_role,
                 "created_at": task.created_at,
                 "document_path": [path[0] for path in document_paths]
@@ -302,20 +310,20 @@ def view_all_tasks(
             tasks_data.append(task_data)
         return_data = ResponseData(
             status=True,
-            message="All tasks",
+            message=data["random_key_18"],
             data={"tasks": tasks_data}
         )
         return return_data.dict()
     except ValidationError:
         return ResponseData(
             status=False,
-            message="Please check your status and input a valid status type",
+            message=data["random_key_6"],
             data={}
         )
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
 
@@ -326,7 +334,7 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
         if current_user.role not in Role.get_roles():
             return ResponseData(
             status=False,
-            message="User has an invalid role",
+            message=data["random_key_7"],
             data={},
         )
         # Define roles that are allowed to view tasks based on the user's role
@@ -338,7 +346,7 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
         if current_user.role not in allowed_roles.get(current_user.role):
             return ResponseData(
             status=False,
-            message="User not allowed to view tasks",
+            message=data["random_key_8"],
             data={},
         )
         # Filter tasks based on user's role
@@ -356,7 +364,7 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
         for task in tasks:
             task_history = {
                 "task_id": task.ID,
-                "created_at": task.created_at,
+                # "created_at": task.created_at,
                 "due_date": task.due_date,
                 "history": [
                     {
@@ -373,13 +381,13 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
         }
         return ResponseData(
             status=True,
-            message="Task history retrieved successfully",
+            message=data["random_key_5"],
             data=return_data,
         )
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
 
@@ -406,6 +414,7 @@ def get_tasks(db: Session, current_user: get_current_user) -> ResponseData:
             agent_id=task.agent_id,
             agent_role=task.agent_role,
             created_by_id=current_user.ID,
+            updated_by_id=current_user.ID,
             created_by_role=current_user.role,
             created_at=task.created_at,
             document_path=full_url,
@@ -414,7 +423,7 @@ def get_tasks(db: Session, current_user: get_current_user) -> ResponseData:
     data = {"tasks": return_tasks}
     return ResponseData(
         status=True,
-        message="Tasks retrieved successfully",
+        message=data["random_key_18"],
         data=data,
     )
 
@@ -434,12 +443,12 @@ def list_uploaded_documents_of_task_service(db: Session, task_id: int) -> Respon
     if not documents:
         return ResponseData(
             status=False,
-            message=f"No documents found for task_id {task_id}",
+            message=data["random_key_9"],
             data=data,
         )
     return ResponseData(
         status=True,
-        message=f"Documents for task_id {task_id} retrieved successfully",
+        message=data["random_key_19"],
         data=data,
     )
 
@@ -450,14 +459,14 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
     if file is None:
         return ResponseData(
             status=False,
-            message="You have not selected any document",
+            message=data["random_key_11"],
             data={}
         )
     task = db.query(Task).filter(Task.ID == task_id).first()
     if not task :
         return ResponseData(
                 status=False,
-                message=f"Task with ID {task_id} not found",
+                message=data["random_key_3"],
                 data={}
             )
 
@@ -465,7 +474,7 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
     if not can_create(current_user.role, task.agent_role):
         return ResponseData(
                 status=False,
-                message="Not enough permissions to upload a file for this task",
+                message=data["random_key_2"],
                 data={}
             )
     upload_dir = "static/uploads"
@@ -478,11 +487,12 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         with open(file_path, 'wb') as f:
             f.write(contents)
         # Save file path in the database
-        db_file = TaskDocument(task_id=task_id, document_path=file_path)
+        db_file = TaskDocument(task_id=task_id, document_path=file_path, created_by_id=current_user.ID)
         db.add(db_file)
         db.commit()
         # Access the ID of the newly created TaskDocument
         document_id = db_file.ID
+        created_by_id=db_file.created_by_id
         # Construct the full URL path 
         base_url = "http://127.0.0.1:8000"
         document_path = f"static/uploads/{task_id}_{file.filename}"
@@ -492,15 +502,16 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
             "document_id": document_id,
             "document_path": full_url,
             "task_id": task_id,
+            "uploaded_by":created_by_id
         }
         return ResponseData(
             status=True, 
-            message=f"Your file is successfulley uploaded.", 
+            message=data["random_key_4"],
             data=response_data)
     except Exception as e:
         return ResponseData(
             status=False,
-            message=f"An unexpected error occurred: {str(e)}",
+            message=data["random_key_10"],
             data={},
         )
     finally:
