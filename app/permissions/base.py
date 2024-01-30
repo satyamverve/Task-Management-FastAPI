@@ -44,6 +44,7 @@ class PermissionType(str, Enum):
     """
     CREATE = "CREATE"
     VIEW_LIST = "VIEW_LIST"
+    VIEW_ROLES = "VIEW_ROLES"
     VIEW_DETAILS = "VIEW_DETAILS"
     EDIT = "EDIT"
     DELETE = "DELETE"
@@ -93,6 +94,9 @@ class ModelPermissions:
         self.VIEW_LIST = ModelPermission(
             permission_type=PermissionType.VIEW_LIST, permission_model=model
         )
+        self.VIEW_ROLES = ModelPermission(
+            permission_type=PermissionType.VIEW_ROLES, permission_model=model
+        )
         self.VIEW_DETAILS = ModelPermission(
             permission_type=PermissionType.VIEW_DETAILS, permission_model=model
         )
@@ -120,9 +124,11 @@ class ModelPermissions:
         self.FULL_PERMISSIONS = [
             self.CREATE,
             self.VIEW_LIST,
+            self.VIEW_ROLES,
             self.VIEW_DETAILS,
             self.EDIT,
             self.DELETE,
+            self.VIEW_ROLES,
             *additional_permissions #this will autometically add all the permissions initialized in __PERMISSIONS__ attribute
             # from models_permissions.py file
         ]

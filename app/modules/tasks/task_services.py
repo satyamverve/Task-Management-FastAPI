@@ -3,8 +3,8 @@
 import os
 import sys
 sys.path.append("..")
-from fastapi import status, HTTPException, Depends,File, UploadFile
-from typing import Dict, List, Optional, Union
+from fastapi import Depends,UploadFile
+from typing import List, Optional
 from pydantic import ValidationError
 from datetime import date
 from sqlalchemy import or_
@@ -71,11 +71,9 @@ def create_task(
             base_url = "http://127.0.0.1:8000"
             document_path = f"static/uploads/{current_user.ID}_{file.filename}"
             full_url = f"{base_url}/{document_path}"
-
         db.add(db_task)
         db.commit()
         db.refresh(db_task)
-
         role_info = f"{current_user.role}"
         id_info = f"{current_user.ID}"
         return_task = ReturnTask(
@@ -91,7 +89,6 @@ def create_task(
             created_at=db_task.created_at,
             document_path=document_path
         )
-
         if document_path:
             return_task.document_path = full_url
         return_data = {
@@ -107,7 +104,6 @@ def create_task(
             "created_at": return_task.created_at,
             "document_path": return_task.document_path,
         }
-
         return ResponseData(
             status=True,
             message="Task Created successfully",
@@ -171,14 +167,12 @@ def update_task(
         # Update the task details
         for key, value in task.model_dump(exclude_unset=True).items():
             setattr(tasks, key, value)
-
         tasks.status = status
         db.commit()
         log_task_history(db, tasks.ID, status, task.comments)
         db.refresh(tasks)
         # Logic to get document_path for the taskID
         document_paths = list_uploaded_documents_of_task_service(db, task_id)
-
         return_data = {
             "ID": tasks.ID,
             "title": tasks.title,
@@ -192,7 +186,6 @@ def update_task(
             "created_at": tasks.created_at,
             "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
         }
-
         return ResponseData(
             status=True,
             message=f"Task with ID {task_id} updated successfully",
@@ -227,7 +220,11 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             if task_to_delete.agent_role == Role.AGENT and task_to_delete.agent_id == current_user.ID:
                 pass
             if task_to_delete.agent_role == Role.MANAGER and task_to_delete.agent_id == current_user.ID:
-                pass
+                return ResponseData(
+                    status=False,
+                    message="Not Authorized to perform the requested action",
+                    data={}
+                )
             elif task_to_delete.agent_role== Role.AGENT:
                 pass
             else:
@@ -238,7 +235,6 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
                 )
         db.delete(task_to_delete)
         db.commit()
-        
         return_data = {
             "ID": task_to_delete.ID,
             "title": task_to_delete.title,
@@ -252,7 +248,6 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             "created_at": task_to_delete.created_at,
             "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
         }
-        
         return ResponseData(
             status=True,
             message=f"Task with ID {task_id} deleted successfully",
@@ -276,7 +271,6 @@ def view_all_tasks(
         due_date: Optional[date] = None
     ):
     try:
-        
         query = db.query(Task)
         if current_user.role == Role.SUPERADMIN:
             pass
@@ -288,9 +282,7 @@ def view_all_tasks(
             query = query.filter(Task.status == status)
         if due_date:
             query = query.filter(Task.due_date == due_date)
-
         tasks = query.all()
-
         tasks_data = []
         for task in tasks:
             document_paths = db.query(TaskDocument.document_path).filter(TaskDocument.task_id == task.ID).all()
@@ -308,7 +300,6 @@ def view_all_tasks(
                 "document_path": [path[0] for path in document_paths]
             }
             tasks_data.append(task_data)
-
         return_data = ResponseData(
             status=True,
             message="All tasks",
@@ -338,37 +329,30 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
             message="User has an invalid role",
             data={},
         )
-        
         # Define roles that are allowed to view tasks based on the user's role
         allowed_roles = {
             Role.SUPERADMIN: [Role.SUPERADMIN, Role.MANAGER, Role.AGENT],
             Role.MANAGER: [Role.MANAGER, Role.AGENT],
             Role.AGENT: [Role.AGENT],
         }
-        
         if current_user.role not in allowed_roles.get(current_user.role):
             return ResponseData(
             status=False,
             message="User not allowed to view tasks",
             data={},
         )
-        
         # Filter tasks based on user's role
         query = db.query(Task)
-        
         if current_user.role == Role.SUPERADMIN:
             pass        
         elif current_user.role == Role.MANAGER:
             query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
         elif current_user.role == Role.AGENT:
             query = query.filter(Task.agent_id == current_user.ID)
-        
         if task_ids:
             query = query.filter(Task.ID.in_(task_ids))
-        
         tasks = query.all()
         task_histories = []
-        
         for task in tasks:
             task_history = {
                 "task_id": task.ID,
@@ -384,11 +368,9 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
                 ],
             }
             task_histories.append(task_history)
-        
         return_data = {
             "task_histories": task_histories
         }
-        
         return ResponseData(
             status=True,
             message="Task history retrieved successfully",
@@ -411,12 +393,10 @@ def get_tasks(db: Session, current_user: get_current_user) -> ResponseData:
         .all()
     )
     return_tasks = []
-
     for task, document_path in tasks:
         # Construct the full URL path for the document
         base_url = "http://127.0.0.1:8000"
         full_url = f"{base_url}/{document_path}" if document_path else None
-
         return_task = ReturnTask(
             ID=task.ID,
             title=task.title,
@@ -430,9 +410,7 @@ def get_tasks(db: Session, current_user: get_current_user) -> ResponseData:
             created_at=task.created_at,
             document_path=full_url,
         )
-
         return_tasks.append(return_task)
-
     data = {"tasks": return_tasks}
     return ResponseData(
         status=True,
@@ -445,24 +423,20 @@ def get_tasks(db: Session, current_user: get_current_user) -> ResponseData:
 def list_uploaded_documents_of_task_service(db: Session, task_id: int) -> ResponseData:
     documents = db.query(TaskDocument).filter(TaskDocument.task_id == task_id).all()
     document_list = []
-
     for document in documents:
         document_list.append(
             DocumentResponseModel(task_id=document.task_id, document_path=document.document_path)
         )
-
     data = {
         "task_id": task_id,
         "documents": document_list
     }
-
     if not documents:
         return ResponseData(
             status=False,
             message=f"No documents found for task_id {task_id}",
             data=data,
         )
-
     return ResponseData(
         status=True,
         message=f"Documents for task_id {task_id} retrieved successfully",
@@ -472,13 +446,22 @@ def list_uploaded_documents_of_task_service(db: Session, task_id: int) -> Respon
 
 # Upload file for a task
 def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_current_user):
+    # Check if a file is provided
+    if file is None:
+        return ResponseData(
+            status=False,
+            message="You have not selected any document",
+            data={}
+        )
     task = db.query(Task).filter(Task.ID == task_id).first()
-    if not task:
+    if not task :
         return ResponseData(
                 status=False,
                 message=f"Task with ID {task_id} not found",
                 data={}
             )
+
+
     if not can_create(current_user.role, task.agent_role):
         return ResponseData(
                 status=False,
@@ -500,18 +483,16 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         db.commit()
         # Access the ID of the newly created TaskDocument
         document_id = db_file.ID
-            # Construct the full URL path 
+        # Construct the full URL path 
         base_url = "http://127.0.0.1:8000"
         document_path = f"static/uploads/{task_id}_{file.filename}"
         full_url = f"{base_url}/{document_path}"
-
         # Construct the response data
         response_data = {
             "document_id": document_id,
             "document_path": full_url,
             "task_id": task_id,
         }
-
         return ResponseData(
             status=True, 
             message=f"Your file is successfulley uploaded.", 

@@ -59,7 +59,10 @@ class UserOut(BaseModel):
     class Config:
         from_attributes = True
 
-class LoginResponse(BaseModel):
+
+class ResponseData(BaseModel):
     status: bool
     message: str
     data: dict
+    class Config:
+        orm_mode = True

@@ -5,10 +5,10 @@ from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.config.database import get_db
-from app.dto.tasks_schema import CreateTask, DocumentResponseModel, ResponseData, ReturnTask, TaskStatus, TaskHistoryResponse
-from app.dto.tasks_schema import ReturnTask ,CreateHistory
+from app.dto.tasks_schema import CreateTask, ResponseData, TaskStatus
+from app.dto.tasks_schema import CreateHistory
 from app.modules.tasks.task_services import create_task, delete_task, list_uploaded_documents_of_task_service, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
-from typing import List, Dict, Optional, Union
+from typing import List, Optional, Union
 from datetime import date
 from app.auth.auth import get_current_user   
 from app.auth.auth import PermissionChecker
@@ -18,6 +18,9 @@ from fastapi import Form
 
 
 router = APIRouter()
+
+# Get the absolute path to the "static" directory
+static_directory = os.path.join(os.path.dirname(os.path.abspath("/static/uploads")), "static")
 
 # CREATE tasks
 @router.post("/task/create",
@@ -55,8 +58,12 @@ async def update_task_status(
     """
     try:
         return update_task(db, task_id, task, status, current_user)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid status provided")
+    except Exception as e:
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
 
 
 # DELETE the existing task
@@ -72,8 +79,12 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db), curr
         deleted_task = delete_task(db, current_user, task_id)
         return deleted_task
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{str(e)}")
-
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
+    
 
 # Filter all tasks with due_date and status
 @router.get("/tasks/filter/", response_model=ResponseData,tags=["Tasks"], summary="Filter all tasks along with due_date and status")
@@ -88,8 +99,12 @@ async def view_all_tasks_endpoint(
     try:
         return view_all_tasks(db, current_user, status, due_date)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
-
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
+    
 
 # GET task history
 @router.get("/tasks/history", response_model=ResponseData, tags=["Tasks"], summary="View task History")
@@ -103,9 +118,13 @@ async def view_task_history_endpoint(
     """
     try:
         return get_task_history(db, current_user,task_ids)
-
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
+    
 
 # LIST all Task for current user
 @router.get("/tasks/all",
@@ -122,8 +141,12 @@ def get_all_tasks(
         tasks = get_tasks(db, current_user)
         return tasks
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")    
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
+
 
 # Upload file for a task
 @router.post("/tasks/upload/{task_id}",
@@ -143,28 +166,58 @@ def upload_file_for_task(
         result = upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
         return result  # Return the result directly
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
 
-    
 
-# Get the absolute path to the "static" directory
-static_directory = os.path.join(os.path.dirname(os.path.abspath("/static/uploads")), "static")
-
-# get the list of documents uploaded
+# get the list of uploaded documents 
 @router.get("/documents/{task_id}", 
             response_model=ResponseData,
             tags=["Tasks"],
             summary="Get the path of the uploaded documents")
 def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):
-    return list_uploaded_documents_of_task_service(db, task_id)
+    try:
+        return list_uploaded_documents_of_task_service(db, task_id)
+    except Exception as e:
+        return ResponseData(
+            status=False,
+            message=f"An unexpected error occurred: {str(e)}",
+            data={},
+        )
     
+
 # Access the uploaded documents
-@router.get("/{document_path}", response_class=FileResponse,tags=["Tasks"])
+@router.get("/{document_path}", 
+            tags=["Tasks"],
+            response_model=ResponseData,
+            summary="Access the uploaded documents")
 def read_document(document_path: str):
-    document_full_path = os.path.join(static_directory, document_path)  
-    if os.path.exists(document_full_path):
-        return FileResponse(document_full_path, filename=document_path)
-    raise HTTPException(status_code=404, detail="Document not found")
+    try:
+        document_full_path = os.path.join(static_directory, document_path)  
+        if os.path.exists(document_full_path):
+            return ResponseData(
+                status=True,
+                message="We found your document",
+                data={FileResponse(document_full_path, filename=document_path)},
+            )
+        else:
+            return ResponseData(
+                status=False,
+                message="Please check your document path",
+                data={},
+            )
+    except Exception as e:
+        return ResponseData(
+        status=False,
+        message=f"An unexpected error occurred: {str(e)}",
+        data={},
+    )
+   
+
+    
 
 
 

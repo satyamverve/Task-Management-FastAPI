@@ -21,7 +21,22 @@ class User(Base):
     role = Column(String(50))
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-    
+    created_by = Column(Integer, ForeignKey('users.ID'), nullable=True)
+    updated_by = Column(Integer, ForeignKey('users.ID'), nullable=True)
+    created_by_user = relationship("User", foreign_keys=[created_by], remote_side=[ID])
+    updated_by_user = relationship("User", foreign_keys=[updated_by], remote_side=[ID])
+
+    def to_dict(self):
+        return {
+            "ID": self.ID,
+            "email": self.email,
+            "name": self.name,
+            "role": self.role,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "created_by": self.created_by,
+            "updated_by": self.updated_by,
+        }
     # Relationship with Token model
     temp_token = relationship("Token", back_populates="user", uselist=False)
     

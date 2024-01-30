@@ -1,12 +1,13 @@
 # main.py
 
-from fastapi import FastAPI, Body, Depends, HTTPException
+from fastapi import FastAPI, Body, Depends, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from app.models.users import User
 from app.config.database import get_db
 from app.auth.auth import signJWT, verify_password
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.dto.users_schemas import LoginResponse, UserLoginSchema
+from app.dto.users_schemas import ResponseData, UserLoginSchema
 from app.models.users import Base as user_base
 from app.models.tasks import Base as task_base
 from app.config.database import engine
@@ -69,7 +70,7 @@ def check_user(data: UserLoginSchema, db: Session):
 
 
 
-@app.post("/user/login", response_model=LoginResponse, tags=["Authentication"])
+@app.post("/user/login", response_model=ResponseData, tags=["Authentication"])
 async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):
     """
     Endpoint to handle user login.
@@ -79,7 +80,7 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
     - db (Session): The SQLAlchemy database session.
 
     Returns:
-    - LoginResponse: Status, message, user data, and JWT token if login is successful, otherwise an error message.
+    - ResponseData: Status, message, user data, and JWT token if login is successful, otherwise an error message.
     """
     db_user = check_user(user, db)
     if db_user:
@@ -91,13 +92,13 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
             "created_at": db_user.created_at,
             "token": signJWT(db_user.email),
         }
-        return LoginResponse(
+        return ResponseData(
             status=True,
             message="Logged in successfully",
             data=user_data,
         )
     else:
-        return LoginResponse(
+        return ResponseData(
             status=False,
             message="User not found",
             data={},
@@ -117,3 +118,19 @@ app.include_router(task_router)
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# @app.exception_handler(RequestValidationError)
+# async def validation_exception_handler(request: Request, exc: RequestValidationError):
+#     return ResponseData(
+#             status=False,
+#             message="Not enough permissions to access this resource",
+#             data={}
+#         )
+
+# @app.exception_handler(HTTPException)
+# async def http_exception_handler(request: Request, exc: HTTPException):
+#     return ResponseData(
+#             status=False,
+#             message="Not enough permissions to access this resource",
+#             data={}
+#         )

@@ -9,5 +9,4 @@ class Users(ModelPermissionsMixin):
         'VIEW',
         'EDIT',
         'CHANGE_PASSWORD',
-        'VIEW_ROLES',
     ]
