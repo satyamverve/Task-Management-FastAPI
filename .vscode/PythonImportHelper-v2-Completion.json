@@ -336,31 +336,7 @@
         "documentation": {}
     },
     {
-        "label": "status",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "HTTPException",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
         "label": "Depends",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "File",
         "importPath": "fastapi",
         "description": "fastapi",
         "isExtraImport": true,
@@ -488,43 +464,11 @@
         "documentation": {}
     },
     {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
+        "label": "Request",
+        "importPath": "fastapi",
+        "description": "fastapi",
         "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
+        "detail": "fastapi",
         "documentation": {}
     },
     {
@@ -552,7 +496,7 @@
         "documentation": {}
     },
     {
-        "label": "Union",
+        "label": "List",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -560,7 +504,7 @@
         "documentation": {}
     },
     {
-        "label": "Dict",
+        "label": "Optional",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -585,6 +529,22 @@
     },
     {
         "label": "Union",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -1204,14 +1164,6 @@
         "documentation": {}
     },
     {
-        "label": "DocumentResponseModel",
-        "importPath": "app.dto.tasks_schema",
-        "description": "app.dto.tasks_schema",
-        "isExtraImport": true,
-        "detail": "app.dto.tasks_schema",
-        "documentation": {}
-    },
-    {
         "label": "ResponseData",
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
@@ -1220,31 +1172,7 @@
         "documentation": {}
     },
     {
-        "label": "ReturnTask",
-        "importPath": "app.dto.tasks_schema",
-        "description": "app.dto.tasks_schema",
-        "isExtraImport": true,
-        "detail": "app.dto.tasks_schema",
-        "documentation": {}
-    },
-    {
         "label": "TaskStatus",
-        "importPath": "app.dto.tasks_schema",
-        "description": "app.dto.tasks_schema",
-        "isExtraImport": true,
-        "detail": "app.dto.tasks_schema",
-        "documentation": {}
-    },
-    {
-        "label": "TaskHistoryResponse",
-        "importPath": "app.dto.tasks_schema",
-        "description": "app.dto.tasks_schema",
-        "isExtraImport": true,
-        "detail": "app.dto.tasks_schema",
-        "documentation": {}
-    },
-    {
-        "label": "ReturnTask",
         "importPath": "app.dto.tasks_schema",
         "description": "app.dto.tasks_schema",
         "isExtraImport": true,
@@ -1305,6 +1233,14 @@
         "description": "app.dto.tasks_schema",
         "isExtraImport": true,
         "detail": "app.dto.tasks_schema",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "importPath": "main",
+        "description": "main",
+        "isExtraImport": true,
+        "detail": "main",
         "documentation": {}
     },
     {
@@ -1589,6 +1525,14 @@
         "documentation": {}
     },
     {
+        "label": "ResponseData",
+        "importPath": "app.dto.users_schemas",
+        "description": "app.dto.users_schemas",
+        "isExtraImport": true,
+        "detail": "app.dto.users_schemas",
+        "documentation": {}
+    },
+    {
         "label": "UserSignUp",
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
@@ -1621,6 +1565,14 @@
         "documentation": {}
     },
     {
+        "label": "ResponseData",
+        "importPath": "app.dto.users_schemas",
+        "description": "app.dto.users_schemas",
+        "isExtraImport": true,
+        "detail": "app.dto.users_schemas",
+        "documentation": {}
+    },
+    {
         "label": "RolesUpdate",
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
@@ -1645,7 +1597,7 @@
         "documentation": {}
     },
     {
-        "label": "LoginResponse",
+        "label": "ResponseData",
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
         "isExtraImport": true,
@@ -1725,6 +1677,14 @@
         "description": "dataclasses",
         "isExtraImport": true,
         "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "RequestValidationError",
+        "importPath": "fastapi.exceptions",
+        "description": "fastapi.exceptions",
+        "isExtraImport": true,
+        "detail": "fastapi.exceptions",
         "documentation": {}
     },
     {
@@ -2092,11 +2052,11 @@
         "documentation": {}
     },
     {
-        "label": "LoginResponse",
+        "label": "ResponseData",
         "kind": 6,
         "importPath": "app.dto.users_schemas",
         "description": "app.dto.users_schemas",
-        "peekOfCode": "class LoginResponse(BaseModel):\n    status: bool\n    message: str\n    data: dict",
+        "peekOfCode": "class ResponseData(BaseModel):\n    status: bool\n    message: str\n    data: dict\n    class Config:\n        orm_mode = True",
         "detail": "app.dto.users_schemas",
         "documentation": {}
     },
@@ -2249,7 +2209,7 @@
         "kind": 2,
         "importPath": "app.modules.tasks.task_routers",
         "description": "app.modules.tasks.task_routers",
-        "peekOfCode": "def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):\n    return list_uploaded_documents_of_task_service(db, task_id)\n# Access the uploaded documents\n@router.get(\"/{document_path}\", response_class=FileResponse,tags=[\"Tasks\"])\ndef read_document(document_path: str):\n    document_full_path = os.path.join(static_directory, document_path)  \n    if os.path.exists(document_full_path):\n        return FileResponse(document_full_path, filename=document_path)\n    raise HTTPException(status_code=404, detail=\"Document not found\")",
+        "peekOfCode": "def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):\n    try:\n        return list_uploaded_documents_of_task_service(db, task_id)\n    except Exception as e:\n        return ResponseData(\n            status=False,\n            message=f\"An unexpected error occurred: {str(e)}\",\n            data={},\n        )\n# Access the uploaded documents",
         "detail": "app.modules.tasks.task_routers",
         "documentation": {}
     },
@@ -2258,7 +2218,7 @@
         "kind": 2,
         "importPath": "app.modules.tasks.task_routers",
         "description": "app.modules.tasks.task_routers",
-        "peekOfCode": "def read_document(document_path: str):\n    document_full_path = os.path.join(static_directory, document_path)  \n    if os.path.exists(document_full_path):\n        return FileResponse(document_full_path, filename=document_path)\n    raise HTTPException(status_code=404, detail=\"Document not found\")",
+        "peekOfCode": "def read_document(document_path: str):\n    try:\n        document_full_path = os.path.join(static_directory, document_path)  \n        if os.path.exists(document_full_path):\n            return ResponseData(\n                status=True,\n                message=\"We found your document\",\n                data={FileResponse(document_full_path, filename=document_path)},\n            )\n        else:",
         "detail": "app.modules.tasks.task_routers",
         "documentation": {}
     },
@@ -2267,7 +2227,7 @@
         "kind": 5,
         "importPath": "app.modules.tasks.task_routers",
         "description": "app.modules.tasks.task_routers",
-        "peekOfCode": "router = APIRouter()\n# CREATE tasks\n@router.post(\"/task/create\",\n              response_model=ResponseData,\n              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],\n              tags=[\"Tasks\"],\n                summary=\"Create the new task\")\ndef create_task_route(\n    title: str = Form(...),\n    description: str = Form(...),",
+        "peekOfCode": "router = APIRouter()\n# Get the absolute path to the \"static\" directory\nstatic_directory = os.path.join(os.path.dirname(os.path.abspath(\"/static/uploads\")), \"static\")\n# CREATE tasks\n@router.post(\"/task/create\",\n              response_model=ResponseData,\n              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],\n              tags=[\"Tasks\"],\n                summary=\"Create the new task\")\ndef create_task_route(",
         "detail": "app.modules.tasks.task_routers",
         "documentation": {}
     },
@@ -2276,7 +2236,7 @@
         "kind": 5,
         "importPath": "app.modules.tasks.task_routers",
         "description": "app.modules.tasks.task_routers",
-        "peekOfCode": "static_directory = os.path.join(os.path.dirname(os.path.abspath(\"/static/uploads\")), \"static\")\n# get the list of documents uploaded\n@router.get(\"/documents/{task_id}\", \n            response_model=ResponseData,\n            tags=[\"Tasks\"],\n            summary=\"Get the path of the uploaded documents\")\ndef list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):\n    return list_uploaded_documents_of_task_service(db, task_id)\n# Access the uploaded documents\n@router.get(\"/{document_path}\", response_class=FileResponse,tags=[\"Tasks\"])",
+        "peekOfCode": "static_directory = os.path.join(os.path.dirname(os.path.abspath(\"/static/uploads\")), \"static\")\n# CREATE tasks\n@router.post(\"/task/create\",\n              response_model=ResponseData,\n              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],\n              tags=[\"Tasks\"],\n                summary=\"Create the new task\")\ndef create_task_route(\n    title: str = Form(...),\n    description: str = Form(...),",
         "detail": "app.modules.tasks.task_routers",
         "documentation": {}
     },
@@ -2357,7 +2317,7 @@
         "kind": 2,
         "importPath": "app.modules.tasks.task_services",
         "description": "app.modules.tasks.task_services",
-        "peekOfCode": "def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_current_user):\n    task = db.query(Task).filter(Task.ID == task_id).first()\n    if not task:\n        return ResponseData(\n                status=False,\n                message=f\"Task with ID {task_id} not found\",\n                data={}\n            )\n    if not can_create(current_user.role, task.agent_role):\n        return ResponseData(",
+        "peekOfCode": "def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_current_user):\n    # Check if a file is provided\n    if file is None:\n        return ResponseData(\n            status=False,\n            message=\"You have not selected any document\",\n            data={}\n        )\n    task = db.query(Task).filter(Task.ID == task_id).first()\n    if not task :",
         "detail": "app.modules.tasks.task_services",
         "documentation": {}
     },
@@ -2366,7 +2326,7 @@
         "kind": 2,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "def get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"\n    try:\n        roles_with_permissions = []\n        for role in Role:\n            role_permissions = get_role_permissions(role)\n            roles_with_permissions.append({role.value: role_permissions})\n        return roles_with_permissions",
+        "peekOfCode": "def get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"\n    try:\n        roles_with_permissions = []\n        for role in Role:\n            role_permissions = get_role_permissions(role)\n            roles_with_permissions.append({role.value: role_permissions})\n        response_data = ResponseData(",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2375,25 +2335,25 @@
         "kind": 2,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):\n    \"\"\"\n    Update role of user.\n    \"\"\"\n    try:\n        updated_role = db_crud.update_roles(db, user_id,current_user, user_update)\n        return updated_role \n    except ValueError as e:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))",
+        "peekOfCode": "def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):\n    \"\"\"\n    Update role of user.\n    \"\"\"\n    try:\n        updated_role = db_crud.update_roles(db, user_id, current_user, user_update)\n        return updated_role\n    except Exception:\n        response_data = ResponseData(\n            status=False,",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
     {
-        "label": "get_users",
+        "label": "get_user_by_user_id",
         "kind": 2,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "def get_users(user_id: Optional[int] = None, \n              db: Session = Depends(get_db),\n              current_user: get_current_user = Depends()):\n    \"\"\"\n    Get list of all users with optional filter by user_id.\n    \"\"\"\n    try:\n        users = db_crud.get_users(db,current_user, user_id=user_id)\n        return users\n    except Exception as e:",
+        "peekOfCode": "def get_user_by_user_id(user_id: int, \n                        db: Session = Depends(get_db),\n                        current_user: User = Depends(get_current_user),\n                        ):\n    \"\"\"\n    Get Information of all users.\n    \"\"\"\n    try:\n        return db_crud.get_user(db, user_id, current_user)\n    except Exception:",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
     {
-        "label": "update_user",
+        "label": "update_user_api",
         "kind": 2,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "def update_user(user: UserUpdate, current_user: User = Depends(get_current_user),\n                         db: Session = Depends(get_db)):\n    \"\"\"\n    Changes password, email, name for user.\n    \"\"\"\n    try:\n        db_crud.update_user(db, user, current_user)\n        return {\"result\": f\"User with ID {current_user.ID}'s password has been updated!\"}\n    except ValueError as e:\n        raise HTTPException(",
+        "peekOfCode": "def update_user_api(user_id: int, user: UserUpdate, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):\n    try:\n        return db_crud.update_user(db, user_id, user, current_user)\n    except Exception:\n        response_data = ResponseData(\n            status=False,\n            message=f\"User not found\",\n            data={}\n        )\n        return response_data",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2402,7 +2362,7 @@
         "kind": 2,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):\n    \"\"\"\n    Deletes a user.\n    \"\"\"\n    try:\n        db_crud.delete_users(db, current_user, user_id)\n        return {\"message\": f\"User {user_id} has been deleted successfully!\"}\n    except ValueError as e:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))",
+        "peekOfCode": "def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):\n    \"\"\"\n    Deletes a user.\n    \"\"\"\n    try:\n        return db_crud.delete_users(db, current_user, user_id)\n    except Exception:\n        response_data = ResponseData(\n            status=False,\n            message=\"User not found\",",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2411,7 +2371,7 @@
         "kind": 2,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "def user_reset_password(request: Request, user: User = Depends(get_current_user_via_temp_token),\n                        db: Session = Depends(get_db), new_password: str = Form(...)):\n    \"\"\"\n    Reset the password for the authenticated user.\n    \"\"\"\n    try:\n        result = db_crud.user_reset_password(db, user.email, new_password)\n        # Update token status and is_expired status using the same expire_minutes value\n        db_crud.update_token_status(db, TEMP_TOKEN_EXPIRE_MINUTES)\n        db_crud.update_password_change_status(db, user.temp_token.token)",
+        "peekOfCode": "def user_reset_password(request: Request, user: User = Depends(get_current_user_via_temp_token),\n                         db: Session = Depends(get_db), new_password: str = Form(...),\n                         background_tasks: BackgroundTasks = BackgroundTasks()):\n    \"\"\"\n    Bear the access token genereted from \"/token_template\" and validate this token for reset password \n    \"\"\"\n    try:\n        result = db_crud.user_reset_password(db, user.email, new_password)\n        # Update token status and is_expired status using the same expire_minutes value\n        db_crud.update_token_status(db, TEMP_TOKEN_EXPIRE_MINUTES)",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2429,7 +2389,7 @@
         "kind": 5,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "TEMP_TOKEN_EXPIRE_MINUTES = 1\n# Load HTML templates\ntemplates = Jinja2Templates(directory='./app/templates')\nrouter = APIRouter(prefix=\"\")\n# Function to LIST all user roles with permissions\n@router.get(\"/roles/all\",\n            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], \n            response_model=List[Dict[str, List[str]]], summary=\"Get all user roles with permissions\", tags=[\"Roles\"])\ndef get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"",
+        "peekOfCode": "TEMP_TOKEN_EXPIRE_MINUTES = 1\n# Load HTML templates\ntemplates = Jinja2Templates(directory='./app/templates')\nrouter = APIRouter(prefix=\"\")\n# Function to LIST all user roles with permissions\n@router.get(\"/roles/all\",\n            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], \n            response_model=ResponseData, summary=\"Get all user roles with permissions\", tags=[\"Roles\"])\ndef get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2438,7 +2398,7 @@
         "kind": 5,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "templates = Jinja2Templates(directory='./app/templates')\nrouter = APIRouter(prefix=\"\")\n# Function to LIST all user roles with permissions\n@router.get(\"/roles/all\",\n            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], \n            response_model=List[Dict[str, List[str]]], summary=\"Get all user roles with permissions\", tags=[\"Roles\"])\ndef get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"",
+        "peekOfCode": "templates = Jinja2Templates(directory='./app/templates')\nrouter = APIRouter(prefix=\"\")\n# Function to LIST all user roles with permissions\n@router.get(\"/roles/all\",\n            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], \n            response_model=ResponseData, summary=\"Get all user roles with permissions\", tags=[\"Roles\"])\ndef get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2447,7 +2407,7 @@
         "kind": 5,
         "importPath": "app.modules.users.user_routers",
         "description": "app.modules.users.user_routers",
-        "peekOfCode": "router = APIRouter(prefix=\"\")\n# Function to LIST all user roles with permissions\n@router.get(\"/roles/all\",\n            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], \n            response_model=List[Dict[str, List[str]]], summary=\"Get all user roles with permissions\", tags=[\"Roles\"])\ndef get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"\n    try:",
+        "peekOfCode": "router = APIRouter(prefix=\"\")\n# Function to LIST all user roles with permissions\n@router.get(\"/roles/all\",\n            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], \n            response_model=ResponseData, summary=\"Get all user roles with permissions\", tags=[\"Roles\"])\ndef get_user_roles(db: Session = Depends(get_db)):\n    \"\"\"\n    Returns all user roles with their associated permissions.\n    \"\"\"\n    try:",
         "detail": "app.modules.users.user_routers",
         "documentation": {}
     },
@@ -2456,7 +2416,7 @@
         "kind": 6,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "class DuplicateError(Exception):\n    pass\n# Function to update user roles\ndef update_roles(db: Session,user_id:int, current_user: get_current_user, user_update: RolesUpdate):\n    user_to_update = db.query(User).filter(User.ID == user_id).first()\n    if not user_to_update:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )",
+        "peekOfCode": "class DuplicateError(Exception):\n    pass\n# Function to update user roles\ndef update_roles(db: Session, user_id: int, current_user: get_current_user, user_update: RolesUpdate):\n    user_to_update = db.query(User).filter(User.ID == user_id).first()\n    updated_user = user_update.model_dump(exclude_unset=True)\n    for key, value in updated_user.items():\n        setattr(user_to_update, key, value)\n    db.commit()\n    response_data = ResponseData(",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
@@ -2465,16 +2425,16 @@
         "kind": 2,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "def update_roles(db: Session,user_id:int, current_user: get_current_user, user_update: RolesUpdate):\n    user_to_update = db.query(User).filter(User.ID == user_id).first()\n    if not user_to_update:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )\n    updated_user = user_update.model_dump(exclude_unset=True)\n    for key, value in updated_user.items():\n        setattr(user_to_update, key, value)",
+        "peekOfCode": "def update_roles(db: Session, user_id: int, current_user: get_current_user, user_update: RolesUpdate):\n    user_to_update = db.query(User).filter(User.ID == user_id).first()\n    updated_user = user_update.model_dump(exclude_unset=True)\n    for key, value in updated_user.items():\n        setattr(user_to_update, key, value)\n    db.commit()\n    response_data = ResponseData(\n        status=True,\n        message=\"User roles updated successfully\",\n        data=user_to_update.to_dict() # Use to_dict() instead of dict()",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
     {
-        "label": "get_users",
+        "label": "get_user",
         "kind": 2,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "def get_users(db: Session, current_user: get_current_user,user_id: Optional[int] = None):\n    query = db.query(User)\n    if current_user.role == Role.SUPERADMIN:\n        pass\n    elif current_user.role == Role.MANAGER:\n        query = query.filter(or_(User.ID == current_user.ID, User.role == Role.AGENT))\n    elif current_user.role == Role.AGENT:\n        query = query.filter(User.ID == current_user.ID)\n    if user_id:\n        query = db.query(User).filter(User.ID == user_id).first()",
+        "peekOfCode": "def get_user(db: Session, \n             user_id: int,\n             current_user: get_current_user):\n    user= db.query(User).filter(User.ID == user_id).first()\n    # If the user is requesting their own details, allow it\n    if current_user.ID == user.ID:\n        return ResponseData(\n            status=True,\n            message=\"User Details\",\n            data=user.to_dict()",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
@@ -2483,7 +2443,7 @@
         "kind": 2,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "def add_user(db: Session, user: UserSignUp,current_user: get_current_user):\n    # using a can_create function defined in app/permissions/roles.py\n    if not can_create(current_user.role, user.role):\n        raise HTTPException(\n            status_code=status.HTTP_400_BAD_REQUEST,\n            detail=\"Not enough permissions to access this resource\"\n        )\n    password = user.password\n    if not password:\n        characters = string.ascii_letters + string.digits + string.punctuation",
+        "peekOfCode": "def add_user(db: Session,\n            user: UserSignUp,\n            current_user: get_current_user):\n    # using a can_create function defined in app/permissions/roles.py\n    if not can_create(current_user.role, user.role):\n        return ResponseData(\n            status=False,\n            message=\"Not Authorized to perform the requested action\",\n            data={}\n        )",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
@@ -2492,7 +2452,7 @@
         "kind": 2,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "def update_user(db: Session, user: UserUpdate,current_user: get_current_user):\n    user_to_update = db.query(User).filter(User.ID == current_user.ID).first()\n    if not user_to_update:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )\n    # Update optional fields if provided\n    if user.name is not None:\n        user_to_update.name = user.name",
+        "peekOfCode": "def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_current_user):\n    db_user = db.query(User).filter(User.ID == user_id).first()\n    if current_user.ID == user_id:\n        pass\n    elif current_user.role== Role.AGENT:\n        return ResponseData(\n                    status=False,\n                    message=\"Not Authorized to perform the requested action\",\n                    data={}\n                )",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
@@ -2501,7 +2461,7 @@
         "kind": 2,
         "importPath": "app.modules.users.user_services",
         "description": "app.modules.users.user_services",
-        "peekOfCode": "def delete_users(db: Session,\n                current_user: get_current_user,\n                user_id: str):\n    user_to_delete = db.query(User).filter(User.ID == user_id).first()\n    if not user_to_delete:\n        raise HTTPException(\n            status_code=status.HTTP_404_NOT_FOUND,\n            detail=\"User not found\"\n        )\n    # using a can_create function defined in app/permissions/roles.py",
+        "peekOfCode": "def delete_users(db: Session,\n                current_user: get_current_user,\n                user_id: str):\n    user_to_delete = db.query(User).filter(User.ID == user_id).first()\n    if not user_to_delete:\n        return ResponseData(\n            status=False,\n            message=\"User not found\",\n            data={}\n        )",
         "detail": "app.modules.users.user_services",
         "documentation": {}
     },
@@ -2546,7 +2506,7 @@
         "kind": 6,
         "importPath": "app.permissions.base",
         "description": "app.permissions.base",
-        "peekOfCode": "class PermissionType(str, Enum):\n    \"\"\"\n    Enum for the different types of default\n    permissions that can be applied to a model.\n    \"\"\"\n    CREATE = \"CREATE\"\n    VIEW_LIST = \"VIEW_LIST\"\n    VIEW_DETAILS = \"VIEW_DETAILS\"\n    EDIT = \"EDIT\"\n    DELETE = \"DELETE\"",
+        "peekOfCode": "class PermissionType(str, Enum):\n    \"\"\"\n    Enum for the different types of default\n    permissions that can be applied to a model.\n    \"\"\"\n    CREATE = \"CREATE\"\n    VIEW_LIST = \"VIEW_LIST\"\n    VIEW_ROLES = \"VIEW_ROLES\"\n    VIEW_DETAILS = \"VIEW_DETAILS\"\n    EDIT = \"EDIT\"",
         "detail": "app.permissions.base",
         "documentation": {}
     },
@@ -2582,7 +2542,7 @@
         "kind": 6,
         "importPath": "app.permissions.models_permissions",
         "description": "app.permissions.models_permissions",
-        "peekOfCode": "class Users(ModelPermissionsMixin):\n    # List of permissions associated with the Users model\n    __PERMISSIONS__ = [\n        'VIEW',\n        'EDIT',\n        'CHANGE_PASSWORD',\n        'VIEW_ROLES',\n    ]",
+        "peekOfCode": "class Users(ModelPermissionsMixin):\n    # List of permissions associated with the Users model\n    __PERMISSIONS__ = [\n        'VIEW',\n        'EDIT',\n        'CHANGE_PASSWORD',\n    ]",
         "detail": "app.permissions.models_permissions",
         "documentation": {}
     },

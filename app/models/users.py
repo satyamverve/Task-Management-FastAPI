@@ -6,6 +6,7 @@ from app.config.database import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship, declarative_base
+# from app.models.tasks import Task
 
 Base = declarative_base()
 
@@ -25,6 +26,8 @@ class User(Base):
     updated_by = Column(Integer, ForeignKey('users.ID'), nullable=True)
     created_by_user = relationship("User", foreign_keys=[created_by], remote_side=[ID])
     updated_by_user = relationship("User", foreign_keys=[updated_by], remote_side=[ID])
+    # updated_tasks = relationship("Task", foreign_keys=[Task.updated_by_id], back_populates="updater")
+    
 
     def to_dict(self):
         return {

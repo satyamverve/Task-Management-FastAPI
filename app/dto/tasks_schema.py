@@ -45,6 +45,7 @@ class ReturnTask(BaseModel):
     agent_id: int
     agent_role: Optional[str]
     created_by_id: Optional[int]
+    updated_by_id: Optional[int]
     created_by_role: Optional[str]
     created_at: datetime
     document_path: Optional[str]
