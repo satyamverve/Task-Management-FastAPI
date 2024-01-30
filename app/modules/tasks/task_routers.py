@@ -92,7 +92,7 @@ async def view_all_tasks_endpoint(
 
 
 # GET task history
-@router.get("/tasks/history", response_model=List[TaskHistoryResponse], tags=["Tasks"], summary="View task History")
+@router.get("/tasks/history", response_model=ResponseData, tags=["Tasks"], summary="View task History")
 async def view_task_history_endpoint(
     task_ids: Optional[List[int]] = Query(None, title="Task IDs", description="Filter by task IDs"),
     db: Session = Depends(get_db),
@@ -107,6 +107,23 @@ async def view_task_history_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
+# LIST all Task for current user
+@router.get("/tasks/all",
+            response_model=ResponseData, 
+            summary="Get all tasks of current user", tags=["General"])
+def get_all_tasks(
+    db: Session = Depends(get_db),
+    current_user: get_current_user = Depends(),
+):
+    """
+    Get list of all tasks for the current user.
+    """
+    try:
+        tasks = get_tasks(db, current_user)
+        return tasks
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")    
 
 # Upload file for a task
 @router.post("/tasks/upload/{task_id}",
@@ -124,19 +141,23 @@ def upload_file_for_task(
     """
     try:
         result = upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
-        # Construct the full URL path 
-        base_url = "http://127.0.0.1:8000"
-        file_name = file.filename
-        document_path = f"static/uploads/{task_id}_{file_name}"
-        full_url = f"{base_url}/{document_path}"
-        # Return the full URL path
-        return {"document_path": full_url, "task_id": task_id}
+        return result  # Return the result directly
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
     
 
 # Get the absolute path to the "static" directory
 static_directory = os.path.join(os.path.dirname(os.path.abspath("/static/uploads")), "static")
+
+# get the list of documents uploaded
+@router.get("/documents/{task_id}", 
+            response_model=ResponseData,
+            tags=["Tasks"],
+            summary="Get the path of the uploaded documents")
+def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):
+    return list_uploaded_documents_of_task_service(db, task_id)
+    
 # Access the uploaded documents
 @router.get("/{document_path}", response_class=FileResponse,tags=["Tasks"])
 def read_document(document_path: str):
@@ -146,29 +167,7 @@ def read_document(document_path: str):
     raise HTTPException(status_code=404, detail="Document not found")
 
 
-# get the list of documents uploaded
-@router.get("/documents/{task_id}", 
-            response_model=ResponseData,
-            tags=["Tasks"],
-            summary="Get the path of the uploaded documents")
-def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):
-    return list_uploaded_documents_of_task_service(db, task_id)
 
-# LIST all Task for current user
-@router.get("/tasks/all",
-            response_model=List[ReturnTask], 
-            summary="Get all tasks of current user", tags=["General"])
-def get_all_tasks(
-    db: Session = Depends(get_db),
-    current_user: get_current_user = Depends(),
-):
-    """
-    Get list of all tasks for the current user.
-    """
-    try:
-        tasks = get_tasks(db, current_user)
-        return tasks
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"An unexpected error occurred. Report this message to support: {e}")       
+
+   
     

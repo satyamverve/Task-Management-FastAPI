@@ -101,7 +101,6 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
             status=False,
             message="User not found",
             data={},
-            token=""
         )
 
 # Root path endpoint
