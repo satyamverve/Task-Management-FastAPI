@@ -123,6 +123,7 @@ def add_user(db: Session,
             data={}
         )
 
+
 # Update User
 def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_current_user):
     db_user = db.query(User).filter(User.ID == user_id).first()
@@ -149,7 +150,6 @@ def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_cu
             db_user.updated_by = current_user.ID
             db.commit()
             db.refresh(db_user)
-
             # Return the updated user details in the ResponseData model
             return ResponseData(
                 status=True,
@@ -191,7 +191,6 @@ def delete_users(db: Session,
                 )
     db.delete(user_to_delete)
     db.commit()
-
     # Return a ResponseData model with the appropriate status, message, and data
     return ResponseData(
         status=True,
@@ -216,31 +215,33 @@ def user_reset_password(db: Session, email: str, new_password: str):
 
 
 # Function to validate OTP
-
-# Function to validate OTP
 def validate_otp_and_get_email(db: Session, otp: int):
     """
     Validate the OTP and return the associated user_email if valid.
     """
     token = db.query(Token).filter_by(otp=otp, is_expired=False).first()
-
     if token and not token.is_expired:
         return token.user_email
-    
     return None
 
 
 # Function to update the access_token status which was stored in Token model
 def update_token_status(db: Session, expire_minutes: int):
-    expired_tokens = db.query(Token).filter(Token.is_expired == False, Token.created_at - datetime.utcnow() == expire_minutes ).all()
+    # Find tokens that are not expired and created more than `expire_minutes` minutes ago
+    expired_tokens = db.query(Token).filter(
+        Token.is_expired == False,
+        Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)
+    ).all()
 
+    # Update the is_expired status for the found tokens
     for token in expired_tokens:
         token.is_expired = True
 
+    # Commit the changes to the database
     db.commit()
+
+    # Return True if at least one token was expired, otherwise False
     return len(expired_tokens) > 0
-
-
 
 
 # Function to update the status of password 

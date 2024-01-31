@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse
 from app.models import User, Token
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-from app.auth.auth import get_current_user, PermissionChecker, otp_expire, generate_6_digit_otp, get_user_by_email
+from app.auth.auth import get_current_user, PermissionChecker, otp_expire_time, generate_6_digit_otp, get_user_by_email
 from app.permissions.models_permissions import Users
 from app.permissions.roles import get_role_permissions, Role
 from app.config.database import get_db  
@@ -186,16 +186,14 @@ def user_reset_password(
             data={}
             )
             return response_data
-
         # Reset user password
         success = db_crud.user_reset_password(db, user_email, new_password)
-
         if success:
             # Update token status and is_expired status
-            db_crud.update_token_status(db, otp_expire)
+            db_crud.update_token_status(db, otp_expire_time)
             db_crud.update_password_change_status(db, otp)
-            background_tasks.add_task(db_crud.update_password_change_status, db, otp, otp_expire)
-
+            background_tasks.add_task(db_crud.update_password_change_status, db, otp)
+            background_tasks.add_task(db_crud.update_token_status, db, otp_expire_time)
             return templates.TemplateResponse(
                 "reset_password_result.html",
                 {
@@ -264,7 +262,6 @@ async def user_forgot_password(request: Request, user_email: str, db: Session = 
         else:
             # Generate a 6-digit OTP with expiration time
             otp, expiration_time = generate_6_digit_otp()
-            
             # Store the OTP in the password_reset_tokens table
             reset_token = Token(
                 otp=otp,  # Updated from token to otp
@@ -275,17 +272,14 @@ async def user_forgot_password(request: Request, user_email: str, db: Session = 
             )
             db.add(reset_token)
             db.commit()
-
             # Include OTP and expiration time in the response data
             response_data = ResponseData(
                 status=True,
                 message=msg['key_31'],
                 data={"otp": otp, "expiration_time": expiration_time}
             )
-
             # Send the OTP via email or any other preferred method
             await send_reset_password_mail(recipient_email=user_email, user=user, otp=otp, expire_in_minutes=expiration_time)
-
         return response_data
     except Exception as e:
         print(e)

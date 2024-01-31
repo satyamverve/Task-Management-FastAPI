@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int
 
     base_url: str
+    otp_expire: int
     class Config:
         env_file = ".env"
 

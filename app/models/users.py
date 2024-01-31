@@ -26,8 +26,6 @@ class User(Base):
     updated_by = Column(Integer, ForeignKey('users.ID'), nullable=True)
     created_by_user = relationship("User", foreign_keys=[created_by], remote_side=[ID])
     updated_by_user = relationship("User", foreign_keys=[updated_by], remote_side=[ID])
-    # updated_tasks = relationship("Task", foreign_keys=[Task.updated_by_id], back_populates="updater")
-    
 
     def to_dict(self):
         return {
@@ -53,11 +51,11 @@ class Token(Base):
     
     # Token model columns
     ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
-    otp = Column(String(250), primary_key=True, index=True)  # Rename from token to otp
+    otp = Column(String(250), primary_key=True, index=True)  
     user_email = Column(String(200), ForeignKey(User.email, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     reset_password = Column(Boolean, default=False)
     is_expired = Column(Boolean, default=False)
-    expiration_time = Column(TIMESTAMP, nullable=True)  # Add the new column for expiration time
+    expiration_time = Column(TIMESTAMP, nullable=True) 
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     
