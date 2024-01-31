@@ -1,20 +1,15 @@
 # app/modules/tasks/routers.py
 
 import os
-from fastapi import Depends, APIRouter, Query
+from fastapi import Depends, APIRouter, Query,File, UploadFile, Form
 from sqlalchemy.orm import Session
 from app.config.database import get_db, msg
-from app.dto.tasks_schema import CreateTask, ResponseData, TaskStatus
-from app.dto.tasks_schema import CreateHistory
+from app.dto.tasks_schema import CreateTask, ResponseData, TaskStatus,CreateHistory
 from app.modules.tasks.task_services import create_task, delete_task, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
 from typing import List, Optional
 from datetime import date
-from app.auth.auth import get_current_user   
-from app.auth.auth import PermissionChecker
+from app.auth.auth import get_current_user ,PermissionChecker 
 from app.permissions.models_permissions import Users
-from fastapi import File, UploadFile
-from fastapi import Form
-
 
 router = APIRouter()
 
@@ -37,11 +32,17 @@ def create_task_route(
     file: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
-    task = CreateTask(title=title, description=description, due_date=due_date, agent_id=agent_id)
-    return create_task(db=db, task=task, status=status, current_user=current_user, file=file)
+    try:
+        task = CreateTask(title=title, description=description, due_date=due_date, agent_id=agent_id)
+        task_data = create_task(db=db, task=task, status=status, current_user=current_user, file=file)
+        return ResponseData(status=True, message=msg['task_created'], data=task_data)
+    except ValueError:
+        return ResponseData(status=False, message=msg['user_not'], data={})
+    except Exception as e:
+        return ResponseData(status=False, message=msg["invalid_user"], data={})
 
 
-# UPDATE task
+# Update Task
 @router.put("/tasks/update/{task_id}",
              response_model=ResponseData,
              tags=["Tasks"], summary="Update the task status")
@@ -56,16 +57,17 @@ async def update_task_status(
     Update the task status and make comments if required
     """
     try:
-        return update_task(db, task_id, task, status, current_user)
+        status, message, data = update_task(db, task_id, task, status, current_user)
+        return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         return ResponseData(
             status=False,
-            message=msg["random_key_10"],
+            message=msg["unexp_error"],
             data={},
         )
 
 
-# DELETE the existing task
+# Delete Task
 @router.delete("/tasks/delete/{task_id}",
                dependencies=[Depends(PermissionChecker([Users.permissions.DELETE])), ],
                response_model=ResponseData, tags=["Tasks"], 
@@ -75,12 +77,12 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db), curr
     Enter the ID of task to delete
     """
     try:
-        deleted_task = delete_task(db, current_user, task_id)
-        return deleted_task
+        status, message, data = delete_task(db, current_user, task_id)
+        return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         return ResponseData(
             status=False,
-            message=msg["random_key_10"],
+            message=msg["unexp_error"],
             data={},
         )
     
@@ -96,15 +98,16 @@ async def view_all_tasks_endpoint(
     Filter the tasks
     """
     try:
-        return view_all_tasks(db, current_user, status, due_date)
+        status, message, data = view_all_tasks(db, current_user, status, due_date)
+        return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         return ResponseData(
             status=False,
-            message=msg["random_key_10"],
+            message=msg["unexp_error"],
             data={},
         )
-    
 
+        
 # GET task history
 @router.get("/tasks/history", response_model=ResponseData, tags=["Tasks"], summary="View task History")
 async def view_task_history_endpoint(
@@ -116,19 +119,20 @@ async def view_task_history_endpoint(
     History of tasks according to the changes made in tasks
     """
     try:
-        return get_task_history(db, current_user,task_ids)
+        status, message, data = get_task_history(db, current_user, task_ids)
+        return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         return ResponseData(
             status=False,
-            message=msg["random_key_10"],
+            message=msg["unexp_error"],
             data={},
         )
-    
+
 
 # LIST all Task for current user
 @router.get("/tasks/all",
             response_model=ResponseData, 
-            summary="Get all tasks of current user", tags=["General"])
+            summary="Get all tasks of current user", tags=["Tasks"])
 def get_all_tasks(
     db: Session = Depends(get_db),
     current_user: get_current_user = Depends(),
@@ -137,12 +141,12 @@ def get_all_tasks(
     Get list of all tasks for the current user.
     """
     try:
-        tasks = get_tasks(db, current_user)
-        return tasks
+        status, message, data = get_tasks(db, current_user)
+        return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         return ResponseData(
             status=False,
-            message=msg["random_key_10"],
+            message=msg["unexp_error"],
             data={},
         )
 
@@ -163,21 +167,10 @@ def upload_file_for_task(
     """
     try:
         result = upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
-        return result  # Return the result directly
+        return result
     except Exception as e:
         return ResponseData(
             status=False,
-            message=msg["random_key_10"],
+            message=msg["unexp_error"],
             data={},
         )
-
-
-   
-
-    
-
-
-
-
-   
-    

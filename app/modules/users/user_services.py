@@ -20,21 +20,7 @@ from app.config.database import msg
 class DuplicateError(Exception):
     pass
 
-# Function to update user roles
-def update_roles(db: Session, user_id: int, current_user: get_current_user, user_update: RolesUpdate):
-    user_to_update = db.query(User).filter(User.ID == user_id).first()
-    updated_user = user_update.model_dump(exclude_unset=True)
-    for key, value in updated_user.items():
-        setattr(user_to_update, key, value)
-    db.commit()
-    response_data = ResponseData(
-        status=True,
-        message=msg['key_20'],
-        data=user_to_update.to_dict() 
-    )
-    return response_data
-
-# LIST of all Users
+# Function to get users
 def get_users(db: Session, current_user: get_current_user):
     query = db.query(User)
     if current_user.role == Role.SUPERADMIN:
@@ -46,55 +32,23 @@ def get_users(db: Session, current_user: get_current_user):
     users = query.all()
 
     user_data = [user.to_dict() for user in users]
-    return ResponseData(
-        status=True,
-        message="List of Users",
-        data={"users": user_data}
-    )
+    return user_data
 
-
-# Read User
-def get_user(db: Session, 
-             user_id: int,
-             current_user: get_current_user):
+# Function to read user
+def get_user(db: Session, user_id: int, current_user: get_current_user):
     user= db.query(User).filter(User.ID == user_id).first()
-    # If the user is requesting their own details, allow it
     if current_user.ID == user.ID:
-        return ResponseData(
-            status=True,
-            message=msg['key_21'],
-            data=user.to_dict()
-        )
-    elif current_user.role== Role.AGENT:
-        return ResponseData(
-                    status=False,
-                    message=msg['random_key_2'],
-                    data={}
-                )
+        return user.to_dict()
+    elif current_user.role == Role.AGENT:
+        return None
     if not can_create(current_user.role, user.role):
-        return ResponseData(
-                    status=False,
-                    message=msg['random_key_2'],
-                    data={}
-                )
-    return ResponseData(
-                status=True,
-                message=msg['key_21'],
-                data=user.to_dict()
-            )
-
+        return None
+    return user.to_dict()
 
 # Function to add a new user
-def add_user(db: Session,
-            user: UserSignUp,
-            current_user: get_current_user):
-    # using a can_create function defined in app/permissions/roles.py
+def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
     if not can_create(current_user.role, user.role):
-        return ResponseData(
-            status=False,
-            message=msg['random_key_2'],
-            data={}
-        )
+        return None
     password = user.password
     if not password:
         characters = string.ascii_letters + string.digits + string.punctuation
@@ -110,18 +64,10 @@ def add_user(db: Session,
         db.add(user)
         db.commit()
         
-        return ResponseData(
-            status=True,
-            message=msg['key_22'],
-            data=user.to_dict()
-        )
+        return user.to_dict()
     except IntegrityError:
         db.rollback()
-        return ResponseData(
-            status=False,
-            message=msg['key_23'],
-            data={}
-        )
+        return None
 
 
 # Update User
@@ -197,6 +143,21 @@ def delete_users(db: Session,
         message=msg['key_27'],
         data=user_to_delete.to_dict()
     )
+
+
+# Function to update user roles
+def update_roles(db: Session, user_id: int, current_user: get_current_user, user_update: RolesUpdate):
+    user_to_update = db.query(User).filter(User.ID == user_id).first()
+    updated_user = user_update.model_dump(exclude_unset=True)
+    for key, value in updated_user.items():
+        setattr(user_to_update, key, value)
+    db.commit()
+    response_data = ResponseData(
+        status=True,
+        message=msg['key_20'],
+        data=user_to_update.to_dict() 
+    )
+    return response_data
 
 
 # Function to reset user password for registered users
