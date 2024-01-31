@@ -37,4 +37,4 @@ import json
 # JSON file
 f = open ('app/unique_messages.json', "r")
 # Reading from file
-data = json.loads(f.read())
+msg = json.loads(f.read())

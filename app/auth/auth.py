@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
@@ -69,22 +70,18 @@ def get_current_user(token: str = Depends(JWTBearer()), db: Session = Depends(ge
     return user
 
 # Function to get the current user using a temporary access token
-def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get_db)):
-    try:
-        decoded_token = decodeJWT(access_token)
-        user_email = decoded_token.get('data')
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate bearer token",
-        )
-    if not user_email:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired temp_token")
+import random
+from datetime import timedelta
 
-    user = db.query(User).filter(User.email == user_email).first()
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired temp_token")
-    return user
+# Token expiration time for forgot password
+otp_expire = 1
+
+def generate_6_digit_otp():
+    """Generates a random 6-digit OTP with expiration time."""
+    otp = random.randint(100000, 999999)
+    expiration_time = datetime.utcnow() + timedelta(minutes=int(otp_expire))
+    return otp, expiration_time
+
 
 # Class for checking permissions
 class PermissionChecker:

@@ -14,7 +14,8 @@ from app.dto.tasks_schema import CreateTask, DocumentResponseModel, ResponseData
 from app.auth.auth import get_current_user  
 from app.models.users import User 
 from app.permissions.roles import Role, can_create
-from app.config.database import data
+from app.config.database import msg
+from app.data.data_class import settings
 
 # Log History
 def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Optional[str] = None):
@@ -37,7 +38,7 @@ def create_task(
             if not assigned_user:
                 return ResponseData(
                     status=False,
-                    message=data["random_key_1"],
+                    message=msg["random_key_1"],
                     data={}
                 )
         agent_id_value = assigned_user.ID
@@ -56,7 +57,7 @@ def create_task(
         if not can_create(current_user.role, db_task.agent_role):
             return ResponseData(
             status=False,
-            message=data["random_key_2"],
+            message=msg["random_key_2"],
             data={},
         )
         document_path = None
@@ -70,7 +71,7 @@ def create_task(
                 f.write(contents)
             db_file = TaskDocument(task=db_task, document_path=file_path, created_by_id=current_user.ID)
             db.add(db_file)
-            base_url = "http://127.0.0.1:8000"
+            base_url = settings.base_url
             document_path = f"static/uploads/{current_user.ID}_{file.filename}"
             full_url = f"{base_url}/{document_path}"
         db.add(db_task)
@@ -111,14 +112,14 @@ def create_task(
         }
         return ResponseData(
             status=True,
-            message=data['random_key_16'],
+            message=msg['random_key_16'],
             data=return_data,
         )
     except Exception as e:
         # Return a ResponseData with empty values
         return ResponseData(
             status=False,
-            message=data["random_key_1"],
+            message=msg["random_key_1"],
             data={},
         )
     finally:
@@ -139,7 +140,7 @@ def update_task(
         if tasks is None:
             return ResponseData(
                 status=False,
-                message=data["random_key_3"],
+                message=msg["random_key_3"],
                 data={}
             )
         # Superadmin can do any CRUD operation
@@ -156,7 +157,7 @@ def update_task(
             else:
                 return ResponseData(
                     status=False,
-                    message=data["random_key_4"],
+                    message=msg["random_key_4"],
                     data={}
                 )
         # Agent can only update his own tasks
@@ -166,7 +167,7 @@ def update_task(
             else:
                 return ResponseData(
                     status=False,
-                    message=data["random_key_4"],
+                    message=msg["random_key_4"],
 
                     data={}
                 )
@@ -195,13 +196,13 @@ def update_task(
         }
         return ResponseData(
             status=True,
-            message=data["random_key_16"],
+            message=msg["random_key_16"],
             data=return_data,
         )
     except ValueError:
         return ResponseData(
             status=False,
-            message=data["random_key_6"],
+            message=msg["random_key_6"],
             data={}
         )
 
@@ -216,7 +217,7 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
         if task_to_delete is None:
             return ResponseData(
                 status=False,
-                message=data["random_key_3"],
+                message=msg["random_key_3"],
                 data={}
             )
         # Superadmin can do any CRUD operation
@@ -229,7 +230,7 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             if task_to_delete.agent_role == Role.MANAGER and task_to_delete.agent_id == current_user.ID:
                 return ResponseData(
                     status=False,
-                    message=data["random_key_4"],
+                    message=msg["random_key_4"],
                     data={}
                 )
             elif task_to_delete.agent_role== Role.AGENT:
@@ -237,7 +238,7 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             else:
                 return ResponseData(
                     status=False,
-                    message=data["random_key_4"],
+                    message=msg["random_key_4"],
                     data={}
                 )
         db.delete(task_to_delete)
@@ -258,14 +259,14 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
         }
         return ResponseData(
             status=True,
-            message=data["random_key_17"],
+            message=msg["random_key_17"],
             data=return_data,
         )
     except Exception as e:
         # Return a ResponseData with empty values
         return ResponseData(
             status=False,
-            message=data["random_key_3"],
+            message=msg["random_key_3"],
             data={},
         )
 
@@ -310,20 +311,20 @@ def view_all_tasks(
             tasks_data.append(task_data)
         return_data = ResponseData(
             status=True,
-            message=data["random_key_18"],
+            message=msg["random_key_18"],
             data={"tasks": tasks_data}
         )
         return return_data.dict()
     except ValidationError:
         return ResponseData(
             status=False,
-            message=data["random_key_6"],
+            message=msg["random_key_6"],
             data={}
         )
     except Exception as e:
         return ResponseData(
             status=False,
-            message=data["random_key_10"],
+            message=msg["random_key_10"],
             data={},
         )
 
@@ -334,7 +335,7 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
         if current_user.role not in Role.get_roles():
             return ResponseData(
             status=False,
-            message=data["random_key_7"],
+            message=msg["random_key_7"],
             data={},
         )
         # Define roles that are allowed to view tasks based on the user's role
@@ -346,7 +347,7 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
         if current_user.role not in allowed_roles.get(current_user.role):
             return ResponseData(
             status=False,
-            message=data["random_key_8"],
+            message=msg["random_key_8"],
             data={},
         )
         # Filter tasks based on user's role
@@ -381,13 +382,13 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
         }
         return ResponseData(
             status=True,
-            message=data["random_key_5"],
+            message=msg["random_key_5"],
             data=return_data,
         )
     except Exception as e:
         return ResponseData(
             status=False,
-            message=data["random_key_10"],
+            message=msg["random_key_10"],
             data={},
         )
 
@@ -403,7 +404,7 @@ def get_tasks(db: Session, current_user: get_current_user) -> ResponseData:
     return_tasks = []
     for task, document_path in tasks:
         # Construct the full URL path for the document
-        base_url = "http://127.0.0.1:8000"
+        base_url = settings.base_url
         full_url = f"{base_url}/{document_path}" if document_path else None
         return_task = ReturnTask(
             ID=task.ID,
@@ -423,7 +424,7 @@ def get_tasks(db: Session, current_user: get_current_user) -> ResponseData:
     data = {"tasks": return_tasks}
     return ResponseData(
         status=True,
-        message=data["random_key_18"],
+        message=msg["random_key_18"],
         data=data,
     )
 
@@ -443,12 +444,12 @@ def list_uploaded_documents_of_task_service(db: Session, task_id: int) -> Respon
     if not documents:
         return ResponseData(
             status=False,
-            message=data["random_key_9"],
+            message=msg["random_key_9"],
             data=data,
         )
     return ResponseData(
         status=True,
-        message=data["random_key_19"],
+        message=msg["random_key_19"],
         data=data,
     )
 
@@ -459,14 +460,14 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
     if file is None:
         return ResponseData(
             status=False,
-            message=data["random_key_11"],
+            message=msg["random_key_11"],
             data={}
         )
     task = db.query(Task).filter(Task.ID == task_id).first()
     if not task :
         return ResponseData(
                 status=False,
-                message=data["random_key_3"],
+                message=msg["random_key_3"],
                 data={}
             )
 
@@ -474,7 +475,7 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
     if not can_create(current_user.role, task.agent_role):
         return ResponseData(
                 status=False,
-                message=data["random_key_2"],
+                message=msg["random_key_2"],
                 data={}
             )
     upload_dir = "static/uploads"
@@ -494,7 +495,7 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         document_id = db_file.ID
         created_by_id=db_file.created_by_id
         # Construct the full URL path 
-        base_url = "http://127.0.0.1:8000"
+        base_url = settings.base_url
         document_path = f"static/uploads/{task_id}_{file.filename}"
         full_url = f"{base_url}/{document_path}"
         # Construct the response data
@@ -506,12 +507,12 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         }
         return ResponseData(
             status=True, 
-            message=data["random_key_4"],
+            message=msg["random_key_4"],
             data=response_data)
     except Exception as e:
         return ResponseData(
             status=False,
-            message=data["random_key_10"],
+            message=msg["random_key_10"],
             data={},
         )
     finally:

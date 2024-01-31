@@ -7,8 +7,8 @@
     "random_key_6": "Please check your input",
     "random_key_7": "User has an invalid role",
     "random_key_8": "User not allowed to view tasks",
-    "random_key_9": "No documents found for task_id {task_id}",
-    "random_key_10": "An unexpected error occurred: {str(e)}",
+    "random_key_9": "No documents found for task",
+    "random_key_10": "An unexpected error occurred",
     "random_key_11": "You have not selected any document",
     "random_key_12": "Not enough permissions to upload a file for this task",
     "random_key_14": "We found your document",
@@ -16,5 +16,20 @@
     "random_key_16": "Task Created successfully",
     "random_key_17": "Task Deleted successfully",
     "random_key_18": "All available tasks",
-    "random_key_19": "Documents for task_id {task_id} retrieved successfully"
+    "random_key_19": "Documents for task with inputed task_id retrieved successfully",
+    "key_20": "User roles updated successfully",
+    "key_21": "Details of the user",
+    "key_22": "User Created successfully",
+    "key_23": "The entered email is is already attached to a registered user",
+    "key_24": "User details updated successfully",
+    "key_25": "Old password provided is incorrect",
+    "key_26": "User not found",
+    "key_27": "User Deleted successfully",
+    "key_28": "User roles retrieved successfully",
+    "key_29": "Logged in successfully",
+    "key_30": "Please enter a valid user or id...!",
+    "key_31": "An OTP has been sent to registered mail for password reset.",
+    "key_32": "Failed to reset password",
+    "key_33": "Invalid OTP"
+
 }

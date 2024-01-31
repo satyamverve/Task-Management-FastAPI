@@ -1,9 +1,8 @@
 # main.py
 
-from fastapi import FastAPI, Body, Depends, HTTPException, Request
-from fastapi.exceptions import RequestValidationError
+from fastapi import FastAPI, Body, Depends
 from app.models.users import User
-from app.config.database import get_db
+from app.config.database import get_db, msg
 from app.auth.auth import signJWT, verify_password
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -94,13 +93,13 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
         }
         return ResponseData(
             status=True,
-            message="Logged in successfully",
+            message=msg['key_29'],
             data=user_data,
         )
     else:
         return ResponseData(
             status=False,
-            message="User not found",
+            message=msg['key_30'],
             data={},
         )
 
@@ -112,29 +111,10 @@ def read_root():
 # Include routers
 app.include_router(user_router)
 app.include_router(task_router)
-# app.include_router(auth_router)
 
 # Run the application using uvicorn
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="192.168.1.114", port=8000, reload=True)
 
 
-
-
-
-# @app.exception_handler(RequestValidationError)
-# async def validation_exception_handler(request: Request, exc: RequestValidationError):
-#     return ResponseData(
-#             status=False,
-#             message="Not enough permissions to access this resource",
-#             data={}
-#         )
-
-# @app.exception_handler(HTTPException)
-# async def http_exception_handler(request: Request, exc: HTTPException):
-#     return ResponseData(
-#             status=False,
-#             message="Not enough permissions to access this resource",
-#             data={}
-#         )

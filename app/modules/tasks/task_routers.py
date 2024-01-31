@@ -1,14 +1,13 @@
 # app/modules/tasks/routers.py
 
 import os
-from fastapi import Depends, APIRouter, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi import Depends, APIRouter, Query
 from sqlalchemy.orm import Session
-from app.config.database import get_db, data
+from app.config.database import get_db, msg
 from app.dto.tasks_schema import CreateTask, ResponseData, TaskStatus
 from app.dto.tasks_schema import CreateHistory
-from app.modules.tasks.task_services import create_task, delete_task, list_uploaded_documents_of_task_service, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
-from typing import List, Optional, Union
+from app.modules.tasks.task_services import create_task, delete_task, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
+from typing import List, Optional
 from datetime import date
 from app.auth.auth import get_current_user   
 from app.auth.auth import PermissionChecker
@@ -61,7 +60,7 @@ async def update_task_status(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=data["random_key_10"],
+            message=msg["random_key_10"],
             data={},
         )
 
@@ -81,7 +80,7 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db), curr
     except Exception as e:
         return ResponseData(
             status=False,
-            message=data["random_key_10"],
+            message=msg["random_key_10"],
             data={},
         )
     
@@ -101,7 +100,7 @@ async def view_all_tasks_endpoint(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=data["random_key_10"],
+            message=msg["random_key_10"],
             data={},
         )
     
@@ -121,7 +120,7 @@ async def view_task_history_endpoint(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=data["random_key_10"],
+            message=msg["random_key_10"],
             data={},
         )
     
@@ -143,7 +142,7 @@ def get_all_tasks(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=data["random_key_10"],
+            message=msg["random_key_10"],
             data={},
         )
 
@@ -168,53 +167,11 @@ def upload_file_for_task(
     except Exception as e:
         return ResponseData(
             status=False,
-            message=data["random_key_10"],
+            message=msg["random_key_10"],
             data={},
         )
 
 
-# get the list of uploaded documents 
-@router.get("/documents/{task_id}", 
-            response_model=ResponseData,
-            tags=["Tasks"],
-            summary="Get the path of the uploaded documents")
-def list_uploaded_documents_of_task(task_id: int, db: Session = Depends(get_db)):
-    try:
-        return list_uploaded_documents_of_task_service(db, task_id)
-    except Exception as e:
-        return ResponseData(
-            status=False,
-            message=data["random_key_10"],
-            data={},
-        )
-    
-
-# Access the uploaded documents
-@router.get("/{document_path}", 
-            tags=["Tasks"],
-            response_model=ResponseData,
-            summary="Access the uploaded documents")
-def read_document(document_path: str):
-    try:
-        document_full_path = os.path.join(static_directory, document_path)  
-        if os.path.exists(document_full_path):
-            return ResponseData(
-                status=True,
-                message=data["random_key_14"],
-                data={FileResponse(document_full_path, filename=document_path)},
-            )
-        else:
-            return ResponseData(
-                status=False,
-                message=data["random_key_15"],
-                data={},
-            )
-    except Exception as e:
-        return ResponseData(
-        status=False,
-        message=data["random_key_10"],
-        data={},
-    )
    
 
     
