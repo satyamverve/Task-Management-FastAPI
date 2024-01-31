@@ -1,15 +1,21 @@
+from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from app.models.users import User
 from app.config.database import get_db
 from fastapi import Depends, HTTPException, status
-from typing import List, Dict
+from typing import List
 from app.permissions.base import ModelPermission
 from app.permissions.roles import get_role_permissions
 from app.data.data_class import settings
 from app.auth.auth_bearer import JWTBearer
 import time
+import random
+from datetime import timedelta
+
+# Token expiration time for forgot password
+otp_expire_time = settings.otp_expire
 
 # Initialize JWTBearer instance for handling JWT tokens
 jwt_bearer = JWTBearer()
@@ -68,23 +74,12 @@ def get_current_user(token: str = Depends(JWTBearer()), db: Session = Depends(ge
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user credentials")
     return user
 
-# Function to get the current user using a temporary access token
-def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get_db)):
-    try:
-        decoded_token = decodeJWT(access_token)
-        user_email = decoded_token.get('data')
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate bearer token",
-        )
-    if not user_email:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired temp_token")
-
-    user = db.query(User).filter(User.email == user_email).first()
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired temp_token")
-    return user
+# Function to generate a otp for forgot password
+def generate_6_digit_otp():
+    """Generates a random 6-digit OTP with expiration time."""
+    otp = random.randint(100000, 999999)
+    expiration_time = datetime.utcnow() + timedelta(minutes=otp_expire_time)
+    return otp, expiration_time
 
 # Class for checking permissions
 class PermissionChecker:

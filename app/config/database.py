@@ -31,3 +31,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+import json
+# JSON file
+f = open ('app/unique_messages.json', "r")
+# Reading from file
+msg = json.loads(f.read())

@@ -1,19 +1,20 @@
 # app.modules.users.service.py
 
+from datetime import datetime, timedelta
 import sys
+from typing import Optional
+
+from sqlalchemy import or_
 sys.path.append("..")
 import string
 import random
-from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.models.users import User, Token
 from app.dto.users_schemas import ResponseData, RolesUpdate, UserSignUp, UserUpdate
 from sqlalchemy.exc import IntegrityError
 from app.auth.auth import get_password_hash, verify_password, get_current_user
-from datetime import datetime, timedelta
 from app.permissions.roles import Role, can_create
-from typing import Optional
-from sqlalchemy import or_
+from app.config.database import msg
 
 # Custom exception for duplicate error
 class DuplicateError(Exception):
@@ -28,11 +29,28 @@ def update_roles(db: Session, user_id: int, current_user: get_current_user, user
     db.commit()
     response_data = ResponseData(
         status=True,
-        message="User roles updated successfully",
-        data=user_to_update.to_dict() # Use to_dict() instead of dict()
+        message=msg['key_20'],
+        data=user_to_update.to_dict() 
     )
     return response_data
 
+# LIST of all Users
+def get_users(db: Session, current_user: get_current_user):
+    query = db.query(User)
+    if current_user.role == Role.SUPERADMIN:
+        pass
+    elif current_user.role == Role.MANAGER:
+        query = query.filter(or_(User.ID == current_user.ID, User.role == Role.AGENT))
+    elif current_user.role == Role.AGENT:
+        query = query.filter(User.ID == current_user.ID)
+    users = query.all()
+
+    user_data = [user.to_dict() for user in users]
+    return ResponseData(
+        status=True,
+        message="List of Users",
+        data={"users": user_data}
+    )
 
 
 # Read User
@@ -44,24 +62,24 @@ def get_user(db: Session,
     if current_user.ID == user.ID:
         return ResponseData(
             status=True,
-            message="User Details",
+            message=msg['key_21'],
             data=user.to_dict()
         )
     elif current_user.role== Role.AGENT:
         return ResponseData(
                     status=False,
-                    message="Not Authorized to perform the requested action",
+                    message=msg['random_key_2'],
                     data={}
                 )
     if not can_create(current_user.role, user.role):
         return ResponseData(
                     status=False,
-                    message="Not Authorized to perform the requested action",
+                    message=msg['random_key_2'],
                     data={}
                 )
     return ResponseData(
                 status=True,
-                message="User Details",
+                message=msg['key_21'],
                 data=user.to_dict()
             )
 
@@ -74,7 +92,7 @@ def add_user(db: Session,
     if not can_create(current_user.role, user.role):
         return ResponseData(
             status=False,
-            message="Not Authorized to perform the requested action",
+            message=msg['random_key_2'],
             data={}
         )
     password = user.password
@@ -94,16 +112,17 @@ def add_user(db: Session,
         
         return ResponseData(
             status=True,
-            message="User created successfully",
+            message=msg['key_22'],
             data=user.to_dict()
         )
     except IntegrityError:
         db.rollback()
         return ResponseData(
             status=False,
-            message=f"Email {user.email} is already attached to a registered user.",
+            message=msg['key_23'],
             data={}
         )
+
 
 # Update User
 def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_current_user):
@@ -113,13 +132,13 @@ def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_cu
     elif current_user.role== Role.AGENT:
         return ResponseData(
                     status=False,
-                    message="Not Authorized to perform the requested action",
+                    message=msg['random_key_2'],
                     data={}
                 )
     if not can_create(current_user.role, db_user.role):
         return ResponseData(
                     status=False,
-                    message="Not Authorized to perform the requested action",
+                    message=msg['random_key_2'],
                     data={}
                 )
     if db_user:
@@ -131,24 +150,23 @@ def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_cu
             db_user.updated_by = current_user.ID
             db.commit()
             db.refresh(db_user)
-
             # Return the updated user details in the ResponseData model
             return ResponseData(
                 status=True,
-                message="User details updated successfully",
+                message=msg['key_24'],
                 data=db_user.to_dict()  # Convert user object to dictionary
             )
         else:
             # Old password does not match
             return ResponseData(
                 status=False,
-                message="Old password provided is incorrect",
+                message=msg['key_25'],
                 data={}
             )
     else:
         return ResponseData(
             status=False,
-            message="User not found",
+            message=msg['key_26'],
             data={}
         )
 
@@ -161,23 +179,22 @@ def delete_users(db: Session,
     if not user_to_delete:
         return ResponseData(
             status=False,
-            message="User not found",
+            message=msg['key_26'],
             data={}
         )
     # using a can_create function defined in app/permissions/roles.py
     if not can_create(current_user.role, user_to_delete.role):
         return ResponseData(
                     status=False,
-                    message="Not Authorized to perform the requested action",
+                    message=msg['random_key_2'],
                     data={}
                 )
     db.delete(user_to_delete)
     db.commit()
-
     # Return a ResponseData model with the appropriate status, message, and data
     return ResponseData(
         status=True,
-        message=f"User {user_id} has been deleted successfully!",
+        message=msg['key_27'],
         data=user_to_delete.to_dict()
     )
 
@@ -186,30 +203,53 @@ def delete_users(db: Session,
 def user_reset_password(db: Session, email: str, new_password: str):
     try:
         user = db.query(User).filter(User.email == email).first()
-        user.password = get_password_hash(new_password)
-        db.commit()
-    except Exception:
+        if user:
+            user.password = get_password_hash(new_password)
+            db.commit()
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"Error in user_reset_password: {e}")
         return False
-    return True
 
 
-# Function to update the acess_token status which was stored in Token model
+# Function to validate OTP
+def validate_otp_and_get_email(db: Session, otp: int):
+    """
+    Validate the OTP and return the associated user_email if valid.
+    """
+    token = db.query(Token).filter_by(otp=otp, is_expired=False).first()
+    if token and not token.is_expired:
+        return token.user_email
+    return None
+
+
+# Function to update the access_token status which was stored in Token model
 def update_token_status(db: Session, expire_minutes: int):
-    expired_tokens = db.query(Token).filter(Token.is_expired == expire_minutes).first()
-    Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)
-    if expired_tokens:
-        expired_tokens.is_expired
-        db.commit()
-        return True
-    return False
+    # Find tokens that are not expired and created more than `expire_minutes` minutes ago
+    expired_tokens = db.query(Token).filter(
+        Token.is_expired == False,
+        Token.created_at < datetime.utcnow() - timedelta(minutes=expire_minutes)
+    ).all()
+
+    # Update the is_expired status for the found tokens
+    for token in expired_tokens:
+        token.is_expired = True
+
+    # Commit the changes to the database
+    db.commit()
+
+    # Return True if at least one token was expired, otherwise False
+    return len(expired_tokens) > 0
 
 
 # Function to update the status of password 
-def update_password_change_status(db: Session, temp_token: str):
+def update_password_change_status(db: Session, otp: int):
     """
     Update the reset_password column to True for the given temp_token.
     """
-    reset_token = db.query(Token).filter(Token.token == temp_token).first()
+    reset_token = db.query(Token).filter(Token.otp == otp).first()
     if reset_token:
         reset_token.reset_password = True
         db.commit()

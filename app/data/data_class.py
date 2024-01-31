@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     - secret_key (str): Secret key for JWT token encoding and decoding.
     - algorithm (str): Algorithm used for JWT token encoding and decoding.
     - access_token_expire_minutes (int): Expiration time for access tokens in minutes.
+    - base_url (str): base url for accessing the photos
 
     Configurations:
     - env_file (str): The name of the .env file to load settings from.
@@ -43,6 +44,9 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
+
+    base_url: str
+    otp_expire: int
     class Config:
         env_file = ".env"
 

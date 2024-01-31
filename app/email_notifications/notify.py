@@ -66,27 +66,27 @@ async def send_registration_notification(password, recipient_email):
         logger.error(str(e))
 
 
-async def send_reset_password_mail(recipient_email, user, url, expire_in_minutes):
+async def send_reset_password_mail(recipient_email, user, otp, expire_in_minutes):
     """
-    Sends a reset password email with the reset URL and expiration details.
+    Sends a reset password email with the reset OTP and expiration details.
 
     Args:
     - recipient_email (str): Email address of the recipient.
     - user: User information.
-    - url (str): Reset password URL.
-    - expire_in_minutes (int): Expiration time for the reset link.
+    - otp (str): Reset OTP.
+    - expire_in_minutes (int): Expiration time for the reset OTP.
 
     Raises:
     - Exception: If an error occurs during email sending.
     """
     template_body = {
         "user": user,
-        "url": url,
+        "otp": otp,
         "expire_in_minutes": expire_in_minutes
     }
     try:
         message = MessageSchema(
-            subject="FastAPI forgot password application reset password",
+            subject="OTP for Reset Password",
             recipients=[recipient_email],
             template_body=template_body,
             subtype=MessageType.html
