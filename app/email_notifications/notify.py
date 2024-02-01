@@ -51,7 +51,6 @@ async def send_registration_notification(password, recipient_email):
         "email": recipient_email,
         "password": password
     }
-
     try:
         message = MessageSchema(
             subject="FastAPI forgot password application registration",

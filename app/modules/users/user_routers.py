@@ -26,7 +26,7 @@ def get_users_route(
               db: Session = Depends(get_db),
               current_user: get_current_user = Depends()):
     """
-    Get list of all users with optional filter by user_id.
+    Get list of all users.
     """
     try:
         users = db_crud.get_users(db, current_user)
@@ -42,14 +42,14 @@ def get_users_route(
             data={}
         )
 
-# READ User
+# Function to read user by user_id
 @router.get("/user/view/{user_id}",response_model=ResponseData,summary="Get info of users", tags=["Users"])
 def get_user_by_user_id_route(user_id: int, 
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user),
                         ):
     """
-    Get Information of all users.
+    Get Information of users with user_id.
     """
     try:
         user = db_crud.get_user(db, user_id, current_user)
@@ -81,19 +81,8 @@ async def create_user_route(user: UserSignUp, db: Session = Depends(get_db), cur
     Registers a user.
     """
     try:
-        user_data = db_crud.add_user(db, user, current_user)
-        if user_data:
-            return ResponseData(
-                status=True,
-                message=msg['created_user'],
-                data=user_data
-            )
-        else:
-            return ResponseData(
-                status=False,
-                message=msg['duplicate_email'],
-                data={}
-            )
+        status, message, data = db_crud.add_user(db, user, current_user)
+        return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         return ResponseData(
             status=False,
@@ -115,7 +104,6 @@ def update_user_api(user_id: int, user: UserUpdate, db: Session = Depends(get_db
         return response_data
     
 
-
 # Function to delete a user
 @router.delete("/user/delete/{user_id}",
                dependencies=[Depends(PermissionChecker([Users.permissions.DELETE]))],
@@ -135,7 +123,6 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
             data={}
         )
         return response_data
-
 
 
 # Function to update user roles

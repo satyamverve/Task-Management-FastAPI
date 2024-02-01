@@ -18,7 +18,7 @@ from app.config.database import msg
 class DuplicateError(Exception):
     pass
 
-# Function to get users
+# LIST of all Users
 def get_users(db: Session, current_user: get_current_user):
     query = db.query(User)
     if current_user.role == Role.SUPERADMIN:
@@ -32,7 +32,7 @@ def get_users(db: Session, current_user: get_current_user):
     user_data = [user.to_dict() for user in users]
     return user_data
 
-# Function to read user
+# Function to read user by user_id
 def get_user(db: Session, user_id: int, current_user: get_current_user):
     user= db.query(User).filter(User.ID == user_id).first()
     if current_user.ID == user.ID:
@@ -46,7 +46,7 @@ def get_user(db: Session, user_id: int, current_user: get_current_user):
 # Function to add a new user
 def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
     if not can_create(current_user.role, user.role):
-        return None
+        return False, msg["enough_perm"], {}
     password = user.password
     if not password:
         characters = string.ascii_letters + string.digits + string.punctuation
@@ -61,12 +61,10 @@ def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
     try:
         db.add(user)
         db.commit()
-        
-        return user.to_dict()
+        return True,msg['created_user'],user.to_dict()
     except IntegrityError:
         db.rollback()
-        return None
-
+        return False,msg['duplicate_email'],{}
 
 # Update User
 def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_current_user):
@@ -82,7 +80,6 @@ def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_cu
         (current_user.role == Role.AGENT and db_user.ID == current_user.ID)
     ):
         return False, msg["enough_perm"], {}
-    
     if db_user:
         # Check if the provided old password matches the stored password
         if verify_password(user.old_password, db_user.password):
@@ -92,14 +89,11 @@ def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_cu
             db_user.updated_by = current_user.ID
             db.commit()
             db.refresh(db_user)
-            # Return the updated user details in the ResponseData model
             return True,msg['user_upd'],db_user.to_dict()
         else:
             False, msg['incorrect_pass'], {}
     else:
-            False,
-            msg['user_not'],
-            {}
+            False,msg['user_not'],{}
     
 
 # Function to delete a user
@@ -114,7 +108,6 @@ def delete_users(db: Session,
         return False,msg['enough_perm'],{}
     db.delete(user_to_delete)
     db.commit()
-    # Return a ResponseData model with the appropriate status, message, and data
     return True,msg['user_del'],user_to_delete.to_dict()
 
 

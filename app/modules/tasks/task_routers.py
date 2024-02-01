@@ -16,6 +16,47 @@ router = APIRouter()
 # Get the absolute path to the "static" directory
 static_directory = os.path.join(os.path.dirname(os.path.abspath("/static/uploads")), "static")
 
+# LIST all Task for current user
+@router.get("/tasks/me",
+            response_model=ResponseData, 
+            summary="Get all tasks of current user", tags=["Tasks"])
+def get_all_tasks(
+    db: Session = Depends(get_db),
+    current_user: get_current_user = Depends(),
+):
+    """
+    Get list of all tasks for the current user.
+    """
+    try:
+        status, message, data = get_tasks(db, current_user)
+        return ResponseData(status=status, message=message, data=data)
+    except Exception as e:
+        return ResponseData(
+            status=False,
+            message=msg["unexp_error"],
+            data={},
+        )
+
+# Filter all tasks with due_date and status
+@router.get("/tasks/all", response_model=ResponseData,tags=["Tasks"], summary="View all tasks along with filter from due_date and status")
+async def view_all_tasks_endpoint(
+    status: Optional[TaskStatus] = None, 
+    due_date: Optional[date] = None,
+    db: Session = Depends(get_db),
+    current_user: get_current_user = Depends()):
+    """
+    Filter the tasks
+    """
+    try:
+        status, message, data = view_all_tasks(db, current_user, status, due_date)
+        return ResponseData(status=status, message=message, data=data)
+    except Exception as e:
+        return ResponseData(
+            status=False,
+            message=msg["unexp_error"],
+            data={},
+        )
+
 # CREATE tasks
 @router.post("/task/create",
               response_model=ResponseData,
@@ -41,11 +82,10 @@ def create_task_route(
     except Exception as e:
         return ResponseData(status=False, message=msg["invalid_user"], data={})
 
-
 # Update Task
 @router.put("/tasks/update/{task_id}",
              response_model=ResponseData,
-             tags=["Tasks"], summary="Update the task status")
+             tags=["Tasks"], summary="Update the task status and make comments if required")
 async def update_task_status(
     task_id: int,
     task: CreateHistory,
@@ -60,12 +100,12 @@ async def update_task_status(
         status, message, data = update_task(db, task_id, task, status, current_user)
         return ResponseData(status=status, message=message, data=data)
     except Exception as e:
+        print(e)
         return ResponseData(
             status=False,
             message=msg["unexp_error"],
             data={},
         )
-
 
 # Delete Task
 @router.delete("/tasks/delete/{task_id}",
@@ -86,28 +126,6 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db), curr
             data={},
         )
     
-
-# Filter all tasks with due_date and status
-@router.get("/tasks/filter/", response_model=ResponseData,tags=["Tasks"], summary="Filter all tasks along with due_date and status")
-async def view_all_tasks_endpoint(
-    status: Optional[TaskStatus] = None, 
-    due_date: Optional[date] = None,
-    db: Session = Depends(get_db),
-    current_user: get_current_user = Depends()):
-    """
-    Filter the tasks
-    """
-    try:
-        status, message, data = view_all_tasks(db, current_user, status, due_date)
-        return ResponseData(status=status, message=message, data=data)
-    except Exception as e:
-        return ResponseData(
-            status=False,
-            message=msg["unexp_error"],
-            data={},
-        )
-
-        
 # GET task history
 @router.get("/tasks/history", response_model=ResponseData, tags=["Tasks"], summary="View task History")
 async def view_task_history_endpoint(
@@ -128,34 +146,11 @@ async def view_task_history_endpoint(
             data={},
         )
 
-
-# LIST all Task for current user
-@router.get("/tasks/all",
-            response_model=ResponseData, 
-            summary="Get all tasks of current user", tags=["Tasks"])
-def get_all_tasks(
-    db: Session = Depends(get_db),
-    current_user: get_current_user = Depends(),
-):
-    """
-    Get list of all tasks for the current user.
-    """
-    try:
-        status, message, data = get_tasks(db, current_user)
-        return ResponseData(status=status, message=message, data=data)
-    except Exception as e:
-        return ResponseData(
-            status=False,
-            message=msg["unexp_error"],
-            data={},
-        )
-
-
 # Upload file for a task
 @router.post("/tasks/upload/{task_id}",
              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
              tags=["Tasks"],
-             summary="Upload file for a task")
+             summary="Upload files for a task")
 def upload_file_for_task(
     task_id: int,
     file: UploadFile = File(...),
@@ -166,8 +161,8 @@ def upload_file_for_task(
     Upload a file for a specific task.
     """
     try:
-        result = upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
-        return result
+        status, message, data = upload_file(db=db, task_id=task_id, file=file, current_user=current_user)
+        return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         return ResponseData(
             status=False,

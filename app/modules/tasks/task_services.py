@@ -22,6 +22,78 @@ def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Op
     db.add(history_entry)
     db.commit()
 
+# LIST all Task for current user
+def get_tasks(db: Session, current_user: get_current_user):
+    tasks = (
+        db.query(Task)
+        .filter(Task.agent_id == current_user.ID)
+        .all()
+    )
+    return_tasks = []
+    for task in tasks:
+        document_paths = list_uploaded_documents_of_task_service(db, task.ID)
+        task_data = {
+            "ID": task.ID,
+            "title": task.title,
+            "description": task.description,
+            "status": task.status,
+            "due_date": task.due_date,
+            "agent_id": task.agent_id,
+            "agent_role": task.agent_role,
+            "created_by_id": current_user.ID,
+            "updated_by_id": current_user.ID,
+            "created_by_role": current_user.role,
+            "created_at": task.created_at,
+            "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
+        }
+        return_tasks.append(task_data)
+    data = return_tasks
+    return True,msg["tasks_avl"],data
+
+# Filter all tasks with due_date and status
+def view_all_tasks(
+        db: Session, 
+        current_user: get_current_user, 
+        status: Optional[TaskStatus] = None, 
+        due_date: Optional[date] = None
+    ):
+    try:
+        query = db.query(Task)
+        if current_user.role == Role.MANAGER:
+            query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
+        elif current_user.role == Role.AGENT:
+            query = query.filter(Task.agent_id == current_user.ID)
+        if status:
+            query = query.filter(Task.status == status)
+        if due_date:
+            query = query.filter(Task.due_date == due_date)
+        tasks = query.all()
+        tasks_data = []
+        for task in tasks:
+            document_paths_response = list_uploaded_documents_of_task_service(db, task.ID)
+            if document_paths_response.status:
+                document_paths = document_paths_response.data.get("documents", [])
+            else:
+                document_paths = []
+            task_data = {
+                "ID": task.ID,
+                "title": task.title,
+                "description": task.description,
+                "status": task.status,
+                "due_date": task.due_date,
+                "agent_id": task.agent_id,
+                "agent_role": task.agent_role,
+                "created_by_id": task.created_by_id,
+                "updated_by_id": task.updated_by_id,
+                "created_by_role": task.created_by_role,
+                "created_at": task.created_at,
+                "document_path": document_paths
+            }
+            tasks_data.append(task_data)
+        return True, msg["tasks_avl"], task_data
+    except Exception as e:
+        return False, msg["unexp_error"], {}
+
 # CREATE tasks with optional file upload
 def create_task(
     db: Session,
@@ -84,7 +156,6 @@ def create_task(
         return_task["document_path"] = full_url
     return return_task
 
-
 # Update Task
 def update_task(
     db: Session,
@@ -132,7 +203,6 @@ def update_task(
         "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
     }
 
-
 # Delete Task
 def delete_task(db: Session, current_user: get_current_user, task_id: int):
     try:
@@ -168,52 +238,6 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
     except Exception as e:
         return False, msg["invalid_task"], {}
 
-
-# Filter all tasks with due_date and status
-def view_all_tasks(
-        db: Session, 
-        current_user: get_current_user, 
-        status: Optional[TaskStatus] = None, 
-        due_date: Optional[date] = None
-    ):
-    try:
-        query = db.query(Task)
-        if current_user.role == Role.MANAGER:
-            query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
-        elif current_user.role == Role.AGENT:
-            query = query.filter(Task.agent_id == current_user.ID)
-        if status:
-            query = query.filter(Task.status == status)
-        if due_date:
-            query = query.filter(Task.due_date == due_date)
-        tasks = query.all()
-        tasks_data = []
-        for task in tasks:
-            document_paths_response = list_uploaded_documents_of_task_service(db, task.ID)
-            if document_paths_response.status:
-                document_paths = document_paths_response.data.get("documents", [])
-            else:
-                document_paths = []
-            task_data = {
-                "ID": task.ID,
-                "title": task.title,
-                "description": task.description,
-                "status": task.status,
-                "due_date": task.due_date,
-                "agent_id": task.agent_id,
-                "agent_role": task.agent_role,
-                "created_by_id": task.created_by_id,
-                "updated_by_id": task.updated_by_id,
-                "created_by_role": task.created_by_role,
-                "created_at": task.created_at,
-                "document_path": document_paths
-            }
-            tasks_data.append(task_data)
-        return True, msg["tasks_avl"], {"tasks": tasks_data}
-    except Exception as e:
-        return False, msg["unexp_error"], {}
-
-
 # GET task history
 def get_task_history(db: Session, current_user: get_current_user, task_ids: Optional[List[int]] = None):
     try:
@@ -248,49 +272,19 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
     except Exception as e:
         return False, msg["unexp_error"], {}
 
-
-# LIST all Task for current user
-def get_tasks(db: Session, current_user: get_current_user) -> ResponseData:
-    tasks = (
-        db.query(Task)
-        .filter(Task.agent_id == current_user.ID)
-        .all()
-    )
-    return_tasks = []
-    for task in tasks:
-        document_paths = list_uploaded_documents_of_task_service(db, task.ID)
-        task_data = {
-            "ID": task.ID,
-            "title": task.title,
-            "description": task.description,
-            "status": task.status,
-            "due_date": task.due_date,
-            "agent_id": task.agent_id,
-            "agent_role": task.agent_role,
-            "created_by_id": current_user.ID,
-            "updated_by_id": current_user.ID,
-            "created_by_role": current_user.role,
-            "created_at": task.created_at,
-            "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
-        }
-        return_tasks.append(task_data)
-    data = {"tasks": return_tasks}
-    return True,msg["tasks_avl"],data
-    
-
 # Upload file for a task
 def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_current_user):
     try:
         # Check if a file is provided
         if not file:
-            return ResponseData(status=False, message=msg["random_key_11"], data={})
+            return False, msg["random_key_11"], {}
         # Retrieve the task
         task = db.query(Task).filter(Task.ID == task_id).first()
         if not task:
-            return ResponseData(status=False, message=msg["invalid_task"], data={})
+            return False, msg["invalid_task"], {}
         # Check if the current user can create a document for the task
         if not can_create(current_user.role, task.agent_role):
-            return ResponseData(status=False, message=msg["enough_perm"], data={})
+            return False, msg["enough_perm"], {}
         # Create the upload directory if it doesn't exist
         upload_dir = "static/uploads"
         os.makedirs(upload_dir, exist_ok=True)
@@ -317,13 +311,11 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
             "task_id": task_id,
             "uploaded_by": current_user.ID
         }
-        return ResponseData(status=True, message=msg["upload"], data=response_data)
+        return True, msg["upload"], response_data
     except Exception as e:
-        return ResponseData(status=False, message=msg["unexp_error"], data={})
+        return False, msg["unexp_error"], {}
     finally:
         file.file.close()
-
-    
     
 # GET the list of uploaded documents
 def list_uploaded_documents_of_task_service(db: Session, task_id: int) -> ResponseData:

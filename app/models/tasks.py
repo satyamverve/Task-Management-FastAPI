@@ -61,7 +61,6 @@ class TaskDocument(Base):
     task_id = Column(Integer, ForeignKey("tasks.ID", ondelete='CASCADE', onupdate='NO ACTION'))
     document_path = Column(String(255), nullable=False)
     created_by_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'), nullable=True)
-
     
     # Relationship with Task model
     task = relationship("Task", back_populates="documents")

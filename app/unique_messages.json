@@ -24,8 +24,9 @@
     "failed_res_pass": "Failed to reset password",
     "invalid_otp": "Invalid OTP, please check your mail and enter a valid OTP",
     "update_task": "Task updated successfulley.",
-    "user_not": "Assigned user not found",
+    "user_not": "User not found",
     "lst_user": "List of the Users",
-    "updated_pass": "You have successfulley updated your password"
+    "updated_pass": "You have successfulley updated your password",
+    "retrived_docs": "All uploaded documents"
 
 }

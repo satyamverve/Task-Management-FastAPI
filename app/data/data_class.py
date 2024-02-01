@@ -47,6 +47,7 @@ class Settings(BaseSettings):
 
     base_url: str
     otp_expire: int
+    
     class Config:
         env_file = ".env"
 

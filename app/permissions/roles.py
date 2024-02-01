@@ -3,7 +3,6 @@
 from enum import Enum
 from app.permissions.models_permissions import *
 
-
 # Enum class representing different user roles
 class Role(str, Enum):
     SUPERADMIN = "SUPERADMIN"

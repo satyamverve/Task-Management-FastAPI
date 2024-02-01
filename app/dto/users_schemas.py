@@ -35,7 +35,6 @@ class RolesUpdate(BaseModel):
     """
     role: Optional[Role]
 
-
 class UserUpdate(BaseModel):
     """
     Pydantic model for updating user details.
