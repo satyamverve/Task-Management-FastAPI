@@ -1,4 +1,9 @@
-# Command run the FastAPI application
+# Dependings to run this application
+- Create a virtual environment
+- Install the requirements.txt file
+- COMMAND: `pip install -r requirements.txt`
+
+# Command to run the FastAPI application
 - `uvicorn main:app --reload`
 ## Command to run and access the fastapi application from others system (IP):
 - `uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
