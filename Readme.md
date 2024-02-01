@@ -9,10 +9,9 @@
 
 ## access the fastapi app from others system:
 <search: http://<your-local-ip>:8000>
-w
+
 # CREATE THE ".env" file and add the below details
->> Create at the root directory
-# .env
+```Create a file called ".env" at the root directory of your project ``` 
 
 DATABASE_USERNAME=
 DATABASE_PASSWORD=
@@ -28,3 +27,10 @@ MAIL_USERNAME =
 MAIL_PASSWORD = 
 MAIL_FROM = 
 MAIL_PORT = 
+BASE_URL = 
+OTP_EXPIRE = 
+
+` Base_URL is the local host address eg. http://localhost/`
+` OTP_EXPIRE is the expiration time for forgot password`
+
+
