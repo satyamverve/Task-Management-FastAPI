@@ -6,6 +6,9 @@
 # Command to run the FastAPI application
 - `uvicorn main:app --reload`
 
+## Endpoints requests
+- All endpoints can be used by visiting the swagger documentation at `localhost:8000/docs`
+
 ## Command to run and access the fastapi application from others system (IP):
 - `uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
 - `search: http://<your-local-ip>:8000`
@@ -37,3 +40,6 @@
 - ` Base_URL is the local host address eg. http://localhost/`
 - ` OTP_EXPIRE is the expiration time for forgot password`
 
+
+# Command to clear all pycache files
+- `find . -type d -name "pycache" -exec rm -r {} ;`
