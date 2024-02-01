@@ -76,7 +76,7 @@ def get_user_by_user_id_route(user_id: int,
 @router.post("/user/create",
              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],
              response_model=ResponseData, summary="Register users", tags=["Users"])
-async def create_user_route(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_user_route(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Registers a user.
     """
@@ -89,6 +89,7 @@ async def create_user_route(user: UserSignUp, db: Session = Depends(get_db), cur
             message=msg['unexp_error'],
             data={}
         )
+    
 # Function to update user information
 @router.put("/user/update/{user_id}", response_model=ResponseData, summary="Update users", tags=["Users"])
 def update_user_api(user_id: int, user: UserUpdate, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
@@ -102,7 +103,6 @@ def update_user_api(user_id: int, user: UserUpdate, db: Session = Depends(get_db
             data={}
         )
         return response_data
-    
 
 # Function to delete a user
 @router.delete("/user/delete/{user_id}",
@@ -124,7 +124,6 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
         )
         return response_data
 
-
 # Function to update user roles
 @router.put("/roles/update/{user_id}",
             dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_DETAILS, Users.permissions.EDIT]))],
@@ -144,7 +143,6 @@ def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(g
             data={}
         )
         return response_data
-
 
 # Function to LIST all user roles with permissions
 @router.get("/roles/all",
@@ -172,7 +170,6 @@ def get_user_roles(db: Session = Depends(get_db)):
             data={"roles": roles_with_permissions}
         )
         return response_data
-
 
 # Forgot password
 @router.post("/forgot_password",

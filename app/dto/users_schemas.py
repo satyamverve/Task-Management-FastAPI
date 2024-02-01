@@ -25,7 +25,7 @@ class UserSignUp(BaseModel):
     Pydantic model for user registration.
     """
     email: EmailStr
-    password: Optional[str]
+    password: str
     name: str
     role: Role
 

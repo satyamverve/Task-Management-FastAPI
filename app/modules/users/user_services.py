@@ -4,15 +4,14 @@ from datetime import datetime, timedelta
 import sys
 from sqlalchemy import or_
 sys.path.append("..")
-import string
-import random
 from sqlalchemy.orm import Session
 from app.models.users import User, Token
 from app.dto.users_schemas import RolesUpdate, UserSignUp, UserUpdate
 from sqlalchemy.exc import IntegrityError
-from app.auth.auth import get_password_hash, verify_password, get_current_user
+from app.auth.auth import  get_current_user
 from app.permissions.roles import Role, can_create
 from app.config.database import msg
+from utils import verify_password, get_password_hash
 
 # Custom exception for duplicate error
 class DuplicateError(Exception):
@@ -48,9 +47,8 @@ def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
     if not can_create(current_user.role, user.role):
         return False, msg["enough_perm"], {}
     password = user.password
-    if not password:
-        characters = string.ascii_letters + string.digits + string.punctuation
-        password = ''.join(random.choice(characters) for i in range(10))
+    if not password:    
+        return False,msg['password'],{}
     user = User(
         email=user.email,
         password=get_password_hash(password),

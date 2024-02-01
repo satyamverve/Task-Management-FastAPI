@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from app.models.users import User
@@ -24,17 +23,6 @@ jwt_bearer = JWTBearer()
 JWT_SECRET = settings.secret_key
 JWT_ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Function to verify plaintext password against hashed password
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-# Function to generate hashed password
-def get_password_hash(password):
-    return pwd_context.hash(password)
 
 # Function to sign a JWT token
 def signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:

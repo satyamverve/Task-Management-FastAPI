@@ -13,7 +13,7 @@
     "role_upd": "User roles updated successfully",
     "user_detail": "Available details of the user",
     "created_user": "User Created successfully",
-    "duplicate_email": "The entered email is is already attached to a registered user",
+    "duplicate_email": "The entered email is already attached to a registered user",
     "user_upd": "User details updated successfully",
     "incorrect_pass": "Old password provided is incorrect",
     "user_del": "User Deleted successfully",
@@ -27,6 +27,7 @@
     "user_not": "User not found",
     "lst_user": "List of the Users",
     "updated_pass": "You have successfulley updated your password",
-    "retrived_docs": "All uploaded documents"
+    "retrived_docs": "All uploaded documents",
+    "password": "Please provide a password"
 
 }

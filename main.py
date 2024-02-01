@@ -3,7 +3,8 @@
 from fastapi import FastAPI, Body, Depends
 from app.models.users import User
 from app.config.database import get_db, msg
-from app.auth.auth import signJWT, verify_password
+from app.auth.auth import signJWT
+from utils import verify_password
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.dto.users_schemas import UserLoginSchema
