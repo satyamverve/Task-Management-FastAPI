@@ -1,7 +1,7 @@
 # Command the run the FastAPI application
 - `uvicorn main:app --reload`
 
-# For the first time create new users use the below Query mannualy in SQL
+# To create new user for the first time, use the below Query mannualy in SQL
 ``` INSERT INTO users (email,password,name, role) VALUES('admin@gmail.com', '$2a$12$G1.eB9vmbGprvloq.Fb3v.iK3sgosfTj.FMglkWlDEDJEzCjJZgpq', 'admin', 'SUPERADMIN'); ```
 
 ## access the fastapi app from others system (IP):
