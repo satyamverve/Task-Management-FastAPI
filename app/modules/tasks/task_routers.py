@@ -37,7 +37,7 @@ def create_task_route(
         task_data = create_task(db=db, task=task, status=status, current_user=current_user, file=file)
         return ResponseData(status=True, message=msg['task_created'], data=task_data)
     except ValueError:
-        return ResponseData(status=False, message=msg['user_not'], data={})
+        return ResponseData(status=False, message=msg['invalid_user'], data={})
     except Exception as e:
         return ResponseData(status=False, message=msg["invalid_user"], data={})
 

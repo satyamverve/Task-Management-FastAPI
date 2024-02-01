@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from pydantic import BaseModel, EmailStr, Field
-from datetime import datetime
 from typing import Optional
 from app.permissions.roles import Role
 
@@ -36,6 +35,7 @@ class RolesUpdate(BaseModel):
     """
     role: Optional[Role]
 
+
 class UserUpdate(BaseModel):
     """
     Pydantic model for updating user details.
@@ -44,25 +44,3 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr]
     old_password: str
     new_password: str
-
-class UserOut(BaseModel):
-    """
-    Pydantic model for returning user details.
-    """
-    ID: int
-    email: EmailStr
-    name: Optional[str]
-    role: Role
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class ResponseData(BaseModel):
-    status: bool
-    message: str
-    data: dict
-    class Config:
-        orm_mode = True

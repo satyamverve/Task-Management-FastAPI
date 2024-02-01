@@ -5,7 +5,6 @@ import sys
 sys.path.append("..")
 from fastapi import Depends,UploadFile
 from typing import List, Optional
-from pydantic import ValidationError
 from datetime import date
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -36,7 +35,7 @@ def create_task(
     if task.agent_id is not None:
         assigned_user = db.query(User).filter(User.ID == task.agent_id).first()
         if not assigned_user:
-            return msg["user_not"]
+            return msg["invalid_user"]
     agent_id_value = assigned_user.ID if assigned_user else None
     status_value = status
     db_task = Task(

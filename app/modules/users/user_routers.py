@@ -1,18 +1,16 @@
 # app.modules.users.routes.py
 
-from typing import Optional
-from fastapi import BackgroundTasks, Depends, APIRouter, Form, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi import BackgroundTasks, Depends, APIRouter, Form, Request
 from app.models import User, Token
-from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from app.auth.auth import get_current_user, PermissionChecker, otp_expire_time, generate_6_digit_otp, get_user_by_email
 from app.permissions.models_permissions import Users
 from app.permissions.roles import get_role_permissions, Role
 from app.config.database import get_db  
 from app.modules.users import user_services as db_crud
-from app.dto.users_schemas import ResponseData, UserSignUp, UserUpdate, RolesUpdate
+from app.dto.users_schemas import UserSignUp, UserUpdate, RolesUpdate
 from app.email_notifications.notify import send_reset_password_mail
+from app.dto.tasks_schema import ResponseData
 from fastapi.templating import Jinja2Templates
 from app.config.database import msg
 
@@ -34,13 +32,13 @@ def get_users_route(
         users = db_crud.get_users(db, current_user)
         return ResponseData(
             status=True,
-            message="List of Users",
+            message=msg['lst_user'],
             data={"users": users}
         )
     except Exception:
         return ResponseData(
             status=False,
-            message=msg['random_key_10'],
+            message=msg['unexp_error'],
             data={}
         )
 
@@ -58,19 +56,19 @@ def get_user_by_user_id_route(user_id: int,
         if user:
             return ResponseData(
                 status=True,
-                message=msg['key_21'],
+                message=msg['user_detail'],
                 data=user
             )
         else:
             return ResponseData(
                 status=False,
-                message=msg['key_26'],
+                message=msg['user_not'],
                 data={}
             )
     except Exception:
         return ResponseData(
             status=False,
-            message=msg['key_26'],
+            message=msg['user_not'],
             data={}
         )
 
@@ -87,30 +85,31 @@ async def create_user_route(user: UserSignUp, db: Session = Depends(get_db), cur
         if user_data:
             return ResponseData(
                 status=True,
-                message=msg['key_22'],
+                message=msg['created_user'],
                 data=user_data
             )
         else:
             return ResponseData(
                 status=False,
-                message=msg['key_23'],
+                message=msg['duplicate_email'],
                 data={}
             )
     except Exception as e:
         return ResponseData(
             status=False,
-            message=msg['random_key_10'],
+            message=msg['unexp_error'],
             data={}
         )
 # Function to update user information
 @router.put("/user/update/{user_id}", response_model=ResponseData, summary="Update users", tags=["Users"])
 def update_user_api(user_id: int, user: UserUpdate, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
     try:
-        return db_crud.update_user(db, user_id, user, current_user)
+        status, message, data= db_crud.update_user(db, user_id, user, current_user)
+        return ResponseData(status=status, message=message, data=data)
     except Exception:
         response_data = ResponseData(
             status=False,
-            message=msg['key_26'],
+            message=msg['incorrect_pass'],
             data={}
         )
         return response_data
@@ -118,7 +117,7 @@ def update_user_api(user_id: int, user: UserUpdate, db: Session = Depends(get_db
 
 
 # Function to delete a user
-@router.delete("/user/{user_id}",
+@router.delete("/user/delete/{user_id}",
                dependencies=[Depends(PermissionChecker([Users.permissions.DELETE]))],
                response_model=ResponseData,
                summary="Delete users", tags=["Users"])
@@ -127,11 +126,12 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
     Deletes a user.
     """
     try:
-        return db_crud.delete_users(db, current_user, user_id)
+        status, message, data=db_crud.delete_users(db, current_user, user_id)
+        return ResponseData(status=status, message=message, data=data)
     except Exception:
         response_data = ResponseData(
             status=False,
-            message=msg['key_26'],
+            message=msg['user_not'],
             data={}
         )
         return response_data
@@ -145,15 +145,15 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
             summary="Update users role", tags=["Roles"])
 def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Update role of user.
+    Update role of user (Only Superadmin can update the role of users).
     """
     try:
-        updated_role = db_crud.update_roles(db, user_id, current_user, user_update)
-        return updated_role
+        status, message, data = db_crud.update_roles(db, user_id, current_user, user_update)
+        return ResponseData(status=status, message=message, data=data)
     except Exception:
         response_data = ResponseData(
             status=False,
-            message=msg['key_26'],
+            message=msg['user_not'],
             data={}
         )
         return response_data
@@ -165,7 +165,7 @@ def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(g
             response_model=ResponseData, summary="Get all user roles with permissions", tags=["Roles"])
 def get_user_roles(db: Session = Depends(get_db)):
     """
-    Returns all user roles with their associated permissions.
+    Returns all roles with their associated permissions.
     """
     try:
         roles_with_permissions = []
@@ -174,15 +174,62 @@ def get_user_roles(db: Session = Depends(get_db)):
             roles_with_permissions.append({role.value: role_permissions})
         response_data = ResponseData(
             status=True,
-            message=msg['key_28'],
+            message=msg['upd_roles'],
             data={"roles": roles_with_permissions}
         )
         return response_data
     except Exception:
         response_data = ResponseData(
             status=False,
-            message=msg['random_key_2'],
+            message=msg['enough_perm'],
             data={"roles": roles_with_permissions}
+        )
+        return response_data
+
+
+# Forgot password
+@router.post("/forgot_password",
+              summary="Forgotten Password", tags=["Forgot Password"])
+async def user_forgot_password(request: Request, user_email: str, db: Session = Depends(get_db)):
+    """
+    Triggers forgot password mechanism for a user.
+    """
+    try:
+        user = get_user_by_email(db=db, user_email=user_email)
+        if not user:
+            response_data = ResponseData(
+                status=False,
+                message=msg['user_not'],
+                data={}
+            )
+        else:
+            # Generate a 6-digit OTP with expiration time
+            otp, expiration_time = generate_6_digit_otp()
+            # Store the OTP in the password_reset_tokens table
+            reset_token = Token(
+                otp=otp,  # Updated from token to otp
+                user_email=user_email,
+                reset_password=False,  # Initially set to False
+                is_expired=False,  # Initially set to False
+                expiration_time=expiration_time  # Set expiration time
+            )
+            db.add(reset_token)
+            db.commit()
+            # Include OTP and expiration time in the response data
+            response_data = ResponseData(
+                status=True,
+                message=msg['sent_otp'],
+                data={"otp": otp, "expiration_time": expiration_time}
+            )
+            # Send the OTP via email or any other preferred method
+            await send_reset_password_mail(recipient_email=user_email, user=user, otp=otp, expire_in_minutes=expiration_time)
+        return response_data
+    except Exception as e:
+        print(e)
+        response_data = ResponseData(
+            status=False,
+            message=msg['unexp_error'],
+            data={}
         )
         return response_data
 
@@ -205,7 +252,7 @@ def user_reset_password(
         if not user_email:
             response_data = ResponseData(
             status=False,
-            message=msg['key_33'],
+            message=msg['invalid_otp'],
             data={}
             )
             return response_data
@@ -217,24 +264,23 @@ def user_reset_password(
             db_crud.update_password_change_status(db, otp)
             background_tasks.add_task(db_crud.update_password_change_status, db, otp)
             background_tasks.add_task(db_crud.update_token_status, db, otp_expire_time)
-            return templates.TemplateResponse(
-                "reset_password_result.html",
-                {
-                    "request": request,
-                    "success": True
-                }
-            )
+            response_data = ResponseData(
+                    status=True,
+                    message=msg['updated_pass'],
+                    data={}
+                    )
+            return response_data
         else:
             response_data = ResponseData(
             status=False,
-            message=msg['key_32'],
+            message=msg['failed_res_pass'],
             data={}
             )
             return response_data
     except Exception as e:
         response_data = ResponseData(
             status=False,
-            message=msg['random_key_10'],
+            message=msg['unexp_error'],
             data={}
         )
         return response_data
@@ -248,7 +294,7 @@ def user_reset_password_template(request: Request):
     try:
         token = request.query_params.get('otp')
         return templates.TemplateResponse(
-            "reset_password.html",
+            "282777",
             {
                 "request": request, 
                 "otp": token
@@ -257,56 +303,11 @@ def user_reset_password_template(request: Request):
     except Exception as e:
         response_data = ResponseData(
             status=False,
-            message=msg['random_key_10'],
+            message=msg['unexp_error'],
             data={}
         )
         return response_data
 
 
 
-# Forgot password
-@router.post("/forgot_password",
-              summary="Forgotten Password", tags=["Forgot Password"])
-async def user_forgot_password(request: Request, user_email: str, db: Session = Depends(get_db)):
-    """
-    Triggers forgot password mechanism for a user.
-    """
-    try:
-        user = get_user_by_email(db=db, user_email=user_email)
-        if not user:
-            response_data = ResponseData(
-                status=False,
-                message=msg['key_26'],
-                data={}
-            )
-        else:
-            # Generate a 6-digit OTP with expiration time
-            otp, expiration_time = generate_6_digit_otp()
-            # Store the OTP in the password_reset_tokens table
-            reset_token = Token(
-                otp=otp,  # Updated from token to otp
-                user_email=user_email,
-                reset_password=False,  # Initially set to False
-                is_expired=False,  # Initially set to False
-                expiration_time=expiration_time  # Set expiration time
-            )
-            db.add(reset_token)
-            db.commit()
-            # Include OTP and expiration time in the response data
-            response_data = ResponseData(
-                status=True,
-                message=msg['key_31'],
-                data={"otp": otp, "expiration_time": expiration_time}
-            )
-            # Send the OTP via email or any other preferred method
-            await send_reset_password_mail(recipient_email=user_email, user=user, otp=otp, expire_in_minutes=expiration_time)
-        return response_data
-    except Exception as e:
-        print(e)
-        response_data = ResponseData(
-            status=False,
-            message=msg['random_key_10'],
-            data={}
-        )
-        return response_data
 

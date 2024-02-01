@@ -6,7 +6,9 @@ from app.config.database import get_db, msg
 from app.auth.auth import signJWT, verify_password
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.dto.users_schemas import ResponseData, UserLoginSchema
+from app.dto.users_schemas import UserLoginSchema
+from app.dto.tasks_schema import ResponseData
+
 from app.models.users import Base as user_base
 from app.models.tasks import Base as task_base
 from app.config.database import engine
@@ -93,13 +95,13 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
         }
         return ResponseData(
             status=True,
-            message=msg['key_29'],
+            message=msg['login'],
             data=user_data,
         )
     else:
         return ResponseData(
             status=False,
-            message=msg['key_30'],
+            message=msg['invalid_login'],
             data={},
         )
 
