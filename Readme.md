@@ -8,7 +8,7 @@
 - `uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
 - `search: http://<your-local-ip>:8000`
 
-# CREATE THE ".env" file and add the below details
+# CREATE ".env" file and add the below details
 ```Create a file called ".env" at the root directory of your project ``` 
 
 - DATABASE_USERNAME=     
