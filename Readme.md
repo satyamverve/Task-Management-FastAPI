@@ -1,4 +1,4 @@
-# Command the run the FastAPI application
+# Command run the FastAPI application
 - `uvicorn main:app --reload`
 
 # To create new user for the first time, use the below Query mannualy in SQL
