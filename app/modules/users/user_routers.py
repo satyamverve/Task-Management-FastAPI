@@ -62,7 +62,7 @@ def get_user_by_user_id_route(user_id: int,
         else:
             return ResponseData(
                 status=False,
-                message=msg['user_not'],
+                message=msg['enough_perm'],
                 data={}
             )
     except Exception:

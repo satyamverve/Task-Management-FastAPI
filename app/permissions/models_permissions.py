@@ -8,5 +8,4 @@ class Users(ModelPermissionsMixin):
     __PERMISSIONS__ = [
         'VIEW',
         'EDIT',
-        'CHANGE_PASSWORD',
     ]

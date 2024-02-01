@@ -48,13 +48,6 @@ class PermissionType(str, Enum):
     VIEW_DETAILS = "VIEW_DETAILS"
     EDIT = "EDIT"
     DELETE = "DELETE"
-    MANAGER = "MANAGER"  # Add MANAGER permission
-    AGENT = "AGENT"  # Add AGENT permission
-    CREATE_SUPERADMIN = "CREATE_SUPERADMIN"  # Add CREATE_SUPERADMIN permission
-    CREATE_AGENT = "CREATE_AGENT"  # Add CREATE_AGENT permission
-    CREATE_TASK= "CREATE_TASK"
-    DELETE_TASK= "DELETE_TASK"
-    EDIT_TASK= "EDIT_TASK"
 
     def __str__(self):
         return f"{self.value}"
@@ -142,5 +135,6 @@ class ModelPermissionsMixin:
 
     @classmethod
     @property
-    def permissions(cls) -> ModelPermissions: # noqa
+    def permissions(cls) -> ModelPermissions: # noqa (noqa most likely stands for no quality assurance .
+                                                #  It tells code-analysis software to ignore warnings)
         return ModelPermissions(cls)

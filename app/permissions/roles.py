@@ -2,7 +2,6 @@
 
 from enum import Enum
 from app.permissions.models_permissions import *
-from typing import List
 
 
 # Enum class representing different user roles
