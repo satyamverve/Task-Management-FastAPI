@@ -13,22 +13,22 @@
 # CREATE THE ".env" file and add the below details
 ```Create a file called ".env" at the root directory of your project ``` 
 
-DATABASE_USERNAME=
-DATABASE_PASSWORD=
-DATABASE_HOSTNAME="localhost"
-DATABASE_PORT="3306"
-DATABASE_NAME=
+- DATABASE_USERNAME=     
+- DATABASE_PASSWORD=
+- DATABASE_HOSTNAME="localhost"
+- DATABASE_PORT="3306"
+- DATABASE_NAME=
 
-SECRET_KEY=
-ALGORITHM=
-ACCESS_TOKEN_EXPIRE_MINUTES=
+- SECRET_KEY=
+- ALGORITHM=
+- ACCESS_TOKEN_EXPIRE_MINUTES=
 
-MAIL_USERNAME = 
-MAIL_PASSWORD = 
-MAIL_FROM = 
-MAIL_PORT = 
-BASE_URL = 
-OTP_EXPIRE = 
+- MAIL_USERNAME = 
+- MAIL_PASSWORD = 
+- MAIL_FROM = 
+- MAIL_PORT = 
+- BASE_URL = 
+- OTP_EXPIRE = `
 
 ` Base_URL is the local host address eg. http://localhost/`
 ` OTP_EXPIRE is the expiration time for forgot password`
