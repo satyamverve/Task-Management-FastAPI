@@ -70,7 +70,7 @@ def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
 def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_current_user):
     db_user = db.query(User).filter(User.ID == user_id).first()
     if db_user is None:
-        return False, msg["invalid_task"], {}
+        return False, msg["user_not"], {}
     # Check permissions based on user role
     if not (
         current_user.role == Role.SUPERADMIN or
@@ -92,9 +92,7 @@ def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_cu
             return True,msg['user_upd'],db_user.to_dict()
         else:
             False, msg['incorrect_pass'], {}
-    else:
-            False,msg['user_not'],{}
-    
+
 
 # Function to delete a user
 def delete_users(db: Session,
