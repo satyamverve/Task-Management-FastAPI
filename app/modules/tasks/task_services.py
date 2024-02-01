@@ -26,7 +26,7 @@ def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Op
 def get_tasks(db: Session, current_user: get_current_user):
     tasks = (
         db.query(Task)
-        .filter(Task.agent_id == current_user.ID)
+        .filter(Task.user_id == current_user.ID)
         .all()
     )
     return_tasks = []
@@ -38,11 +38,10 @@ def get_tasks(db: Session, current_user: get_current_user):
             "description": task.description,
             "status": task.status,
             "due_date": task.due_date,
-            "agent_id": task.agent_id,
-            "agent_role": task.agent_role,
+            "user_id": task.user_id,
+            "role_id": task.role_id,
             "created_by_id": current_user.ID,
             "updated_by_id": current_user.ID,
-            "created_by_role": current_user.role,
             "created_at": task.created_at,
             "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
         }
@@ -59,10 +58,10 @@ def view_all_tasks(
     ):
     try:
         query = db.query(Task)
-        if current_user.role == Role.MANAGER:
-            query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
-        elif current_user.role == Role.AGENT:
-            query = query.filter(Task.agent_id == current_user.ID)
+        if current_user.role_id == 2:
+            query = query.filter(or_(Task.user_id == current_user.ID, Task.role_id == 3))
+        elif current_user.role_id == 3:
+            query = query.filter(Task.user_id == current_user.ID)
         if status:
             query = query.filter(Task.status == status)
         if due_date:
@@ -81,17 +80,17 @@ def view_all_tasks(
                 "description": task.description,
                 "status": task.status,
                 "due_date": task.due_date,
-                "agent_id": task.agent_id,
-                "agent_role": task.agent_role,
+                "user_id": task.user_id,
+                "role_id": task.role_id,
                 "created_by_id": task.created_by_id,
                 "updated_by_id": task.updated_by_id,
-                "created_by_role": task.created_by_role,
                 "created_at": task.created_at,
                 "document_path": document_paths
             }
             tasks_data.append(task_data)
-        return True, msg["tasks_avl"], task_data
+        return True, msg["tasks_avl"], tasks_data
     except Exception as e:
+        print(e)
         return False, msg["unexp_error"], {}
 
 # CREATE tasks with optional file upload
@@ -104,11 +103,11 @@ def create_task(
 ):
     """Create a task with optional file upload."""
     assigned_user = None
-    if task.agent_id is not None:
-        assigned_user = db.query(User).filter(User.ID == task.agent_id).first()
+    if task.user_id is not None:
+        assigned_user = db.query(User).filter(User.ID == task.user_id).first()
         if not assigned_user:
             return msg["invalid_user"]
-    agent_id_value = assigned_user.ID if assigned_user else None
+    user_id_value = assigned_user.ID if assigned_user else None
     status_value = status
     db_task = Task(
         title=task.title,
@@ -116,12 +115,11 @@ def create_task(
         due_date=task.due_date,
         created_by_id=current_user.ID,
         updated_by_id=current_user.ID,
-        created_by_role=current_user.role,
-        agent_id=agent_id_value,
-        agent_role=assigned_user.role if assigned_user else None,
+        user_id=user_id_value,
+        role_id=assigned_user.role_id if assigned_user else None,
         status=status_value,
     )
-    if not can_create(current_user.role, db_task.agent_role):
+    if not can_create(current_user.role_id, db_task.role_id):
         raise ValueError("User not authorized to create task")
     document_path = None
     if file:
@@ -144,11 +142,10 @@ def create_task(
         "description": db_task.description,
         "status": db_task.status,
         "due_date": db_task.due_date,
-        "agent_id": db_task.agent_id,
-        "agent_role": db_task.agent_role,
+        "user_id": db_task.user_id,
+        "role_id": db_task.role_id,
         "created_by_id": str(current_user.ID),
         "updated_by_id": str(current_user.ID),
-        "created_by_role": current_user.role,
         "created_at": db_task.created_at,
         "document_path": document_path
     }
@@ -170,11 +167,11 @@ def update_task(
         return False, msg["invalid_task"], {}
     # Check permissions based on user role
     if not (
-        current_user.role == Role.SUPERADMIN or
-        (current_user.role == Role.MANAGER and (
-            (tasks.agent_role in {Role.AGENT, Role.MANAGER} and tasks.agent_id == current_user.ID) or
-            tasks.agent_role == Role.AGENT)) or
-        (current_user.role == Role.AGENT and tasks.agent_id == current_user.ID)
+        current_user.role_id == 1 or
+        (current_user.role_id == 2 and (
+            (tasks.role_id in {3, 2} and tasks.user_id == current_user.ID) or
+            tasks.role_id == 3)) or
+        (current_user.role_id == 3 and tasks.user_id == current_user.ID)
     ):
         return False, msg["enough_perm"], {}
     # Update task details
@@ -194,11 +191,10 @@ def update_task(
         "description": tasks.description,
         "status": tasks.status,
         "due_date": tasks.due_date,
-        "agent_id": tasks.agent_id,
-        "agent_role": tasks.agent_role,
+        "user_id": tasks.user_id,
+        "role_id": tasks.role_id,
         "created_by_id": tasks.created_by_id,
         "updated_by_id": current_user.ID,
-        "created_by_role": tasks.created_by_role,
         "created_at": tasks.created_at,
         "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
     }
@@ -211,13 +207,8 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
         if not task_to_delete:
             return False, msg["invalid_task"], {}
         # Check permissions based on user role
-        if not (
-            current_user.role == Role.SUPERADMIN or
-            (current_user.role == Role.MANAGER and (
-                (task_to_delete.agent_role in {Role.AGENT, Role.MANAGER} and task_to_delete.agent_id == current_user.ID) or
-                task_to_delete.agent_role == Role.AGENT))
-        ):
-            return False, msg["enough_perm"], {}
+        if not can_create(current_user.role_id, task_to_delete.role_id):
+            return False,msg['enough_perm'],{}
         # Delete the task
         db.delete(task_to_delete)
         db.commit()
@@ -228,11 +219,10 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             "description": task_to_delete.description,
             "status": task_to_delete.status,
             "due_date": task_to_delete.due_date,
-            "agent_id": task_to_delete.agent_id,
-            "agent_role": task_to_delete.agent_role,
+            "user_id": task_to_delete.user_id,
+            "role_id": task_to_delete.role_id,
             "created_by_id": task_to_delete.created_by_id,
             "updated_by_id": current_user.ID,
-            "created_by_role": task_to_delete.created_by_role,
             "created_at": task_to_delete.created_at,
         }
     except Exception as e:
@@ -241,14 +231,14 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
 # GET task history
 def get_task_history(db: Session, current_user: get_current_user, task_ids: Optional[List[int]] = None):
     try:
-        if current_user.role not in Role.get_roles():
+        if current_user.role_id not in Role.get_roles():
             return False, msg["invalid_role"], {}
         # Filter tasks based on user's role
         query = db.query(Task)
-        if current_user.role == Role.MANAGER:
-            query = query.filter(or_(Task.agent_id == current_user.ID, Task.agent_role == Role.AGENT))
-        elif current_user.role == Role.AGENT:
-            query = query.filter(Task.agent_id == current_user.ID)
+        if current_user.role_id == 2:
+            query = query.filter(or_(Task.user_id == current_user.ID, Task.role_id == 3))
+        elif current_user.role_id == 3:
+            query = query.filter(Task.user_id == current_user.ID)
         if task_ids:
             query = query.filter(Task.ID.in_(task_ids))
         tasks = query.all()
@@ -283,7 +273,7 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         if not task:
             return False, msg["invalid_task"], {}
         # Check if the current user can create a document for the task
-        if not can_create(current_user.role, task.agent_role):
+        if not can_create(current_user.role_id, task.role_id):
             return False, msg["enough_perm"], {}
         # Create the upload directory if it doesn't exist
         upload_dir = "static/uploads"

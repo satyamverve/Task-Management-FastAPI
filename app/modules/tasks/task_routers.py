@@ -60,21 +60,20 @@ async def view_all_tasks_endpoint(
 # CREATE tasks
 @router.post("/task/create",
               response_model=ResponseData,
-              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
               tags=["Tasks"],
                 summary="Create the new task")
 def create_task_route(
     title: str = Form(...),
     description: str = Form(...),
     due_date: date = Form(...),
-    agent_id: Optional[int] = Form(None),
+    user_id: Optional[int] = Form(None),
     status: TaskStatus = Form(...),
     current_user: get_current_user = Depends(),
     file: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
     try:
-        task = CreateTask(title=title, description=description, due_date=due_date, agent_id=agent_id)
+        task = CreateTask(title=title, description=description, due_date=due_date, user_id=user_id)
         task_data = create_task(db=db, task=task, status=status, current_user=current_user, file=file)
         return ResponseData(status=True, message=msg['task_created'], data=task_data)
     except ValueError:
@@ -109,7 +108,6 @@ async def update_task_status(
 
 # Delete Task
 @router.delete("/tasks/delete/{task_id}",
-               dependencies=[Depends(PermissionChecker([Users.permissions.DELETE])), ],
                response_model=ResponseData, tags=["Tasks"], 
                summary="Delete tasks with task_id")
 async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db), current_user: get_current_user = Depends()):

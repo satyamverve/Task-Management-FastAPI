@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.data.data_class import settings
+from app.models.roles import RoleBase, Role
 
 # Database connection URL constructed using settings
 DATABASE_URL = f"mysql+pymysql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
@@ -32,9 +33,24 @@ def get_db():
     finally:
         db.close()
 
+def create_roles():
+    """
+    Function to create predefined roles if they don't exist in the database.
+    """
+    with SessionLocal() as session:
+        Role.create_predefined_roles(session)
+def create_database():
+    """
+    Create the database tables if they do not exist.
+    """
+    RoleBase.metadata.create_all(bind=engine)
+
+    # Call the create_roles function to create predefined roles
+    create_roles()
 
 import json
 # JSON file
 f = open ('app/unique_messages.json', "r")
 # Reading from file
 msg = json.loads(f.read())
+# create_database()

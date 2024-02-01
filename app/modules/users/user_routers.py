@@ -74,7 +74,6 @@ def get_user_by_user_id_route(user_id: int,
 
 # Function to add a new user
 @router.post("/user/create",
-             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],
              response_model=ResponseData, summary="Register users", tags=["Users"])
 def create_user_route(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
@@ -106,7 +105,6 @@ def update_user_api(user_id: int, user: UserUpdate, db: Session = Depends(get_db
 
 # Function to delete a user
 @router.delete("/user/delete/{user_id}",
-               dependencies=[Depends(PermissionChecker([Users.permissions.DELETE]))],
                response_model=ResponseData,
                summary="Delete users", tags=["Users"])
 def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -124,9 +122,8 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
         )
         return response_data
 
-# Function to update user roles
+# Function to update user role_ids
 @router.put("/roles/update/{user_id}",
-            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_DETAILS, Users.permissions.EDIT]))],
             response_model=ResponseData,
             summary="Update users role", tags=["Roles"])
 def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -146,7 +143,6 @@ def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(g
 
 # Function to LIST all user roles with permissions
 @router.get("/roles/all",
-            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], 
             response_model=ResponseData, summary="Get all user roles with permissions", tags=["Roles"])
 def get_user_roles(db: Session = Depends(get_db)):
     """
@@ -257,7 +253,7 @@ def user_reset_password(
         else:
             response_data = ResponseData(
             status=False,
-            message=msg['failed_res_pass'],
+            message=msg['invalidated'],
             data={}
             )
             return response_data

@@ -2,3 +2,4 @@
 
 from .users import Token, User
 from .tasks import TaskDocument, Task, TaskHistory
+from .roles import Role

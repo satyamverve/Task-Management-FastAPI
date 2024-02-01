@@ -20,11 +20,11 @@ class DuplicateError(Exception):
 # LIST of all Users
 def get_users(db: Session, current_user: get_current_user):
     query = db.query(User)
-    if current_user.role == Role.SUPERADMIN:
+    if current_user.role_id == 1:
         pass
-    elif current_user.role == Role.MANAGER:
-        query = query.filter(or_(User.ID == current_user.ID, User.role == Role.AGENT))
-    elif current_user.role == Role.AGENT:
+    elif current_user.role_id == 2:
+        query = query.filter(or_(User.ID == current_user.ID, User.role_id == 3))
+    elif current_user.role_id == 3:
         query = query.filter(User.ID == current_user.ID)
     users = query.all()
 
@@ -36,15 +36,15 @@ def get_user(db: Session, user_id: int, current_user: get_current_user):
     user= db.query(User).filter(User.ID == user_id).first()
     if current_user.ID == user.ID:
         return user.to_dict()
-    elif current_user.role == Role.AGENT:
+    elif current_user.role_id == 3:
         return None
-    if not can_create(current_user.role, user.role):
+    if not can_create(current_user.role_id, user.role_id):
         return None
     return user.to_dict()
 
 # Function to add a new user
 def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
-    if not can_create(current_user.role, user.role):
+    if not can_create(current_user.role_id, user.role_id):
         return False, msg["enough_perm"], {}
     password = user.password
     if not password:    
@@ -53,7 +53,7 @@ def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
         email=user.email,
         password=get_password_hash(password),
         name=user.name,
-        role=user.role,
+        role_id=user.role_id,
         created_by=current_user.ID 
     )
     try:
@@ -69,13 +69,13 @@ def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_cu
     db_user = db.query(User).filter(User.ID == user_id).first()
     if db_user is None:
         return False, msg["user_not"], {}
-    # Check permissions based on user role
+    # Check permissions based on user role_id
     if not (
-        current_user.role == Role.SUPERADMIN or
-        (current_user.role == Role.MANAGER and (
-            (db_user.role in {Role.AGENT, Role.MANAGER} and db_user.ID == current_user.ID) or
-            db_user.role == Role.AGENT)) or
-        (current_user.role == Role.AGENT and db_user.ID == current_user.ID)
+        current_user.role_id == 1 or
+        (current_user.role_id == 2 and (
+            (db_user.role_id in {3, 2} and db_user.ID == current_user.ID) or
+            db_user.role_id == 3)) or
+        (current_user.role_id == 3 and db_user.ID == current_user.ID)
     ):
         return False, msg["enough_perm"], {}
     if db_user:
@@ -100,7 +100,7 @@ def delete_users(db: Session,
     if not user_to_delete:
         return False,msg['user_not'],{}
     # using a can_create function defined in app/permissions/roles.py
-    if not can_create(current_user.role, user_to_delete.role):
+    if not can_create(current_user.role_id, user_to_delete.role_id):
         return False,msg['enough_perm'],{}
     db.delete(user_to_delete)
     db.commit()
@@ -109,12 +109,14 @@ def delete_users(db: Session,
 
 # Function to update user roles
 def update_roles(db: Session, user_id: int, current_user: get_current_user, user_update: RolesUpdate):
+    if current_user.role_id != 1:  # Assuming SUPERADMIN role_id is 1
+        return False, msg['enough_perm'], {}
     user_to_update = db.query(User).filter(User.ID == user_id).first()
     updated_user = user_update.model_dump(exclude_unset=True)
     for key, value in updated_user.items():
         setattr(user_to_update, key, value)
     db.commit()
-    return True, msg['role_upd'],user_to_update.to_dict() 
+    return True, msg['role_upd'], user_to_update.to_dict() 
 
 
 # Function to reset user password for registered users
@@ -132,13 +134,16 @@ def user_reset_password(db: Session, email: str, new_password: str):
         return False
 
 
-# Function to validate OTP
+# Function to validate OTP and get associated email
 def validate_otp_and_get_email(db: Session, otp: int):
     """
     Validate the OTP and return the associated user_email if valid.
     """
     token = db.query(Token).filter_by(otp=otp, is_expired=False).first()
     if token and not token.is_expired:
+        if token.reset_password:
+            # If reset_password is True, OTP is already used
+            return False, msg['invalidated'], {}
         return token.user_email
     return None
 
@@ -164,7 +169,7 @@ def update_password_change_status(db: Session, otp: int):
     Update the reset_password column to True for the given temp_token.
     """
     reset_token = db.query(Token).filter(Token.otp == otp).first()
-    if reset_token:
+    if reset_token and not reset_token.reset_password:
         reset_token.reset_password = True
         db.commit()
         return True

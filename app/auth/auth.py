@@ -70,7 +70,7 @@ class PermissionChecker:
 
     def __call__(self, user: User = Depends(get_current_user)):
         for permission_required in self.permissions_required:
-            if permission_required not in get_role_permissions(user.role):
+            if permission_required not in get_role_permissions(user.role_id):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Not enough permissions to access this resource")

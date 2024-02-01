@@ -14,7 +14,7 @@
 - `search: http://<your-local-ip>:8000`
 
 # Create fist admin manually
-- ``` INSERT INTO users (email,password,name, role) VALUES('admin@gmail.com', '$2a$12$G1.eB9vmbGprvloq.Fb3v.iK3sgosfTj.FMglkWlDEDJEzCjJZgpq', 'admin', 'SUPERADMIN'); ```
+- ``` INSERT INTO users (email,password,name, role_id) VALUES('admin@gmail.com', '$2a$12$G1.eB9vmbGprvloq.Fb3v.iK3sgosfTj.FMglkWlDEDJEzCjJZgpq', 'admin', '1'); ```
 - `username: admin@gmail.com | password: admin@12`
 
 # CREATE ".env" file and add the below details
