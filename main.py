@@ -36,7 +36,6 @@ app = FastAPI(
     lifespan=lifespan,
     description=description,
     version="1.0.0",
-    
 )
 
 # CORS Middleware configuration
@@ -47,11 +46,13 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=["*"]
 )
+# Root path endpoint
+@app.get("/", tags=["General"])
+def read_root():
+    return {"message": "This is the root path"}
 
 # Mount the static directory for serving uploaded files
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
 
 def check_user(data: UserLoginSchema, db: Session):
     """
@@ -68,7 +69,6 @@ def check_user(data: UserLoginSchema, db: Session):
     if db_user and verify_password(data.password, db_user.password):
         return db_user
     return None
-
 
 
 @app.post("/user/login", response_model=ResponseData, tags=["Authentication"])
@@ -104,11 +104,6 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
             message=msg['invalid_login'],
             data={},
         )
-
-# Root path endpoint
-@app.get("/", tags=["General"])
-def read_root():
-    return {"message": "This is the root path"}
 
 # Include routers
 app.include_router(user_router)

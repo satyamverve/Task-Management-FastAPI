@@ -36,12 +36,6 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-# Function to create a token response
-def token_response(token: str):
-    return {
-        "access_token": token
-    }
-
 # Function to sign a JWT token
 def signJWT(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:
     expiration_time = time.time() + expire_minutes
