@@ -1,6 +1,6 @@
 # Command run the FastAPI application
 - `uvicorn main:app --reload`
-## access the fastapi app from others system (IP):
+## Command to run and access the fastapi application from others system (IP):
 - `uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
 - `search: http://<your-local-ip>:8000`
 
