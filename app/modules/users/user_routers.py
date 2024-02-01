@@ -21,78 +21,32 @@ templates = Jinja2Templates(directory='./app/templates')
 
 router = APIRouter(prefix="")
 
-# LIST User with filter by user_id
+# LIST of all Users
 @router.get("/user/all",
             response_model=ResponseData, summary="Get all users", tags=["Users"])
-def get_users(
+def get_users_route(
               db: Session = Depends(get_db),
               current_user: get_current_user = Depends()):
     """
     Get list of all users with optional filter by user_id.
     """
     try:
-        return  db_crud.get_users(db,current_user)
+        users = db_crud.get_users(db, current_user)
+        return ResponseData(
+            status=True,
+            message="List of Users",
+            data={"users": users}
+        )
     except Exception:
-        response_data = ResponseData(
+        return ResponseData(
             status=False,
             message=msg['random_key_10'],
             data={}
         )
-        return response_data  
-
-
-# Function to LIST all user roles with permissions
-@router.get("/roles/all",
-            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], 
-            response_model=ResponseData, summary="Get all user roles with permissions", tags=["Roles"])
-def get_user_roles(db: Session = Depends(get_db)):
-    """
-    Returns all user roles with their associated permissions.
-    """
-    try:
-        roles_with_permissions = []
-        for role in Role:
-            role_permissions = get_role_permissions(role)
-            roles_with_permissions.append({role.value: role_permissions})
-        response_data = ResponseData(
-            status=True,
-            message=msg['key_28'],
-            data={"roles": roles_with_permissions}
-        )
-        return response_data
-    except Exception:
-        response_data = ResponseData(
-            status=False,
-            message=msg['random_key_2'],
-            data={"roles": roles_with_permissions}
-        )
-        return response_data
-
-
-# Function to update user roles
-@router.put("/roles/update/{user_id}",
-            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_DETAILS, Users.permissions.EDIT]))],
-            response_model=ResponseData,
-            summary="Update users role", tags=["Roles"])
-def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """
-    Update role of user.
-    """
-    try:
-        updated_role = db_crud.update_roles(db, user_id, current_user, user_update)
-        return updated_role
-    except Exception:
-        response_data = ResponseData(
-            status=False,
-            message=msg['key_26'],
-            data={}
-        )
-        return response_data
-
 
 # READ User
 @router.get("/user/view/{user_id}",response_model=ResponseData,summary="Get info of users", tags=["Users"])
-def get_user_by_user_id(user_id: int, 
+def get_user_by_user_id_route(user_id: int, 
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user),
                         ):
@@ -100,35 +54,54 @@ def get_user_by_user_id(user_id: int,
     Get Information of all users.
     """
     try:
-        return db_crud.get_user(db, user_id, current_user)
+        user = db_crud.get_user(db, user_id, current_user)
+        if user:
+            return ResponseData(
+                status=True,
+                message=msg['key_21'],
+                data=user
+            )
+        else:
+            return ResponseData(
+                status=False,
+                message=msg['key_26'],
+                data={}
+            )
     except Exception:
-        response_data = ResponseData(
+        return ResponseData(
             status=False,
             message=msg['key_26'],
             data={}
         )
-        return response_data
-
 
 # Function to add a new user
 @router.post("/user/create",
              dependencies=[Depends(PermissionChecker([Users.permissions.CREATE]))],
              response_model=ResponseData, summary="Register users", tags=["Users"])
-async def create_user(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def create_user_route(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Registers a user.
     """
     try:
-        response = db_crud.add_user(db, user, current_user)
-        return response
+        user_data = db_crud.add_user(db, user, current_user)
+        if user_data:
+            return ResponseData(
+                status=True,
+                message=msg['key_22'],
+                data=user_data
+            )
+        else:
+            return ResponseData(
+                status=False,
+                message=msg['key_23'],
+                data={}
+            )
     except Exception as e:
         return ResponseData(
             status=False,
             message=msg['random_key_10'],
             data={}
         )
-
-
 # Function to update user information
 @router.put("/user/update/{user_id}", response_model=ResponseData, summary="Update users", tags=["Users"])
 def update_user_api(user_id: int, user: UserUpdate, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
@@ -160,6 +133,56 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
             status=False,
             message=msg['key_26'],
             data={}
+        )
+        return response_data
+
+
+
+# Function to update user roles
+@router.put("/roles/update/{user_id}",
+            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_DETAILS, Users.permissions.EDIT]))],
+            response_model=ResponseData,
+            summary="Update users role", tags=["Roles"])
+def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Update role of user.
+    """
+    try:
+        updated_role = db_crud.update_roles(db, user_id, current_user, user_update)
+        return updated_role
+    except Exception:
+        response_data = ResponseData(
+            status=False,
+            message=msg['key_26'],
+            data={}
+        )
+        return response_data
+
+
+# Function to LIST all user roles with permissions
+@router.get("/roles/all",
+            dependencies=[Depends(PermissionChecker([Users.permissions.VIEW_ROLES]))], 
+            response_model=ResponseData, summary="Get all user roles with permissions", tags=["Roles"])
+def get_user_roles(db: Session = Depends(get_db)):
+    """
+    Returns all user roles with their associated permissions.
+    """
+    try:
+        roles_with_permissions = []
+        for role in Role:
+            role_permissions = get_role_permissions(role)
+            roles_with_permissions.append({role.value: role_permissions})
+        response_data = ResponseData(
+            status=True,
+            message=msg['key_28'],
+            data={"roles": roles_with_permissions}
+        )
+        return response_data
+    except Exception:
+        response_data = ResponseData(
+            status=False,
+            message=msg['random_key_2'],
+            data={"roles": roles_with_permissions}
         )
         return response_data
 
@@ -217,10 +240,7 @@ def user_reset_password(
         return response_data
 
 
-## Retrieve the access token from incoming http(here is /forgot_password)
-@router.get("/token_template",
-              response_class=HTMLResponse,
-              summary="Retrieve access token", tags=["Forgot Password"])
+# Retrieve the access token from incoming http(here is /forgot_password)
 def user_reset_password_template(request: Request):
     """
     Retrieve the access token from incoming http(here is /forgot_password) and make this token valid until token expire time
