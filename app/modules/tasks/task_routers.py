@@ -77,6 +77,15 @@ def create_task_route(
     file: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
+    """
+    Create new tasks for existing users:
+    - Entries for status_id:
+    - 1 = Not-Assigned
+    - 2 = Assigned
+    - 3 = In-Progress
+    - 4 = On-Hold
+    - 5 = Completed
+    """
     try:
         task = CreateTask(title=title, description=description, due_date=due_date, user_id=user_id, status_id=status_id)
         status, message, data = create_task(db=db, task=task, status_id=status_id, current_user=current_user, file=file)

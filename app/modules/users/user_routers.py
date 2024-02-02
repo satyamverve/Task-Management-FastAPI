@@ -3,8 +3,7 @@
 from fastapi import BackgroundTasks, Depends, APIRouter, Form, Request
 from app.models import User, Token
 from sqlalchemy.orm import Session
-from app.auth.auth import get_current_user, PermissionChecker, otp_expire_time, generate_6_digit_otp, get_user_by_email
-from app.permissions.models_permissions import Users
+from app.auth.auth import get_current_user, otp_expire_time, generate_6_digit_otp, get_user_by_email
 from app.permissions.roles import get_role_permissions, Role
 from app.config.database import get_db  
 from app.modules.users import user_services as db_crud
