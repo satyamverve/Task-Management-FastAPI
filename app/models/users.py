@@ -6,6 +6,7 @@ from app.config.database import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship, declarative_base
+from app.models.roles import Role
 # from app.models.tasks import Task
 
 Base = declarative_base()
@@ -19,7 +20,7 @@ class User(Base):
     name = Column(String(150), nullable=True)
     email = Column(String(200), primary_key=True, index=True, unique=True)
     password = Column(String(250))
-    role = Column(String(50))
+    role_id = Column(Integer, ForeignKey(Role.id, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     created_by = Column(Integer, ForeignKey('users.ID'), nullable=True)
@@ -32,7 +33,7 @@ class User(Base):
             "ID": self.ID,
             "email": self.email,
             "name": self.name,
-            "role": self.role,
+            "role_id": self.role_id,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
             "created_by": self.created_by,

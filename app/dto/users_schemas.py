@@ -27,13 +27,13 @@ class UserSignUp(BaseModel):
     email: EmailStr
     password: str
     name: str
-    role: Role
+    role_id: int
 
 class RolesUpdate(BaseModel):
     """
     Pydantic model for updating user roles.
     """
-    role: Optional[Role]
+    role_id: Optional[int]
 
 class UserUpdate(BaseModel):
     """

@@ -12,6 +12,7 @@ from app.dto.tasks_schema import ResponseData
 
 from app.models.users import Base as user_base
 from app.models.tasks import Base as task_base
+from app.models.roles import RoleBase as role_base
 from app.config.database import engine
 from app.modules.users.user_routers import router as user_router
 from app.modules.tasks.task_routers import router as task_router
@@ -29,6 +30,7 @@ FastAPI Task Management: A robust API for efficient task tracking and management
 async def lifespan(app: FastAPI):
     user_base.metadata.create_all(bind=engine)
     task_base.metadata.create_all(bind=engine)
+    role_base.metadata.create_all(bind=engine)
     yield
 
 # Create FastAPI app instance
@@ -90,7 +92,7 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
             "ID": db_user.ID,
             "email": db_user.email,
             "name": db_user.name,
-            "role": db_user.role,
+            "role": db_user.role_id,
             "created_at": db_user.created_at,
             "token": signJWT(db_user.email),
         }

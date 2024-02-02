@@ -28,6 +28,7 @@
     "lst_user": "List of the Users",
     "updated_pass": "You have successfulley updated your password",
     "retrived_docs": "All uploaded documents",
-    "password": "Please provide a password"
+    "password": "Please provide a password",
+    "invalidated": "OTP already used, invalidated!"
 
 }

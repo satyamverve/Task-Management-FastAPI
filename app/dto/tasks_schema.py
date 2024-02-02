@@ -31,7 +31,7 @@ class CreateTask(BaseModel):
     title: str
     description: str
     due_date: date
-    agent_id: Optional[int] = None
+    user_id: Optional[int] = None
 
 class ResponseData(BaseModel):
     status: bool
