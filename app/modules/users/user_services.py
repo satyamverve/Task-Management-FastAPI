@@ -50,6 +50,8 @@ async def add_user(db: Session, user: UserSignUp, current_user: get_current_user
     password = user.password
     if not password:    
         return False,msg['password'],{}
+    if user.role_id not in [1,2,3]:
+        return False, msg['inv_roles'], {}
     user = User(
         email=user.email,
         password=get_password_hash(password),

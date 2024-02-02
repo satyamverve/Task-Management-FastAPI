@@ -30,6 +30,7 @@
     "retrived_docs": "All uploaded documents",
     "password": "Please provide a password",
     "invalidated": "OTP already used, invalidated!",
-    "inv_status": "Invalid status_id!"
+    "inv_status": "Invalid status_id!",
+    "inv_roles" : "Please enter a valid role_id!"
 
 }

@@ -53,7 +53,7 @@ async def send_registration_notification(password, recipient_email):
 
     try:
         message = MessageSchema(
-            subject="FastAPI forgot password application registration",
+            subject="Access credentials for Task Management System API",
             recipients=[recipient_email],
             template_body=template_body,
             subtype=MessageType.html
