@@ -29,6 +29,7 @@
     "updated_pass": "You have successfulley updated your password",
     "retrived_docs": "All uploaded documents",
     "password": "Please provide a password",
-    "invalidated": "OTP already used, invalidated!"
+    "invalidated": "OTP already used, invalidated!",
+    "inv_status": "Invalid status_id!"
 
 }

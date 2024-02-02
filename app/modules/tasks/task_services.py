@@ -2,6 +2,7 @@
 
 import os
 import sys
+
 sys.path.append("..")
 from fastapi import Depends,UploadFile
 from typing import List, Optional
@@ -9,17 +10,16 @@ from datetime import date
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app.models.tasks import Task, TaskHistory, TaskDocument
-from app.dto.tasks_schema import CreateTask, DocumentResponseModel, ResponseData, TaskStatus,CreateHistory
+from app.dto.tasks_schema import CreateTask, DocumentResponseModel, ResponseData, CreateHistory
 from app.auth.auth import get_current_user  
 from app.models.users import User 
 from app.permissions.roles import can_create
 from app.config.database import msg
 from app.data.data_class import settings
-from app.models.roles import Role
 
 # Log History
-def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Optional[str] = None):
-    history_entry = TaskHistory(task_id=task_id, status=status, comments=comments)
+def log_task_history(db: Session, task_id: int, status_id: int, comments: Optional[str] = None):
+    history_entry = TaskHistory(task_id=task_id, status_id=status_id, comments=comments)
     db.add(history_entry)
     db.commit()
 
@@ -37,7 +37,7 @@ def get_tasks(db: Session, current_user: get_current_user):
             "id": task.id,
             "title": task.title,
             "description": task.description,
-            "status": task.status,
+            "status_id": task.status_id,
             "due_date": task.due_date,
             "user_id": task.user_id,
             "role_id": task.role_id,
@@ -50,11 +50,11 @@ def get_tasks(db: Session, current_user: get_current_user):
     data = return_tasks
     return True,msg["tasks_avl"],data
 
-# Filter all tasks with due_date and status
+# Filter all tasks with due_date and status_id
 def view_all_tasks(
         db: Session, 
         current_user: get_current_user, 
-        status: Optional[TaskStatus] = None, 
+        status_id: Optional[int] = None, 
         due_date: Optional[date] = None
     ):
     try:
@@ -63,8 +63,10 @@ def view_all_tasks(
             query = query.filter(or_(Task.user_id == current_user.id, Task.role_id == 3))
         elif current_user.role_id == 3:
             query = query.filter(Task.user_id == current_user.id)
-        if status:
-            query = query.filter(Task.status == status)
+        if status_id:
+            query = query.filter(Task.status_id == status_id)
+            if status_id not in [1,2,3,4,5]:
+                return False, msg['inv_status'], {}
         if due_date:
             query = query.filter(Task.due_date == due_date)
         tasks = query.all()
@@ -79,7 +81,7 @@ def view_all_tasks(
                 "id": task.id,
                 "title": task.title,
                 "description": task.description,
-                "status": task.status,
+                "status_id": task.status_id,
                 "due_date": task.due_date,
                 "user_id": task.user_id,
                 "role_id": task.role_id,
@@ -98,7 +100,7 @@ def view_all_tasks(
 def create_task(
     db: Session,
     task: CreateTask,
-    status: TaskStatus,
+    status_id: int,
     current_user: get_current_user,
     file: UploadFile = None,
 ):
@@ -109,7 +111,7 @@ def create_task(
         if not assigned_user:
             return msg["invalid_user"]
     user_id_value = assigned_user.id if assigned_user else None
-    status_value = status
+    status_id_value = status_id
     db_task = Task(
         title=task.title,
         description=task.description,
@@ -118,7 +120,7 @@ def create_task(
         updated_by_id=current_user.id,
         user_id=user_id_value,
         role_id=assigned_user.role_id if assigned_user else None,
-        status=status_value,
+        status_id=status_id_value,
     )
     if not can_create(current_user.role_id, db_task.role_id):
         return False, msg["enough_perm"], {}
@@ -141,7 +143,7 @@ def create_task(
         "id": db_task.id,  
         "title": db_task.title,
         "description": db_task.description,
-        "status": db_task.status,
+        "status_id": db_task.status_id,
         "due_date": db_task.due_date,
         "user_id": db_task.user_id,
         "role_id": db_task.role_id,
@@ -159,7 +161,7 @@ def update_task(
     db: Session,
     task_id: int,
     task: CreateHistory,
-    status: TaskStatus,
+    status_id: int,
     current_user: get_current_user = Depends(),
 ):
     # Retrieve the task from the database
@@ -178,10 +180,10 @@ def update_task(
     # Update task details
     for key, value in task.model_dump(exclude_unset=True).items():
         setattr(tasks, key, value)
-    tasks.status = status
+    tasks.status_id = status_id
     db.commit()
     # Log task history
-    log_task_history(db, tasks.id, status, task.comments)
+    log_task_history(db, tasks.id, tasks.status_id, task.comments)
     db.refresh(tasks)
     # Retrieve document paths for the task
     document_paths = list_uploaded_documents_of_task_service(db, task_id)
@@ -190,7 +192,7 @@ def update_task(
         "id": tasks.id,
         "title": tasks.title,
         "description": tasks.description,
-        "status": tasks.status,
+        "status_id": tasks.status_id,
         "due_date": tasks.due_date,
         "user_id": tasks.user_id,
         "role_id": tasks.role_id,
@@ -218,7 +220,7 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             "id": task_to_delete.id,
             "title": task_to_delete.title,
             "description": task_to_delete.description,
-            "status": task_to_delete.status,
+            "status_id": task_to_delete.status_id,
             "due_date": task_to_delete.due_date,
             "user_id": task_to_delete.user_id,
             "role_id": task_to_delete.role_id,
@@ -232,7 +234,6 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
 # GET task history
 def get_task_history(db: Session, current_user: get_current_user, task_ids: Optional[List[int]] = None):
     try:
-        
         if current_user.role_id not in [1,2,3]:
             return False, msg["invalid_role"], {}
         # Filter tasks based on user's role
@@ -253,7 +254,7 @@ def get_task_history(db: Session, current_user: get_current_user, task_ids: Opti
                 "history": [
                     {
                         "comments": history.comments,
-                        "status": history.status,
+                        "status_id": history.status_id,
                         "created_at": history.created_at,
                     }
                     for history in task.history

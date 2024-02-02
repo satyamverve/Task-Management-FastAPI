@@ -4,12 +4,11 @@ import os
 from fastapi import Depends, APIRouter, Query,File, UploadFile, Form
 from sqlalchemy.orm import Session
 from app.config.database import get_db, msg
-from app.dto.tasks_schema import CreateTask, ResponseData, TaskStatus,CreateHistory
+from app.dto.tasks_schema import CreateTask, ResponseData,CreateHistory
 from app.modules.tasks.task_services import create_task, delete_task, view_all_tasks,get_tasks,update_task, get_task_history, upload_file
 from typing import List, Optional
 from datetime import date
-from app.auth.auth import get_current_user ,PermissionChecker 
-from app.permissions.models_permissions import Users
+from app.auth.auth import get_current_user 
 
 router = APIRouter()
 
@@ -37,18 +36,24 @@ def get_all_tasks(
             data={},
         )
 
-# Filter all tasks with due_date and status
-@router.get("/tasks/all", response_model=ResponseData,tags=["Tasks"], summary="View all tasks along with filter from due_date and status")
+# Filter all tasks with due_date and status_id
+@router.get("/tasks/all", response_model=ResponseData,tags=["Tasks"], summary="View all tasks along with filter from due_date and status_id_id")
 async def view_all_tasks_endpoint(
-    status: Optional[TaskStatus] = None, 
+    status_id: Optional[int] = None, 
     due_date: Optional[date] = None,
     db: Session = Depends(get_db),
     current_user: get_current_user = Depends()):
     """
-    Filter the tasks
+    Filter the tasks:
+    - Entries for status_ids:
+    - 1 = Not-Assigned
+    - 2 = Assigned
+    - 3 = In-Progress
+    - 4 = On-Hold
+    - 5 = Completed
     """
     try:
-        status, message, data = view_all_tasks(db, current_user, status, due_date)
+        status, message, data = view_all_tasks(db, current_user, status_id, due_date)
         return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         return ResponseData(
@@ -66,15 +71,15 @@ def create_task_route(
     title: str = Form(...),
     description: str = Form(...),
     due_date: date = Form(...),
-    user_id: Optional[int] = Form(None),
-    status: TaskStatus = Form(...),
+    user_id: int = Form(...),
+    status_id: int = Form(...),
     current_user: get_current_user = Depends(),
     file: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
     try:
-        task = CreateTask(title=title, description=description, due_date=due_date, user_id=user_id)
-        status, message, data = create_task(db=db, task=task, status=status, current_user=current_user, file=file)
+        task = CreateTask(title=title, description=description, due_date=due_date, user_id=user_id, status_id=status_id)
+        status, message, data = create_task(db=db, task=task, status_id=status_id, current_user=current_user, file=file)
         return ResponseData(status=status, message=message, data=data)
     except ValueError:
         return ResponseData(status=False, message=msg['invalid_user'], data={})
@@ -84,11 +89,10 @@ def create_task_route(
 # Update Task
 @router.put("/tasks/update/{task_id}",
              response_model=ResponseData,
-             tags=["Tasks"], summary="Update the task status and make comments if required")
+             tags=["Tasks"], summary="Update the task status_id and make comments if required")
 async def update_task_status(
     task_id: int,
     task: CreateHistory,
-    status: TaskStatus = Query(..., title="Status", description="Choose the task status from the dropdown."),
     db: Session = Depends(get_db),
     current_user: get_current_user = Depends(),
 ):
@@ -96,7 +100,11 @@ async def update_task_status(
     Update the task status and make comments if required
     """
     try:
-        status, message, data = update_task(db, task_id, task, status, current_user)
+        # Fetch the status_id from the request body
+        status_id = task.status_id
+
+        # Call update_task function
+        status, message, data = update_task(db, task_id, task, status_id, current_user)
         return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         print(e)

@@ -4,11 +4,11 @@ from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey,
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
-from app.dto.tasks_schema import TaskStatus
 from app.config.database import Base
 from app.models.users import User
 from sqlalchemy.orm import relationship
 from app.models.roles import Role
+from app.models.status import Status
 
 
 Base = declarative_base()
@@ -21,7 +21,7 @@ class Task(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(100), index=True)
     description = Column(String(250))
-    status = Column(Enum(TaskStatus))
+    status_id = Column(Integer, ForeignKey(Status.id, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     due_date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE', onupdate='NO ACTION'))
     role_id = Column(Integer, ForeignKey(Role.id, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
@@ -44,7 +44,7 @@ class TaskHistory(Base):
     id = Column(Integer, primary_key=True, index=True)
     task_id = Column(Integer, ForeignKey("tasks.id"))
     comments = Column(String(250))
-    status = Column(Enum(TaskStatus))
+    status_id = Column(Integer, ForeignKey(Status.id, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     
     # Relationship with Task model

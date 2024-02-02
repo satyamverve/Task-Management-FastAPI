@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.data.data_class import settings
 from app.models.roles import RoleBase, Role
+from app.models.status import StatusBase, Status
 
 # Database connection URL constructed using settings
 DATABASE_URL = f"mysql+pymysql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
@@ -39,12 +40,23 @@ def create_roles():
     """
     with SessionLocal() as session:
         Role.create_predefined_roles(session)
+
+
+def create_status():
+    """
+    Function to create predefined statuses if they don't exist in the database.
+    """
+    with SessionLocal() as session:
+        Status.create_predefined_status(session)
+
+
 def create_database():
     """
     Create the database tables if they do not exist.
     """
     RoleBase.metadata.create_all(bind=engine)
-
+    StatusBase.metadata.create_all(bind=engine)
+    create_status()
     # Call the create_roles function to create predefined roles
     create_roles()
 

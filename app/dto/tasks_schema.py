@@ -4,25 +4,6 @@ from __future__ import annotations
 from pydantic import BaseModel
 from datetime import date, datetime
 from typing import Optional, List, Union
-from enum import Enum
-
-class TaskStatus(str, Enum):
-    """
-    Enumeration for representing the status of a task.
-    Provides predefined status options for tasks.
-    """
-    NotAssigned = "Not-Assigned"
-    Assigned = "Assigned"
-    InProgress = "In-Progress"
-    OnHold = "On-Hold"
-    Completed = "Completed"
-
-    @classmethod
-    def get_status(cls):
-        """
-        Returns a list of all available task statuses.
-        """
-        return list(cls.__members__)
 
 class CreateTask(BaseModel):
     """
@@ -31,7 +12,8 @@ class CreateTask(BaseModel):
     title: str
     description: str
     due_date: date
-    user_id: Optional[int] = None
+    status_id : int
+    user_id: int
 
 class ResponseData(BaseModel):
     status: bool
@@ -46,6 +28,7 @@ class CreateHistory(BaseModel):
     """
     Pydantic model for creating a new task history entry.
     """
+    status_id: int
     comments: Optional[str]
 
 class TaskHistoryResponse(BaseModel):
@@ -54,7 +37,7 @@ class TaskHistoryResponse(BaseModel):
     """
     task_id: Optional[int]
     due_date: date
-    history: List[comments: Optional[str],status: TaskStatus,created_at: datetime]
+    history: List[comments: Optional[str],status_id: int,created_at: datetime]
 
     class Config:
         orm_mode = True

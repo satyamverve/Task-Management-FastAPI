@@ -13,6 +13,7 @@ from app.dto.tasks_schema import ResponseData
 from app.models.users import Base as user_base
 from app.models.tasks import Base as task_base
 from app.models.roles import RoleBase as role_base
+from app.models.status import StatusBase as status_base
 from app.config.database import engine
 from app.modules.users.user_routers import router as user_router
 from app.modules.tasks.task_routers import router as task_router
@@ -31,6 +32,7 @@ async def lifespan(app: FastAPI):
     user_base.metadata.create_all(bind=engine)
     task_base.metadata.create_all(bind=engine)
     role_base.metadata.create_all(bind=engine)
+    status_base.metadata.create_all(bind=engine)
     yield
 
 # Create FastAPI app instance
