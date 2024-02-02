@@ -77,7 +77,11 @@ def get_user_by_user_id_route(user_id: int,
              response_model=ResponseData, summary="Register users", tags=["Users"])
 async def create_user_route(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Registers a user.
+    Register a users:
+    - Enter role_id as 1 or 2 or 3
+    - 1 = SUPERADMIN
+    - 2 = MANAGER
+    - 3 = AGENT
     """
     try:
         status, message, data =await  db_crud.add_user(db, user, current_user)
@@ -128,7 +132,11 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
             summary="Update users role", tags=["Roles"])
 def update_roles(user_id: int, user_update: RolesUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Update role of user (Only Superadmin can update the role of users).
+    Update the roles of the existing users:
+    - Enter role_id as 1 or 2 or 3
+    - 1 = SUPERADMIN
+    - 2 = MANAGER
+    - 3 = AGENT
     """
     try:
         status, message, data = db_crud.update_roles(db, user_id, current_user, user_update)
