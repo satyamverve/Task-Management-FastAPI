@@ -53,4 +53,4 @@ import json
 f = open ('app/unique_messages.json', "r")
 # Reading from file
 msg = json.loads(f.read())
-create_database()
+# create_database()

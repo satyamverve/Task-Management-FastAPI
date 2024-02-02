@@ -75,12 +75,12 @@ def get_user_by_user_id_route(user_id: int,
 # Function to add a new user
 @router.post("/user/create",
              response_model=ResponseData, summary="Register users", tags=["Users"])
-def create_user_route(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def create_user_route(user: UserSignUp, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Registers a user.
     """
     try:
-        status, message, data = db_crud.add_user(db, user, current_user)
+        status, message, data =await  db_crud.add_user(db, user, current_user)
         return ResponseData(status=status, message=message, data=data)
     except Exception as e:
         return ResponseData(

@@ -35,6 +35,35 @@ conf = ConnectionConfig(
     VALIDATE_CERTS=False,
     TEMPLATE_FOLDER=templates_folder,
 )
+async def send_registration_notification(password, recipient_email):
+    """
+    Sends a registration notification email with the provided password to the recipient.
+
+    Args:
+    - password (str): The password for the registered user.
+    - recipient_email (str): Email address of the recipient.
+
+    Raises:
+    - Exception: If an error occurs during email sending.
+    """
+    template_body = {
+        "email": recipient_email,
+        "password": password
+    }
+
+    try:
+        message = MessageSchema(
+            subject="FastAPI forgot password application registration",
+            recipients=[recipient_email],
+            template_body=template_body,
+            subtype=MessageType.html
+        )
+        fm = FastMail(conf)
+        await fm.send_message(message, template_name="registration_notification.html")
+    except Exception as e:
+        logger.error(f"Something went wrong in registration email notification")
+        logger.error(str(e))
+
 async def send_reset_password_mail(recipient_email, user, otp, expire_in_minutes):
     """
     Sends a reset password email with the reset OTP and expiration details.

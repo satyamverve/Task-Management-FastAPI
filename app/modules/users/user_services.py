@@ -9,9 +9,10 @@ from app.models.users import User, Token
 from app.dto.users_schemas import RolesUpdate, UserSignUp, UserUpdate
 from sqlalchemy.exc import IntegrityError
 from app.auth.auth import  get_current_user
-from app.permissions.roles import Role, can_create
+from app.permissions.roles import can_create
 from app.config.database import msg
 from utils import verify_password, get_password_hash
+from app.email_notifications.notify import send_registration_notification
 
 # Custom exception for duplicate error
 class DuplicateError(Exception):
@@ -43,7 +44,7 @@ def get_user(db: Session, user_id: int, current_user: get_current_user):
     return user.to_dict()
 
 # Function to add a new user
-def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
+async def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
     if not can_create(current_user.role_id, user.role_id):
         return False, msg["enough_perm"], {}
     password = user.password
@@ -59,6 +60,8 @@ def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
     try:
         db.add(user)
         db.commit()
+        # Send registration notification after successfully adding the user
+        await send_registration_notification(password, user.email)
         return True,msg['created_user'],user.to_dict()
     except IntegrityError:
         db.rollback()
