@@ -18,17 +18,17 @@ class Task(Base):
     __tablename__ = "tasks"
     
     # Task model columns
-    ID = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     title = Column(String(100), index=True)
     description = Column(String(250))
     status = Column(Enum(TaskStatus))
     due_date = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    user_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'))
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE', onupdate='NO ACTION'))
     role_id = Column(Integer, ForeignKey(Role.id, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-    created_by_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
-    updated_by_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'), nullable=True)
+    created_by_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
+    updated_by_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE', onupdate='NO ACTION'), nullable=True)
     # Relationships with User and TaskDocument models
     assigned_user = relationship(User, foreign_keys=[user_id])
     owner = relationship(User, foreign_keys=[created_by_id])
@@ -38,11 +38,11 @@ class Task(Base):
 
 class TaskHistory(Base):
     # Define the table name
-    __tablename__ = "task_history"
+    __tablename__ = "tasks_histories"
     
     # TaskHistory model columns
-    ID = Column(Integer, primary_key=True, index=True)
-    task_id = Column(Integer, ForeignKey("tasks.ID"))
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("tasks.id"))
     comments = Column(String(250))
     status = Column(Enum(TaskStatus))
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
@@ -55,13 +55,13 @@ Task.history = relationship("TaskHistory", order_by=TaskHistory.created_at, back
 
 class TaskDocument(Base):
     # Define the table name
-    __tablename__ = "task_documents"
+    __tablename__ = "tasks_documents"
     
     # TaskDocument model columns
-    ID = Column(Integer, primary_key=True, index=True)
-    task_id = Column(Integer, ForeignKey("tasks.ID", ondelete='CASCADE', onupdate='NO ACTION'))
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("tasks.id", ondelete='CASCADE', onupdate='NO ACTION'))
     document_path = Column(String(255), nullable=False)
-    created_by_id = Column(Integer, ForeignKey(User.ID, ondelete='CASCADE', onupdate='NO ACTION'), nullable=True)
+    created_by_id = Column(Integer, ForeignKey(User.id, ondelete='CASCADE', onupdate='NO ACTION'), nullable=True)
     
     # Relationship with Task model
     task = relationship("Task", back_populates="documents")

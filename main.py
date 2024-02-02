@@ -89,7 +89,7 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
     db_user = check_user(user, db)
     if db_user:
         user_data = {
-            "ID": db_user.ID,
+            "id": db_user.id,
             "email": db_user.email,
             "name": db_user.name,
             "role": db_user.role_id,

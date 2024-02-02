@@ -43,3 +43,5 @@
 
 # Command to clear all pycache files
 - `find . -type d -name "pycache" -exec rm -r {} ;`
+
+- `Note: If you get any duplicate error while creating tables for 1st time then navigate to directory: app/config/database.py >> scroll down to the bottom >> comment out the "create_database()" `

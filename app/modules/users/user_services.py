@@ -23,9 +23,9 @@ def get_users(db: Session, current_user: get_current_user):
     if current_user.role_id == 1:
         pass
     elif current_user.role_id == 2:
-        query = query.filter(or_(User.ID == current_user.ID, User.role_id == 3))
+        query = query.filter(or_(User.id == current_user.id, User.role_id == 3))
     elif current_user.role_id == 3:
-        query = query.filter(User.ID == current_user.ID)
+        query = query.filter(User.id == current_user.id)
     users = query.all()
 
     user_data = [user.to_dict() for user in users]
@@ -33,8 +33,8 @@ def get_users(db: Session, current_user: get_current_user):
 
 # Function to read user by user_id
 def get_user(db: Session, user_id: int, current_user: get_current_user):
-    user= db.query(User).filter(User.ID == user_id).first()
-    if current_user.ID == user.ID:
+    user= db.query(User).filter(User.id == user_id).first()
+    if current_user.id == user.id:
         return user.to_dict()
     elif current_user.role_id == 3:
         return None
@@ -54,7 +54,7 @@ def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
         password=get_password_hash(password),
         name=user.name,
         role_id=user.role_id,
-        created_by=current_user.ID 
+        created_by=current_user.id 
     )
     try:
         db.add(user)
@@ -66,16 +66,16 @@ def add_user(db: Session, user: UserSignUp, current_user: get_current_user):
 
 # Update User
 def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_current_user):
-    db_user = db.query(User).filter(User.ID == user_id).first()
+    db_user = db.query(User).filter(User.id == user_id).first()
     if db_user is None:
         return False, msg["user_not"], {}
     # Check permissions based on user role_id
     if not (
         current_user.role_id == 1 or
         (current_user.role_id == 2 and (
-            (db_user.role_id in {3, 2} and db_user.ID == current_user.ID) or
+            (db_user.role_id in {3, 2} and db_user.id == current_user.id) or
             db_user.role_id == 3)) or
-        (current_user.role_id == 3 and db_user.ID == current_user.ID)
+        (current_user.role_id == 3 and db_user.id == current_user.id)
     ):
         return False, msg["enough_perm"], {}
     if db_user:
@@ -84,7 +84,7 @@ def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_cu
             db_user.password = get_password_hash(user.new_password)
             for key, value in user.model_dump(exclude_unset=True).items():
                 setattr(db_user, key, value)
-            db_user.updated_by = current_user.ID
+            db_user.updated_by = current_user.id
             db.commit()
             db.refresh(db_user)
             return True,msg['user_upd'],db_user.to_dict()
@@ -96,7 +96,7 @@ def update_user(db: Session, user_id: int, user: UserUpdate,current_user: get_cu
 def delete_users(db: Session,
                 current_user: get_current_user,
                 user_id: str):
-    user_to_delete = db.query(User).filter(User.ID == user_id).first()
+    user_to_delete = db.query(User).filter(User.id == user_id).first()
     if not user_to_delete:
         return False,msg['user_not'],{}
     # using a can_create function defined in app/permissions/roles.py
@@ -111,7 +111,7 @@ def delete_users(db: Session,
 def update_roles(db: Session, user_id: int, current_user: get_current_user, user_update: RolesUpdate):
     if current_user.role_id != 1:  # Assuming SUPERADMIN role_id is 1
         return False, msg['enough_perm'], {}
-    user_to_update = db.query(User).filter(User.ID == user_id).first()
+    user_to_update = db.query(User).filter(User.id == user_id).first()
     updated_user = user_update.model_dump(exclude_unset=True)
     for key, value in updated_user.items():
         setattr(user_to_update, key, value)

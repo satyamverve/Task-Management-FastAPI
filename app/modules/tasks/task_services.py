@@ -12,9 +12,10 @@ from app.models.tasks import Task, TaskHistory, TaskDocument
 from app.dto.tasks_schema import CreateTask, DocumentResponseModel, ResponseData, TaskStatus,CreateHistory
 from app.auth.auth import get_current_user  
 from app.models.users import User 
-from app.permissions.roles import Role, can_create
+from app.permissions.roles import can_create
 from app.config.database import msg
 from app.data.data_class import settings
+from app.models.roles import Role
 
 # Log History
 def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Optional[str] = None):
@@ -26,22 +27,22 @@ def log_task_history(db: Session, task_id: int, status: TaskStatus, comments: Op
 def get_tasks(db: Session, current_user: get_current_user):
     tasks = (
         db.query(Task)
-        .filter(Task.user_id == current_user.ID)
+        .filter(Task.user_id == current_user.id)
         .all()
     )
     return_tasks = []
     for task in tasks:
-        document_paths = list_uploaded_documents_of_task_service(db, task.ID)
+        document_paths = list_uploaded_documents_of_task_service(db, task.id)
         task_data = {
-            "ID": task.ID,
+            "id": task.id,
             "title": task.title,
             "description": task.description,
             "status": task.status,
             "due_date": task.due_date,
             "user_id": task.user_id,
             "role_id": task.role_id,
-            "created_by_id": current_user.ID,
-            "updated_by_id": current_user.ID,
+            "created_by_id": current_user.id,
+            "updated_by_id": current_user.id,
             "created_at": task.created_at,
             "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
         }
@@ -59,9 +60,9 @@ def view_all_tasks(
     try:
         query = db.query(Task)
         if current_user.role_id == 2:
-            query = query.filter(or_(Task.user_id == current_user.ID, Task.role_id == 3))
+            query = query.filter(or_(Task.user_id == current_user.id, Task.role_id == 3))
         elif current_user.role_id == 3:
-            query = query.filter(Task.user_id == current_user.ID)
+            query = query.filter(Task.user_id == current_user.id)
         if status:
             query = query.filter(Task.status == status)
         if due_date:
@@ -69,13 +70,13 @@ def view_all_tasks(
         tasks = query.all()
         tasks_data = []
         for task in tasks:
-            document_paths_response = list_uploaded_documents_of_task_service(db, task.ID)
+            document_paths_response = list_uploaded_documents_of_task_service(db, task.id)
             if document_paths_response.status:
                 document_paths = document_paths_response.data.get("documents", [])
             else:
                 document_paths = []
             task_data = {
-                "ID": task.ID,
+                "id": task.id,
                 "title": task.title,
                 "description": task.description,
                 "status": task.status,
@@ -104,54 +105,54 @@ def create_task(
     """Create a task with optional file upload."""
     assigned_user = None
     if task.user_id is not None:
-        assigned_user = db.query(User).filter(User.ID == task.user_id).first()
+        assigned_user = db.query(User).filter(User.id == task.user_id).first()
         if not assigned_user:
             return msg["invalid_user"]
-    user_id_value = assigned_user.ID if assigned_user else None
+    user_id_value = assigned_user.id if assigned_user else None
     status_value = status
     db_task = Task(
         title=task.title,
         description=task.description,
         due_date=task.due_date,
-        created_by_id=current_user.ID,
-        updated_by_id=current_user.ID,
+        created_by_id=current_user.id,
+        updated_by_id=current_user.id,
         user_id=user_id_value,
         role_id=assigned_user.role_id if assigned_user else None,
         status=status_value,
     )
     if not can_create(current_user.role_id, db_task.role_id):
-        raise ValueError("User not authorized to create task")
+        return False, msg["enough_perm"], {}
     document_path = None
     if file:
         upload_dir = "static/uploads"
         os.makedirs(upload_dir, exist_ok=True)
-        file_path = f"{upload_dir}/{current_user.ID}_{file.filename}"
+        file_path = f"{upload_dir}/{current_user.id}_{file.filename}"
         with open(file_path, 'wb') as f:
             f.write(file.file.read())
-        db_file = TaskDocument(task=db_task, document_path=file_path, created_by_id=current_user.ID)
+        db_file = TaskDocument(task=db_task, document_path=file_path, created_by_id=current_user.id)
         db.add(db_file)
         base_url = settings.base_url
-        document_path = f"static/uploads/{current_user.ID}_{file.filename}"
+        document_path = f"static/uploads/{current_user.id}_{file.filename}"
         full_url = f"{base_url}/{document_path}"
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
     return_task = {
-        "ID": db_task.ID,  
+        "id": db_task.id,  
         "title": db_task.title,
         "description": db_task.description,
         "status": db_task.status,
         "due_date": db_task.due_date,
         "user_id": db_task.user_id,
         "role_id": db_task.role_id,
-        "created_by_id": str(current_user.ID),
-        "updated_by_id": str(current_user.ID),
+        "created_by_id": str(current_user.id),
+        "updated_by_id": str(current_user.id),
         "created_at": db_task.created_at,
         "document_path": document_path
     }
     if document_path:
         return_task["document_path"] = full_url
-    return return_task
+    return True, msg['task_created'], return_task
 
 # Update Task
 def update_task(
@@ -162,16 +163,16 @@ def update_task(
     current_user: get_current_user = Depends(),
 ):
     # Retrieve the task from the database
-    tasks = db.query(Task).filter(Task.ID == task_id).first()
+    tasks = db.query(Task).filter(Task.id == task_id).first()
     if tasks is None:
         return False, msg["invalid_task"], {}
     # Check permissions based on user role
     if not (
         current_user.role_id == 1 or
         (current_user.role_id == 2 and (
-            (tasks.role_id in {3, 2} and tasks.user_id == current_user.ID) or
+            (tasks.role_id in {3, 2} and tasks.user_id == current_user.id) or
             tasks.role_id == 3)) or
-        (current_user.role_id == 3 and tasks.user_id == current_user.ID)
+        (current_user.role_id == 3 and tasks.user_id == current_user.id)
     ):
         return False, msg["enough_perm"], {}
     # Update task details
@@ -180,13 +181,13 @@ def update_task(
     tasks.status = status
     db.commit()
     # Log task history
-    log_task_history(db, tasks.ID, status, task.comments)
+    log_task_history(db, tasks.id, status, task.comments)
     db.refresh(tasks)
     # Retrieve document paths for the task
     document_paths = list_uploaded_documents_of_task_service(db, task_id)
     # Construct return data
     return True, msg["update_task"], {
-        "ID": tasks.ID,
+        "id": tasks.id,
         "title": tasks.title,
         "description": tasks.description,
         "status": tasks.status,
@@ -194,7 +195,7 @@ def update_task(
         "user_id": tasks.user_id,
         "role_id": tasks.role_id,
         "created_by_id": tasks.created_by_id,
-        "updated_by_id": current_user.ID,
+        "updated_by_id": current_user.id,
         "created_at": tasks.created_at,
         "document_path": document_paths.data.get("documents", []) if document_paths.status else None,
     }
@@ -203,7 +204,7 @@ def update_task(
 def delete_task(db: Session, current_user: get_current_user, task_id: int):
     try:
         # Retrieve the task to delete
-        task_to_delete = db.query(Task).filter(Task.ID == task_id).first()
+        task_to_delete = db.query(Task).filter(Task.id == task_id).first()
         if not task_to_delete:
             return False, msg["invalid_task"], {}
         # Check permissions based on user role
@@ -214,7 +215,7 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
         db.commit()
         # Construct return data
         return True, msg["task_del"], {
-            "ID": task_to_delete.ID,
+            "id": task_to_delete.id,
             "title": task_to_delete.title,
             "description": task_to_delete.description,
             "status": task_to_delete.status,
@@ -222,7 +223,7 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
             "user_id": task_to_delete.user_id,
             "role_id": task_to_delete.role_id,
             "created_by_id": task_to_delete.created_by_id,
-            "updated_by_id": current_user.ID,
+            "updated_by_id": current_user.id,
             "created_at": task_to_delete.created_at,
         }
     except Exception as e:
@@ -231,21 +232,22 @@ def delete_task(db: Session, current_user: get_current_user, task_id: int):
 # GET task history
 def get_task_history(db: Session, current_user: get_current_user, task_ids: Optional[List[int]] = None):
     try:
-        if current_user.role_id not in Role.get_roles():
+        
+        if current_user.role_id not in [1,2,3]:
             return False, msg["invalid_role"], {}
         # Filter tasks based on user's role
         query = db.query(Task)
         if current_user.role_id == 2:
-            query = query.filter(or_(Task.user_id == current_user.ID, Task.role_id == 3))
+            query = query.filter(or_(Task.user_id == current_user.id, Task.role_id == 3))
         elif current_user.role_id == 3:
-            query = query.filter(Task.user_id == current_user.ID)
+            query = query.filter(Task.user_id == current_user.id)
         if task_ids:
-            query = query.filter(Task.ID.in_(task_ids))
+            query = query.filter(Task.id.in_(task_ids))
         tasks = query.all()
         task_histories = []
         for task in tasks:
             task_history = {
-                "task_id": task.ID,
+                "task_id": task.id,
                 # "created_at": task.created_at,
                 "due_date": task.due_date,
                 "history": [
@@ -269,7 +271,9 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         if not file:
             return False, msg["random_key_11"], {}
         # Retrieve the task
-        task = db.query(Task).filter(Task.ID == task_id).first()
+        task = db.query(Task).filter(Task.id == task_id).first()
+        if not can_create(current_user.role_id, task.role_id):
+            return False, msg["enough_perm"], {}
         if not task:
             return False, msg["invalid_task"], {}
         # Check if the current user can create a document for the task
@@ -287,7 +291,7 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         db_file = TaskDocument(
             task_id=task_id,
             document_path=file_path,
-            created_by_id=current_user.ID
+            created_by_id=current_user.id
         )
         db.add(db_file)
         db.commit()
@@ -296,10 +300,10 @@ def upload_file(db: Session, task_id: int, file: UploadFile, current_user: get_c
         full_url = f"{base_url}/{file_path}"
         # Construct the response data
         response_data = {
-            "document_id": db_file.ID,
+            "document_id": db_file.id,
             "document_path": full_url,
             "task_id": task_id,
-            "uploaded_by": current_user.ID
+            "uploaded_by": current_user.id
         }
         return True, msg["upload"], response_data
     except Exception as e:

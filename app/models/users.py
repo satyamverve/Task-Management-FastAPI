@@ -16,21 +16,21 @@ class User(Base):
     __tablename__ = "users"
     
     # User model columns
-    ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
+    id = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
     name = Column(String(150), nullable=True)
     email = Column(String(200), primary_key=True, index=True, unique=True)
     password = Column(String(250))
     role_id = Column(Integer, ForeignKey(Role.id, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=True, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-    created_by = Column(Integer, ForeignKey('users.ID'), nullable=True)
-    updated_by = Column(Integer, ForeignKey('users.ID'), nullable=True)
-    created_by_user = relationship("User", foreign_keys=[created_by], remote_side=[ID])
-    updated_by_user = relationship("User", foreign_keys=[updated_by], remote_side=[ID])
+    created_by = Column(Integer, ForeignKey('users.id'), nullable=True)
+    updated_by = Column(Integer, ForeignKey('users.id'), nullable=True)
+    created_by_user = relationship("User", foreign_keys=[created_by], remote_side=[id])
+    updated_by_user = relationship("User", foreign_keys=[updated_by], remote_side=[id])
 
     def to_dict(self):
         return {
-            "ID": self.ID,
+            "id": self.id,
             "email": self.email,
             "name": self.name,
             "role_id": self.role_id,
@@ -51,7 +51,7 @@ class Token(Base):
     __tablename__ = "reset_password"
     
     # Token model columns
-    ID = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
+    id = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
     otp = Column(String(250), primary_key=True, index=True)  
     user_email = Column(String(200), ForeignKey(User.email, ondelete='CASCADE', onupdate='NO ACTION'), nullable=False)
     reset_password = Column(Boolean, default=False)

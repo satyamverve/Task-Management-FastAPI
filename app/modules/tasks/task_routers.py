@@ -74,8 +74,8 @@ def create_task_route(
 ):
     try:
         task = CreateTask(title=title, description=description, due_date=due_date, user_id=user_id)
-        task_data = create_task(db=db, task=task, status=status, current_user=current_user, file=file)
-        return ResponseData(status=True, message=msg['task_created'], data=task_data)
+        status, message, data = create_task(db=db, task=task, status=status, current_user=current_user, file=file)
+        return ResponseData(status=status, message=message, data=data)
     except ValueError:
         return ResponseData(status=False, message=msg['invalid_user'], data={})
     except Exception as e:
@@ -112,7 +112,7 @@ async def update_task_status(
                summary="Delete tasks with task_id")
 async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db), current_user: get_current_user = Depends()):
     """
-    Enter the ID of task to delete
+    Enter the id of task to delete
     """
     try:
         status, message, data = delete_task(db, current_user, task_id)
@@ -127,7 +127,7 @@ async def delete_task_endpoint(task_id: int, db: Session = Depends(get_db), curr
 # GET task history
 @router.get("/tasks/history", response_model=ResponseData, tags=["Tasks"], summary="View task History")
 async def view_task_history_endpoint(
-    task_ids: Optional[List[int]] = Query(None, title="Task IDs", description="Filter by task IDs"),
+    task_ids: Optional[List[int]] = Query(None, title="Task ids", description="Filter by task ids"),
     db: Session = Depends(get_db),
     current_user: get_current_user = Depends(),
 ):
@@ -146,7 +146,6 @@ async def view_task_history_endpoint(
 
 # Upload file for a task
 @router.post("/tasks/upload/{task_id}",
-             dependencies=[Depends(PermissionChecker([Users.permissions.CREATE])), ],
              tags=["Tasks"],
              summary="Upload files for a task")
 def upload_file_for_task(
